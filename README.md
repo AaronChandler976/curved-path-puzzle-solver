@@ -2,7 +2,7 @@
 
 **Course:** CMPE 258-02, Deep Learning — Fall 2026, San Jose State University
 **Track:** Option 1 — Modern Deep Learning Pipeline (Training + Deployment)
-**Team members:** Aaron Chandler *(add teammates here if this becomes a team project)*
+**Team members:** Aaron Chandler
 
 ## Abstract
 
