@@ -5,6 +5,16 @@ curved-path puzzle-solving project. Two older foundational papers are also noted
 end for context, since the project's method extends them, but they are not counted
 toward the recency requirement.
 
+Most entries ground the technical approach directly (the learned-heuristic-search
+lineage, and the curved-path motion-planning oracle). Three — items 5, 6, and 9 — serve
+a different purpose: they establish that the underlying problem structure this project
+targets (decide what to try next, when checking feasibility is expensive and some
+moves must be curved) is not puzzle-specific, but recurs in real industrial
+disassembly, cluttered-scene retrieval, and recycling/maintenance robotics. Interlocking
+puzzles are the testbed used here precisely because they let that same structure be
+studied cheaply and reproducibly, without needing production hardware; see the
+proposal document's Domain Problem section for this framing stated explicitly.
+
 ## 1. DeepCubeAF (2025)
 
 Generalizes DeepCubeA into a single learned heuristic that transfers across
