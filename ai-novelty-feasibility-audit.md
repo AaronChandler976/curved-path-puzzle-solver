@@ -79,6 +79,32 @@ planning from scratch.
   construct and verify a rotation-required subset of the training family before
   training begins.
 
+## Scale and framing risks
+
+- **Training-scale honesty.** DeepCubeA's original approximate value iteration trained
+  on state volumes (and compute) far beyond what a laptop-plus-modest-cloud semester
+  project can reach, because in this project — unlike a Rubik's Cube move — checking
+  whether a candidate extraction is legal requires a real motion-planning query, not a
+  free lookup. Unrestricted training against the real CMG-RRT oracle would be
+  bottlenecked by query cost long before reaching a meaningful sample size. Mitigation:
+  a two-phase training curriculum — bulk approximate value iteration (targeting
+  10^4-10^5 sampled states) against the cheap, near-free discretized-action oracle
+  (PyBullet), which is enough volume for a real GNN-vs-MLP comparison, followed by
+  transfer/fine-tuning and final evaluation against the real CMG-RRT oracle on a small,
+  deliberately curated set (10^2-10^3 queries). This is an honest, bounded-scale
+  demonstration of the method, not a claim to match industrial-scale training runs.
+- **Domain-perception risk ("is this just a toy puzzle demo").** Even with a rigorous
+  method, "solves a puzzle" can read as recreational unless explicitly connected to why
+  it matters outside puzzle-enthusiast circles. The connection is real: the same
+  expensive-verification-plus-occasional-curved-motion structure recurs in EV battery
+  disassembly, cluttered-scene retrieval, and recycling/maintenance robotics (literature
+  survey items 5, 6, 9) — puzzles are used here as a controlled, cheaply reproducible
+  testbed for that problem class, not as the target application itself. Mitigation:
+  state this framing explicitly in the README and proposal document rather than leaving
+  it implicit in the citation list, and lead the final demo with the falsifiable claim
+  (fewer oracle calls than uninformed search, on a real physical object) rather than
+  "look, it solved a puzzle."
+
 ## Overall verdict
 
 The project occupies a specific, currently unclaimed combination of two active research
