@@ -2,14 +2,21 @@
 
 **Course:** CMPE 258-02, Deep Learning — Fall 2026, San Jose State University
 **Track:** Option 1 — Modern Deep Learning Pipeline (Training + Deployment)
-**Team members:** Aaron Chandler
+**Team members:** Aaron Chandler (solo project)
 
 ## Abstract
 
-Interlocking and cast-metal puzzles are typically solved by hand, through trial and
-error, or — for the narrow case of axis-aligned "burr" puzzles — by classical
-combinatorial search tools that cannot represent rotational or curved extraction
-moves. We propose a learned-heuristic disassembly solver for **arbitrary-shape**
+Deciding which item to try moving next, when checking whether a move is even possible
+requires an expensive verification step and some moves must be curved or rotational
+rather than straight-line, is a recurring structure in industrial disassembly:
+multi-robot EV battery teardown, cluttered-scene retrieval, and recycling/maintenance
+disassembly all share it. Interlocking and cast-metal puzzles make an ideal, cheaply
+reproducible testbed for this exact problem, since — unlike a real production line —
+they can be freely CAD-modeled, procedurally generated at scale, and solved or failed
+without real-world cost. Today they're solved by hand, through trial and error, or —
+for the narrow case of axis-aligned "burr" puzzles — by classical combinatorial search
+tools that cannot represent rotational or curved extraction moves. We propose a
+learned-heuristic disassembly solver for **arbitrary-shape**
 interlocking puzzles that require genuinely **curved, non-axis-aligned motion**
 (rotation, screw motion, rotate-then-slide sequences), not just translation. The
 system uses a two-layer architecture: a graph neural network, trained via
