@@ -1,13 +1,14 @@
 STATE: RUNNING
 DEADLINE: 2026-11-22T07:00:00-08:00
-CURRENT STAGE: S1 CMG-RRT smoke test and timing (sweep running) + S2 paperwork + S3 adapter dev
+CURRENT STAGE: S3 adapter gate (oracle_check_v2 running); S1 sweep still running
 BACKGROUND JOBS:
-15635 smoke sweep (17 examples x cpu,cuda, 4 parallel, 600 s cap; parent conda pid 15629) experiments/2026-11-22_smoke_sweep/stdout.log
+15635 smoke sweep (4 parallel, 600 s cap) experiments/2026-11-22_smoke_sweep/stdout.log
+(pgrep -f scan_contacts) contact/penetration scan 3-8 parts experiments/2026-11-22_contact_scan/stdout.log
+(pgrep -f smoke_hifi) hi-fi SDF diagnostic general/06397 cuda experiments/2026-11-22_smoke_hifi_sdf/stdout.log
+(pgrep -f oracle_check) oracle check v2 experiments/2026-11-22_oracle_check_v2/stdout.log
 DONE SO FAR:
-- S0 env audit PASS: reports/environment.md, experiments/2026-11-21_env_audit/stdout.log
-- S1 elk cpu 500 iters: unsolved in 330 s: experiments/2026-11-21_smoke_elk_cpu500/results.jsonl
-- S2 downloads done (ATA multi/rot/joint, ASAP train/test): experiments/2026-11-21_downloads*/stdout.log
-- S2 inspect: 4196 multi assemblies all load; experiments/2026-11-21_inspect_multi/summary.json
-- NOTE 23:50: STATUS.md was found deleted from working tree (cause unknown); reconstructed from logs.
-- Finding: bundled general/* = ATA joint_assembly_rotation x 0.2 (ATA normalized to max|coord|=5); 0_sdf.obj = watertight remesh of 0.obj same scale.
-NEXT ACTION: write reports/data_sources.md; write src/disasm/oracle/cmgrrt.py adapter (scale 0.2, q1=q2_start=identity, union-SDF = min over parts); when sweep done write reports/smoke_test.md
+- S0 PASS: reports/environment.md
+- S2 PASS: reports/data_sources.md (4196 assemblies load)
+- S3 adapter written: src/disasm/oracle/cmgrrt.py; tests in tests/; decisions in reports/DECISIONS_FOR_AARON.md
+- oracle_check v1 (killed by me at ~4 min, resumable): 00008 all 5 done parts unsolved because start pose in collision (mesh interpenetration) -> filter added
+NEXT ACTION: when oracle_check_v2 done -> check S3 gate, choose T, launch scripts/label_abd.py (filter by contact scan max_pen<=0.002); write reports/smoke_test.md when sweep done

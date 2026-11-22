@@ -12,7 +12,8 @@ Checkpointing: after every state a line goes to states.jsonl (and its queries to
 finished assemblies go to summary.jsonl. On restart, finished assemblies are skipped and
 unfinished ones resume from their last completed state.
 Order: 3-5 part assemblies first (by id), then 6-8. Skipped (logged in summary.jsonl):
-non-watertight parts, no contact pairs at all (floating parts), mesh load errors, or any
+non-watertight parts, mesh interpenetration > --max-pen (start pose would be in collision),
+no contact pairs at all (floating parts), mesh load errors, or any
 obstacle SDF prep > --max-prep-s.
 """
 import argparse
@@ -56,6 +57,8 @@ def main():
     ap.add_argument("--groups", default="3-5,6-8")
     ap.add_argument("--max-assemblies", type=int, default=100000)
     ap.add_argument("--max-prep-s", type=float, default=120.0)
+    ap.add_argument("--scan", required=True, help="contact scan results.jsonl (scripts/scan_contacts.py)")
+    ap.add_argument("--max-pen", type=float, default=0.002, help="skip assemblies with deeper mesh interpenetration")
     ap.add_argument("--stop-at", default="", help="ISO time: start no new state after this")
     args = ap.parse_args()
     signal.signal(signal.SIGTERM, _sig)
@@ -78,6 +81,7 @@ def main():
             s = json.loads(l)
             progress.setdefault(s["assembly_id"], []).append(s)
 
+    scan = {j["id"]: j for j in map(json.loads, open(args.scan)) if not j.get("error")}
     rows = [json.loads(l) for l in open(args.inspect)]
     order = []
     for g in args.groups.split(","):
@@ -93,6 +97,8 @@ def main():
             f.write(json.dumps(d) + "\n")
         print("SUMMARY", json.dumps(d), flush=True)
 
+    P.pin_threads(1)
+    os.environ.setdefault("DISASM_SDF_THREADS", "2")
     ex = ProcessPoolExecutor(args.workers, mp_context=mp.get_context("spawn"), initializer=P._init,
                              initargs=({"workdir": os.path.join(args.outdir, "work"), "device": args.device,
                                         "threads": 1},))
@@ -121,6 +127,13 @@ def main():
             aid = r["id"]
             if not all(p["watertight"] for p in r["parts"]):
                 log_summary({"assembly_id": aid, "status": "skipped", "reason": "non_watertight", "n_parts": len(r["parts"])})
+                continue
+            sc = scan.get(aid)
+            if sc is None:
+                continue  # not scanned (yet); not logged, may be labelled by a later run
+            if sc["max_penetration"] > args.max_pen:
+                log_summary({"assembly_id": aid, "status": "skipped", "n_parts": len(r["parts"]),
+                             "reason": f"mesh_interpenetration {sc['max_penetration']:.4f} > {args.max_pen}"})
                 continue
             try:
                 asm = load_assembly(os.path.join(root, aid))

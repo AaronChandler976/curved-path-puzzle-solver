@@ -9,6 +9,16 @@ import traceback
 
 _ASM = {}
 _CFG = {}
+THREAD_VARS = ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS",
+               "VECLIB_MAXIMUM_THREADS")
+
+
+def pin_threads(n: int = 1) -> None:
+    """Set BLAS/OpenMP thread caps in THIS process's environment so that spawned workers inherit
+    them before numpy/torch/sklearn load (setting them inside a worker after import is too late).
+    Without this each worker ran ~24 BLAS/KMeans threads and the machine load hit ~88."""
+    for v in THREAD_VARS:
+        os.environ[v] = str(n)
 
 
 def _init(cfg):
@@ -43,6 +53,7 @@ def _run(job):
 
 def make_pool(n_workers: int, workdir: str, device: str = "cpu", threads: int = 1,
               max_iterations: int | None = None):
+    pin_threads(threads)
     ctx = mp.get_context("spawn")
     return ctx.Pool(n_workers, initializer=_init,
                     initargs=({"workdir": workdir, "device": device, "threads": threads,
