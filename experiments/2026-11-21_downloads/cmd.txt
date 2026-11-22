@@ -1,0 +1,1 @@
+cd data/raw/ata_zips && wget -c <url> for multi_assembly.zip, joint_assembly_rotation.zip, joint_assembly.zip (people.csail.mit.edu/yunsheng/Assemble-Them-All/dataset_2403/)
