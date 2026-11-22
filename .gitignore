@@ -1,0 +1,21 @@
+
+# --- CMPE 258 project ---
+data/raw/
+data/processed/
+data/labels/
+external/
+logs/
+experiments/**/*
+!experiments/**/
+!experiments/**/*.md
+!experiments/**/*.yaml
+!experiments/**/cmd.txt
+!experiments/**/git_hash.txt
+!experiments/**/*summary*.csv
+*.pt
+*.ckpt
+*.pkl
+*.obj
+*.stl
+__pycache__/
+.pytest_cache/
