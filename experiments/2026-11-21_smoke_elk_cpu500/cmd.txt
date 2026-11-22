@@ -1,0 +1,1 @@
+python scripts/smoke_cmgrrt.py --example puzzle/elk --device cpu --iterations 500 --timeout 600 --seed 0 --out experiments/2026-11-21_smoke_elk_cpu500/results.jsonl
