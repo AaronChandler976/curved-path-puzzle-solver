@@ -81,6 +81,27 @@ def load_assembly(asm_dir: str) -> Assembly:
                     meshes=meshes, scale=s, raw_max_abs=max_abs)
 
 
+def assembly_from_meshes(asm_id: str, meshes: dict, asm_dir: str = "") -> Assembly:
+    """Build an Assembly from meshes already posed in a common unit frame (no rescaling)."""
+    return Assembly(id=asm_id, dir=asm_dir, part_ids=sorted(meshes), meshes=dict(meshes), scale=1.0,
+                    raw_max_abs=float(max(np.abs(m.vertices).max() for m in meshes.values())))
+
+
+def bundled_example_assembly(example: str) -> Assembly:
+    """A bundled CMG-RRT two-body example (e.g. 'general/06397') as a 2-part Assembly in world
+    frame: part 0 = 0.obj placed at q1, part 1 = 1.obj placed at q2_start (properties.json)."""
+    from taucgl_rrt.cspace import SE3
+    d = os.path.join(ROOT, "external/cmg-rrt/resources/models", example)
+    props = json.load(open(os.path.join(d, "properties.json")))
+    ms = {}
+    for i, key in ((0, "q1"), (1, "q2_start")):
+        m = trimesh.load_mesh(os.path.join(d, f"{i}.obj"), process=True)
+        m.merge_vertices()
+        m.apply_transform(SE3(*props[key]).to_matrix())
+        ms[i] = m
+    return assembly_from_meshes("bundled_" + example.replace("/", "_"), ms, d)
+
+
 # ----------------------------------------------------------------------------------- contacts
 def contact_graph(asm: Assembly, cache_dir: str = DEFAULT_CACHE) -> dict:
     """Pairwise contacts in the assembled pose (parts never move except by removal, so this is
@@ -88,7 +109,7 @@ def contact_graph(asm: Assembly, cache_dir: str = DEFAULT_CACHE) -> dict:
     CONTACT_EPS of q, and the mean of -n_p over them (direction that moves p away from q)."""
     if asm._contacts is not None:
         return asm._contacts
-    path = os.path.join(cache_dir, "contacts", f"{asm.id}.json")
+    path = os.path.join(cache_dir, "contacts_v2", f"{asm.id}.json")
     if os.path.exists(path):
         asm._contacts = json.load(open(path))
         return asm._contacts
@@ -100,7 +121,7 @@ def contact_graph(asm: Assembly, cache_dir: str = DEFAULT_CACHE) -> dict:
         pts, fi = trimesh.sample.sample_surface(m, CONTACT_SAMPLES)
         samples[p] = (np.asarray(pts), np.asarray(m.face_normals[fi]))
     np.random.set_state(rng_state)
-    pairs = {}
+    pairs, min_d = {}, {}
     for p in asm.part_ids:
         pts, nrm = samples[p]
         for q in asm.part_ids:
@@ -113,13 +134,16 @@ def contact_graph(asm: Assembly, cache_dir: str = DEFAULT_CACHE) -> dict:
             if not inb.any():
                 continue
             d = robust_sdf(mq, pts[inb], 4)
+            min_d[f"{p}-{q}"] = float(d.min())
             c = np.abs(d) < CONTACT_EPS
             if c.sum() == 0:
                 continue
             mean_away = (-nrm[inb][c]).mean(0)
             pairs[f"{p}-{q}"] = {"n": int(c.sum()), "away": mean_away.tolist(),
-                                 "frac": float(c.sum()) / CONTACT_SAMPLES}
-    out = {"eps": CONTACT_EPS, "samples": CONTACT_SAMPLES, "pairs": pairs}
+                                 "frac": float(c.sum()) / CONTACT_SAMPLES, "min_d": float(d.min())}
+    # max_penetration: deepest point of any part's surface sample inside another part (>= 0)
+    pen = max([0.0] + [-v for v in min_d.values()])
+    out = {"eps": CONTACT_EPS, "samples": CONTACT_SAMPLES, "pairs": pairs, "max_penetration": pen}
     os.makedirs(os.path.dirname(path), exist_ok=True)
     tmp = path + f".tmp{os.getpid()}"
     json.dump(out, open(tmp, "w"))

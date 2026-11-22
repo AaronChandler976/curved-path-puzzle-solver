@@ -2,7 +2,8 @@
 """S3 gate: query EVERY part of each selected assembly at the assembled state through the
 CMG-RRT adapter (src/disasm/oracle/cmgrrt.py) and log every call.
 
-Selection is deterministic: the first --n assemblies (sorted by id) from the inspection list
+Selection is deterministic: the first --n assemblies (sorted by id) from the inspection list (optionally
+filtered by --scan/--max-pen)
 with --min-parts..--max-parts parts, all parts watertight, and at least one contact pair
 (assemblies whose parts do not touch at all, like 00013, are skipped and logged).
 Resumable: (assembly, part) pairs already in results.jsonl are skipped.
@@ -29,6 +30,9 @@ def main():
     ap.add_argument("--device", default="cpu")
     ap.add_argument("--workers", type=int, default=10)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--scan", default="", help="contact scan results.jsonl; keep only assemblies listed there "
+                    "with contacts and max_penetration <= --max-pen")
+    ap.add_argument("--max-pen", type=float, default=0.002)
     args = ap.parse_args()
     from disasm.oracle.cmgrrt import load_assembly, contact_graph
     from disasm.oracle.pool import make_pool
@@ -42,6 +46,10 @@ def main():
     else:
         cand = sorted((r for r in rows if args.min_parts <= len(r["parts"]) <= args.max_parts
                        and all(p["watertight"] for p in r["parts"])), key=lambda r: r["id"])
+    if args.scan:
+        scan = {j["id"]: j for j in map(json.loads, open(args.scan)) if not j.get("error")}
+        cand = [r for r in cand if r["id"] in scan and scan[r["id"]]["contact_pairs"] > 0
+                and scan[r["id"]]["max_penetration"] <= args.max_pen]
     chosen = []
     with open(sel_path, "a") as sf:
         for r in cand:

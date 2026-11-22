@@ -76,8 +76,18 @@ def union_sampling(meshes: list, num_samples: int, cfg: "SDFTrainConfig", far_fr
     samples = np.concatenate([surf, rng.normal(0.0, cfg.normal_sigma, (n_norm, 3)),
                               rng.uniform(-far_box, far_box, (n_far, 3))])
     vals = np.full(len(samples), np.inf)
+    pad = 2 * cfg.clamping_delta
     for m in meshes:
-        np.minimum(vals, robust_sdf(m, samples, cfg.num_threads), out=vals)
+        # Exact distances only where they can matter: a point more than `pad` outside this mesh's
+        # bbox is >= pad from the mesh, and labels are clamped at clamping_delta < pad, so the
+        # bbox distance (a valid positive lower bound) gives the same clamped label.
+        lo, hi = m.bounds[0], m.bounds[1]
+        out_d = np.linalg.norm(np.maximum(0, np.maximum(lo - samples, samples - hi)), axis=1)
+        near = out_d < pad
+        v = out_d.copy()
+        if near.any():
+            v[near] = robust_sdf(m, samples[near], cfg.num_threads)
+        np.minimum(vals, v, out=vals)
     return samples, vals
 
 

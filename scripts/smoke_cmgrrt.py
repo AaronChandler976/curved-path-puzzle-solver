@@ -14,7 +14,7 @@ import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from disasm.oracle.cmgrrt_core import PlannerParams, run_cmgrrt  # noqa: E402
-from disasm.oracle.sdf_train import SDFTrainConfig, load_obj_merged, train_sdf  # noqa: E402
+from disasm.oracle.sdf_train import SDFTrainConfig, load_obj_merged, train_sdf, train_sdf_union  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -29,6 +29,9 @@ def main():
     ap.add_argument("--sdf-cache", default=os.path.join(ROOT, "data/processed/cmgrrt_bundled_sdf"))
     ap.add_argument("--sdf-epochs", type=int, default=30)
     ap.add_argument("--sdf-samples", type=int, default=2_000_000)
+    ap.add_argument("--sdf-batch", type=int, default=8192)
+    ap.add_argument("--sdf-sign", default="quicksdf", choices=["quicksdf", "robust"],
+                    help="quicksdf = upstream labelling; robust = |quicksdf| with winding-number sign")
     ap.add_argument("--threads", type=int, default=0, help="torch CPU threads (0 = torch default)")
     ap.add_argument("--out", required=True, help="jsonl file to append the result to")
     args = ap.parse_args()
@@ -44,11 +47,16 @@ def main():
 
     cache = os.path.join(args.sdf_cache, args.example.replace("/", "_"))
     os.makedirs(cache, exist_ok=True)
-    pth = os.path.join(cache, f"0_e{args.sdf_epochs}_n{args.sdf_samples}.pth")
+    tag = "" if (args.sdf_batch == 8192 and args.sdf_sign == "quicksdf") else f"_b{args.sdf_batch}_{args.sdf_sign}"
+    pth = os.path.join(cache, f"0_e{args.sdf_epochs}_n{args.sdf_samples}{tag}.pth")
     sdf_stats = None
     if not os.path.exists(pth):
-        cfg = SDFTrainConfig(epochs=args.sdf_epochs, num_samples=args.sdf_samples)
-        sdf_stats = train_sdf(load_obj_merged(os.path.join(ex_dir, "0.obj")), pth, cfg, device="cuda")
+        cfg = SDFTrainConfig(epochs=args.sdf_epochs, num_samples=args.sdf_samples, batch_size=args.sdf_batch)
+        if args.sdf_sign == "robust":
+            sdf_stats = train_sdf_union([load_obj_merged(os.path.join(ex_dir, "0.obj"))], pth, cfg,
+                                        device="cuda", far_frac=0.0)
+        else:
+            sdf_stats = train_sdf(load_obj_merged(os.path.join(ex_dir, "0.obj")), pth, cfg, device="cuda")
         json.dump(sdf_stats, open(pth + ".json", "w"), indent=1)
         print("SDF trained:", json.dumps({k: v for k, v in sdf_stats.items() if k != "cfg"}), flush=True)
     else:
@@ -60,7 +68,9 @@ def main():
                      params, device=args.device, timeout_s=args.timeout,
                      max_iterations=args.iterations, seed=args.seed)
     res.update({"example": args.example, "sdf_path": pth, "sdf_stats": sdf_stats,
-                "total_wall_s": time.time() - t0, "threads": args.threads})
+                "total_wall_s": time.time() - t0, "threads": args.threads,
+                "sdf_epochs": args.sdf_epochs, "sdf_samples": args.sdf_samples, "sdf_batch": args.sdf_batch,
+                "sdf_sign": args.sdf_sign})
     path = res.pop("path")
     if path:
         pp = os.path.splitext(args.out)[0] + f"_{args.example.replace('/', '_')}_{args.device}_path.json"
