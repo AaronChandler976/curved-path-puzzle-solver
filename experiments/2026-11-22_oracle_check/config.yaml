@@ -1,0 +1,9 @@
+n: 6
+min_parts: 3
+max_parts: 6
+timeout_s: 120
+device: cpu
+workers: 6
+seed: 0
+sdf: {epochs: 30, num_samples: 2000000, far_frac: 0.05}
+planner: {eta: 0.002, threshold: -0.005, steps: 50, sampling: 4000}

@@ -1,0 +1,1 @@
+conda run --no-capture-output -n disasm python scripts/smoke_sweep.py --outdir experiments/2026-11-22_smoke_sweep --devices cpu,cuda --parallel 4 --timeout 600 --iterations 5000 --threads 3 --seed 0

@@ -1,0 +1,1 @@
+conda run --no-capture-output -n disasm env DISASM_SDF_THREADS=2 python scripts/oracle_check.py --outdir experiments/2026-11-22_oracle_check --n 6 --min-parts 3 --max-parts 6 --timeout 120 --device cpu --workers 6 --seed 0

@@ -1,0 +1,11 @@
+T: 30
+workers: 6 (raise to 10 after smoke sweep ends)
+concurrent_assemblies: 4
+device: cpu
+seed: 0
+groups: 3-5,6-8
+max_pen: 0.002
+scan: experiments/2026-11-22_contact_scan/results.jsonl
+sdf: {narrow_frac: 0.5, narrow_sigma: 0.005, num_samples: 4000000, epochs: 30, batch: 8192, far_frac: 0.05}
+planner: {eta: 0.002, threshold: -0.005, steps: 50, sampling: 4000}
+stop_at: 2026-11-22T06:05:00-08:00

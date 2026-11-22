@@ -1,6 +1,6 @@
 """Reproduce a bundled CMG-RRT two-body example through our adapter (S3).
 
-general/06397 comes from ATA joint_assembly_rotation (scaled by 0.2), so it is the same kind of
+general/11356 (the bundled example that succeeded in the S1 smoke sweep) comes from ATA joint_assembly_rotation (scaled by 0.2), so it is the same kind of
 geometry our dataset queries use. The adapter must: build the obstacle SDF itself, accept the
 assembled start pose as valid, and find an extraction path for part 1 within the budget.
 """
@@ -10,7 +10,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-EXAMPLE = os.environ.get("BUNDLED_EXAMPLE", "general/06397")
+EXAMPLE = os.environ.get("BUNDLED_EXAMPLE", "general/11356")
 
 
 def test_bundled_two_body(tmp_path):
