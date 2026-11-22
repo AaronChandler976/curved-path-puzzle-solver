@@ -10,5 +10,8 @@ DONE SO FAR:
 - contact/penetration scan: experiments/2026-11-22_contact_scan/results.jsonl (2446 scanned; 1104 kept at max_pen<=0.002)
 - S3 PASS: experiments/2026-11-22_oracle_check_v2/results.jsonl: 6 assemblies, 22 queries, 9 successes in 4 assemblies (00017,00026,00072,00085); median success 1.34 s; figure reports/figures/s3_path_00026_part0.png
 - hi-fi SDF diagnostic (general/06397 cuda) running/finished: experiments/2026-11-22_smoke_hifi_sdf/
+- tests: 3 passed, experiments/2026-11-22_pytest_oracle/stdout.log
+- S4 gate PASS at 00:25 (00026 complete); stats via `conda run -n disasm python scripts/label_stats.py`
+- hi-fi SDF 06397: still unsolved 600 s (experiments/2026-11-22_smoke_hifi_sdf/results.jsonl)
 - T=30 s (DECISIONS #10); labelling SDF = narrow-band 4M (DECISIONS #11)
 NEXT ACTION: when smoke sweep ends: write reports/smoke_test.md (scripts/smoke_report.py); restart label_abd with --workers 10 (kill -TERM pid, relaunch same cmd.txt with --workers 10; resumable). Run replay (scripts/replay_pilot.py) once >=20 states. Final stage S7 at 06:15.

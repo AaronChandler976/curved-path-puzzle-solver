@@ -1,0 +1,1 @@
+run1 (00:19-01:17, 6 workers): cmd.txt, log stdout_run1_6workers.log; run2 (from 01:18, 10 workers): cmd_run2.txt, log stdout.log. Same code (git_hash.txt vs git_hash_run2.txt), same T/seed/SDF config; run2 resumes from states.jsonl.
