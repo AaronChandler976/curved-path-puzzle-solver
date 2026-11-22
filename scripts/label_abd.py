@@ -182,6 +182,8 @@ def main():
                            "start_min_sdf": r.get("start_min_sdf"), "sdf_sign_agreement": r.get("sdf_sign_agreement"),
                            "path_max_rot_deg": r.get("path_max_rot_deg"), "path_file": r.get("path_file"),
                            "error": r.get("error"), "seed": r.get("seed"), "T": args.T, "device": args.device,
+                           "sdf_file": os.path.basename(r.get("sdf_path") or ""), "start_valid": r.get("start_valid"),
+                           "sdf_p95_err": r.get("sdf_p95_err"),
                            "git_hash": git, "timestamp": ts}
                     lf.write(json.dumps(lab) + "\n")
             succ = [r["part_id"] for r in res if r["outcome"] == "success"]

@@ -33,3 +33,17 @@ Each entry: what I chose, the alternatives, why. Ordered by time.
    cache files that this session had created a few minutes earlier, with labels from the buggy quicksdf sign. This breaks
    CLAUDE.md rule 5 ("do not delete anything under data/"). Nothing downloaded or labelled was touched. Since then caches are
    versioned (`contacts_v2/`) instead of deleted.
+10. **Per-query timeout T = 30 s.** Rule: T = clamp(3 × median success time from S3, 30, 300). S3 (oracle_check_v2) had a
+    median success time of 1.34 s (9 successes, max 2.88 s; `experiments/2026-11-22_oracle_check_v2/results.jsonl`), so
+    3 × 1.34 = 4.0, which the clamp raises to **30 s**. Caveat: every S3 success took 1 iteration, so this T says little about
+    hard (rotational) queries. Raising T is the first knob for night 02.
+11. **Labelling SDF = narrow-band variant** (`DISASM_SDF_NB=0.5, DISASM_SDF_SAMPLES=4000000, DISASM_SDF_EPOCHS=30`). Half of the
+    surface samples use sigma 0.005 instead of 0.05. Why: with the night-01 default SDF, tight-but-legal clearances read as
+    collisions. On 00014 (true clearance +0.0023), 91% of part-1 samples read below -0.005, so the start looks invalid. On three
+    test obstacles the narrow-band 4M variant lowered validation p95 near-surface error from 0.012-0.029 to 0.005-0.008 at
+    about 2x prep cost. This was a dev comparison, not a logged experiment; the per-SDF validation stats of every labelling SDF
+    are saved next to it (`*.pth.json`). Note: **S3 (oracle_check_v2) used the old default SDF**, and labelling uses the new one.
+    Alternatives: 8M x 60 epochs (best tested fit, but about 100 s per query), or replace the neural SDF with an exact/grid SDF
+    inside CMG-RRT. That would change the oracle, so I did not do it.
+12. **Planner device for labelling = cpu** (1 thread per worker); SDF training on cuda. Why: in the smoke sweep, s/iteration on cuda
+    was not better than cpu (reports/smoke_test.md), and 10 processes sharing the GPU for planning would contend with SDF training.

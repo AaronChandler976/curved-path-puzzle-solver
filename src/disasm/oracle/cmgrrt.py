@@ -199,11 +199,14 @@ def obstacle_sdf(asm: Assembly, obstacle_ids, cache_dir: str = DEFAULT_CACHE, cf
                  device: str = "cuda", log=lambda *a: None) -> tuple:
     """Return (pth_path, stats, prep_seconds, cached: bool). Atomic write; safe across workers."""
     from disasm.oracle.sdf_train import SDFTrainConfig, train_sdf_union
-    cfg = cfg or SDFTrainConfig(num_threads=int(os.environ.get("DISASM_SDF_THREADS", "8")))
+    cfg = cfg or SDFTrainConfig(num_threads=int(os.environ.get("DISASM_SDF_THREADS", "8")),
+                                num_samples=int(os.environ.get("DISASM_SDF_SAMPLES", "2000000")),
+                                epochs=int(os.environ.get("DISASM_SDF_EPOCHS", "30")),
+                                narrow_frac=float(os.environ.get("DISASM_SDF_NB", "0")))
     d = os.path.join(cache_dir, "obstacle_sdf", asm.id)
     os.makedirs(d, exist_ok=True)
     key = obstacle_key(obstacle_ids)
-    pth = os.path.join(d, f"{key}_e{cfg.epochs}_n{cfg.num_samples}.pth")
+    pth = os.path.join(d, f"{key}{cfg.tag()}.pth")
     if os.path.exists(pth) and os.path.exists(pth + ".json"):
         return pth, json.load(open(pth + ".json")), 0.0, True
     t0 = time.time()

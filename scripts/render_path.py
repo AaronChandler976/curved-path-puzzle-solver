@@ -33,9 +33,19 @@ def main():
 
     a = load_assembly(args.assembly_dir)
     removed = {int(x) for x in args.removed.split(",") if x}
-    path = json.load(open(args.path_file))["path"]
-    # keep only the part of the path near the assembly (the last edge jumps to the far goal)
-    idx = np.linspace(0, len(path) - 1, args.frames).round().astype(int)
+    raw = json.load(open(args.path_file))["path"]
+    # The final tree edge is a straight translation to the far goal (CMG-RRT connects the goal with a
+    # straight is_edge_valid segment). For display, that edge is linearly interpolated so the part can be seen
+    # leaving; interpolated frames are labelled "interp".
+    path, interp = [list(q) for q in raw[:-1]], [False] * (len(raw) - 1)
+    a0, a1 = np.asarray(raw[-2]), np.asarray(raw[-1])
+    for f in np.linspace(0, 1, 40)[1:]:
+        q = a0 + f * (a1 - a0)
+        q[3:] /= np.linalg.norm(q[3:])
+        path.append(q.tolist()); interp.append(True)
+    n_tree = len(raw) - 1
+    idx = list(np.linspace(0, n_tree - 1, max(2, args.frames // 2)).round().astype(int))
+    idx += list(np.linspace(n_tree + 2, len(path) - 1, args.frames - len(idx)).round().astype(int))
     obst = [p for p in a.part_ids if p not in removed and p != args.part]
     b = np.array([a.meshes[p].bounds for p in a.part_ids if p not in removed])
     lo, hi = b[:, 0].min(0), b[:, 1].max(0)
@@ -52,15 +62,12 @@ def main():
         ax.add_collection3d(Poly3DCollection(m.vertices[m.faces], facecolor=(0.85, 0.3, 0.2, 0.8),
                                              edgecolor=(0.5, 0.1, 0.1, 0.2), linewidths=0.1))
         c = (lo + hi) / 2
-        r = span * (0.9 if k < args.frames - 1 else 1.6)
-        last = np.asarray(path[i][:3])
-        if k == args.frames - 1:
-            c = (c + last + m.centroid - a.meshes[args.part].centroid) / 2 if np.linalg.norm(last) < 3 * span else c
+        r = span * 0.75
         for setlim, j in ((ax.set_xlim, 0), (ax.set_ylim, 1), (ax.set_zlim, 2)):
             setlim(c[j] - r, c[j] + r)
         ax.set_axis_off()
         rot = np.degrees(2 * np.arccos(min(1.0, abs(path[i][3]))))
-        ax.set_title(f"node {i}/{len(path) - 1}\nt=({path[i][0]:+.2f},{path[i][1]:+.2f},{path[i][2]:+.2f}) rot {rot:.0f} deg",
+        ax.set_title(("interp. final edge" if interp[i] else f"tree node {i}/{n_tree}") + f"\nt=({path[i][0]:+.2f},{path[i][1]:+.2f},{path[i][2]:+.2f}) rot {rot:.0f} deg",
                      fontsize=7)
     fig.suptitle(f"assembly {a.id}: part {args.part} leaves (removed {sorted(removed)}); CMG-RRT logged path "
                  f"{os.path.basename(args.path_file)}", fontsize=8)

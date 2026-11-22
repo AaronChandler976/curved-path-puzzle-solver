@@ -37,6 +37,17 @@ class SDFTrainConfig:
     epochs: int = 30
     num_threads: int = 8
     seed: int = 0
+    narrow_frac: float = 0.0            # share of surface samples using narrow_sigma instead (ours, not upstream)
+    narrow_sigma: float = 5e-3
+
+    def tag(self) -> str:
+        """Cache-name tag; '' for the original night-01 default so old caches stay valid."""
+        t = f"_e{self.epochs}_n{self.num_samples}"
+        if self.narrow_frac > 0:
+            t += f"_nb{self.narrow_frac:g}s{self.narrow_sigma:g}"
+        if self.batch_size != 8192:
+            t += f"_b{self.batch_size}"
+        return t
 
 
 def train_sdf(mesh: trimesh.Trimesh, out_path: str, cfg: SDFTrainConfig | None = None,
@@ -72,7 +83,10 @@ def union_sampling(meshes: list, num_samples: int, cfg: "SDFTrainConfig", far_fr
     areas = np.array([m.area for m in meshes])
     counts = rng.multinomial(n_surf, areas / areas.sum())
     pts = [trimesh.sample.sample_surface(m, int(c))[0] for m, c in zip(meshes, counts) if c > 0]
-    surf = np.concatenate(pts) + rng.normal(0.0, cfg.boundary_sigma, (n_surf, 3))
+    sig = np.full((n_surf, 1), cfg.boundary_sigma)
+    if cfg.narrow_frac > 0:   # a narrow band resolves tight clearances (CAD gaps ~0.002 in the unit frame)
+        sig[rng.random(n_surf) < cfg.narrow_frac] = cfg.narrow_sigma
+    surf = rng.permutation(np.concatenate(pts)) + rng.normal(0.0, 1.0, (n_surf, 3)) * sig
     samples = np.concatenate([surf, rng.normal(0.0, cfg.normal_sigma, (n_norm, 3)),
                               rng.uniform(-far_box, far_box, (n_far, 3))])
     vals = np.full(len(samples), np.inf)
