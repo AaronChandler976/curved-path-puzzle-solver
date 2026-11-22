@@ -1,17 +1,15 @@
 STATE: RUNNING
 DEADLINE: 2026-11-22T07:00:00-08:00
-CURRENT STAGE: S4 pilot labelling (running) ; S1 sweep still running
+CURRENT STAGE: S4 pilot labelling (run2); S6 done
 BACKGROUND JOBS:
-15635 smoke sweep (pgid: see `ps -o pgid= -p 15635`) experiments/2026-11-22_smoke_sweep/stdout.log
-793161 label_abd.py (6 workers; conda parent 793145; stop with: kill -TERM <label_abd pid>, workers are its children) experiments/2026-11-22_pilot_labels/stdout.log
+870706 label_abd.py run2 (10 workers; stop: kill -TERM 870706, then kill its leftover children via pgrep -P) experiments/2026-11-22_pilot_labels/stdout.log
 DONE SO FAR:
 - S0 PASS: reports/environment.md
+- S1 PASS (3/34 successes): reports/smoke_test.md, experiments/2026-11-22_smoke_sweep/
 - S2 PASS: reports/data_sources.md (4196 assemblies load)
-- contact/penetration scan: experiments/2026-11-22_contact_scan/results.jsonl (2446 scanned; 1104 kept at max_pen<=0.002)
-- S3 PASS: experiments/2026-11-22_oracle_check_v2/results.jsonl: 6 assemblies, 22 queries, 9 successes in 4 assemblies (00017,00026,00072,00085); median success 1.34 s; figure reports/figures/s3_path_00026_part0.png
-- hi-fi SDF diagnostic (general/06397 cuda) running/finished: experiments/2026-11-22_smoke_hifi_sdf/
-- tests: 3 passed, experiments/2026-11-22_pytest_oracle/stdout.log
-- S4 gate PASS at 00:25 (00026 complete); stats via `conda run -n disasm python scripts/label_stats.py`
-- hi-fi SDF 06397: still unsolved 600 s (experiments/2026-11-22_smoke_hifi_sdf/results.jsonl)
-- T=30 s (DECISIONS #10); labelling SDF = narrow-band 4M (DECISIONS #11)
-NEXT ACTION: when smoke sweep ends: write reports/smoke_test.md (scripts/smoke_report.py); restart label_abd with --workers 10 (kill -TERM pid, relaunch same cmd.txt with --workers 10; resumable). Run replay (scripts/replay_pilot.py) once >=20 states. Final stage S7 at 06:15.
+- contact/penetration scan: experiments/2026-11-22_contact_scan/results.jsonl (1104/2446 kept at max_pen<=0.002)
+- S3 PASS: experiments/2026-11-22_oracle_check_v2/results.jsonl (9/22 successes in 4 assemblies); figure reports/figures/s3_path_00026_part0.png; tests 3 passed experiments/2026-11-22_pytest_oracle/stdout.log
+- S4 PASS (run1 00:19-01:17, 385 queries, 40+ complete): experiments/2026-11-22_pilot_labels/stdout_run1_6workers.log; labels data/labels/pilot_v0/
+- S5 early replay works: experiments/2026-11-22_replay_v0_early/replay.md
+- S6 PIPELINE TEST done: reports/s6_pipeline_test.md, experiments/2026-11-22_s6_pipeline_test/ (1511-query snapshot)
+NEXT ACTION: wait; labeller stops itself at 06:05 (--stop-at). At 06:10 start S7: confirm labeller exited (kill leftovers), rerun replay (planner-only and --with-prep) into reports/replay_pilot_v0*.md via experiments/2026-11-22_replay_v0_final/, write MORNING_REPORT.md, STATE: DONE, commit, push.
