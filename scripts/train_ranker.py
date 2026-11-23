@@ -88,7 +88,7 @@ def train_one(cfg, data, st, outdir, dev, log):
     rng = np.random.default_rng(cfg["seed"])
     tr, va = data["train"], data["val"]
     os.makedirs(outdir, exist_ok=True)
-    rows, best, best_ep, bad = [], float("inf"), -1, 0
+    rows, best, best_ep, bad, hist_vm = [], float("inf"), -1, 0, []
     t0 = time.time()
     for ep in range(cfg["max_epochs"]):
         model.train()
@@ -107,14 +107,20 @@ def train_one(cfg, data, st, outdir, dev, log):
             x, ei, ea, s, c, _ = collate(va, st, dev)
             vl = float(model.loss(model(x, ei, ea), s, c))
         vm, vq = val_metric(predict_states(model, va, st, dev), va, rule)
-        rows.append({"epoch": ep, "train_loss": tl / n, "val_loss": vl, "val_cost": vm, "val_queries": vq})
-        if vm < best - 1e-9:
-            best, best_ep, bad = vm, ep, 0
+        W = cfg.get("smooth", 1)
+        hist_vm.append(vm)
+        sm = float(np.mean(hist_vm[-W:])) if len(hist_vm) >= W else float("inf")
+        rows.append({"epoch": ep, "train_loss": tl / n, "val_loss": vl, "val_cost": vm, "val_queries": vq,
+                     "val_cost_smoothed": sm if np.isfinite(sm) else ""})
+        if not np.isfinite(sm):
+            continue
+        if sm < best - 1e-9:
+            best, best_ep, bad = sm, ep, 0
             torch.save({"state_dict": model.state_dict(), "cfg": cfg, "norm": [t.cpu() for t in st], "epoch": ep,
                         "val_cost": vm}, os.path.join(outdir, "best.pt"))
         else:
             bad += 1
-        if bad >= cfg["patience"]:
+        if bad >= cfg["patience"] and ep + 1 >= cfg.get("min_epochs", 0):
             break
     with open(os.path.join(outdir, "metrics.csv"), "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
@@ -155,6 +161,9 @@ def main():
     ap.add_argument("--patience", type=int, default=20)
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--quick", action="store_true", help="dev: 1 grid point, 3 epochs")
+    ap.add_argument("--smooth", type=int, default=1, help="early stopping / checkpoint on the trailing mean of this many epochs' val cost")
+    ap.add_argument("--min-epochs", type=int, default=0)
+    ap.add_argument("--grid-seeds", default="0", help="grid configs are ranked by the mean best val metric over these seeds")
     args = ap.parse_args()
     var = f"{args.enc}_{args.head}"
     vdir = os.path.join(args.outdir, var)
@@ -171,16 +180,24 @@ def main():
     st = norm_stats(data["train"])
     log(f"{var}: train {len(data['train'])} states, val {len(data['val'])} states")
     base = {"enc": args.enc, "head": args.head, "wd": 1e-4, "dropout": 0.1, "batch": 32,
-            "max_epochs": 3 if args.quick else args.max_epochs, "patience": args.patience}
+            "max_epochs": 3 if args.quick else args.max_epochs, "patience": args.patience,
+            "smooth": args.smooth, "min_epochs": args.min_epochs}
     grid = list(itertools.product([64, 128], [1e-3, 3e-4], [2, 3]))
     if args.quick:
         grid = grid[:1]
     gres = []
+    gseeds = [int(x) for x in args.grid_seeds.split(",")]
     for h, lr, L in grid:
-        cfg = {**base, "hidden": h, "lr": lr, "layers": L, "seed": 0}
-        gres.append(train_one(cfg, data, st, os.path.join(vdir, f"grid_h{h}_lr{lr:g}_L{L}"), args.device, log))
+        runs = []
+        for gs in gseeds:
+            cfg = {**base, "hidden": h, "lr": lr, "layers": L, "seed": gs}
+            sub = f"grid_h{h}_lr{lr:g}_L{L}" + (f"_s{gs}" if len(gseeds) > 1 else "")
+            runs.append(train_one(cfg, data, st, os.path.join(vdir, sub), args.device, log))
+        gres.append({"hidden": h, "lr": lr, "layers": L, "best_val_cost": float(np.mean([r["best_val_cost"] for r in runs])),
+                     "per_seed": [r["best_val_cost"] for r in runs], "best_epoch": [r["best_epoch"] for r in runs]})
     best = min(gres, key=lambda r: r["best_val_cost"])
-    sel = {"variant": var, "grid": [{k: r[k] for k in ("hidden", "lr", "layers", "best_val_cost", "best_epoch")} for r in gres],
+    sel = {"variant": var, "grid_seeds": gseeds, "smooth": args.smooth, "min_epochs": args.min_epochs,
+           "patience": args.patience, "grid": gres,
            "chosen": {k: best[k] for k in ("hidden", "lr", "layers")}, "chosen_val_cost": best["best_val_cost"]}
     json.dump(sel, open(os.path.join(vdir, "selection.json"), "w"), indent=1)
     log(f"{var}: chosen config {sel['chosen']} (val cost {best['best_val_cost']:.1f})")
