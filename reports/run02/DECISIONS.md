@@ -36,3 +36,16 @@ Each entry: choice / alternatives / why.
    it equals the library/paper default δ = 0.005 ([P] §5.1) and the test_list threshold. It is 2.5× run 01's
    interpenetration cutoff (0.002), and below half the thinnest walls the checker can see (walls < 2ε are transparent,
    see `run01_review.md` §1). Sensitivity: 0.0025 / 0.005 / 0.01 in R3.
+9. **Light single-core dev tests during R2's SDF-training phase only** (exact-detector unit tests, one 00014/00017
+   query set, profiling). The training phase is untimed setup and already marked confounded (4 concurrent trainings).
+   Nothing runs alongside R2's planner runs (phase 2). *Alt:* stay idle for ~45 min. *Why:* R3 can't be developed blind.
+10. **Bug fixed in `scripts/label_abd.py`:** on exit the script called `os._exit` after a non-waiting executor shutdown,
+    so spawned workers survived and **kept holding planner slots** (seen at 20:44: two orphans from a scratch test,
+    killed). The script now terminates its workers before exiting. This also plausibly explains run 01's 12-process episode.
+11. **Decision #2 was wrong and is corrected for diagnostics.** The exact start clearance of the robot
+    (`experiments/2026-11-22_cmgrrt_repro_clean/diag/start_exact_0obj_vs_0sdfobj.json`) shows `0_sdf.obj` is NOT a
+    faithful remesh near the contact for 9/17 examples (e.g. 11356: −0.050 vs +0.0027 for `0.obj`; duet-g1: −0.139 vs
+    +0.024). The upstream-default SDFs trained on it reproduce those wrong values accurately (11356 learned −0.0496), so 6
+    general examples started in collision. **Diagnostic #2** retrains on `0.obj` (train.py's default path) for 11356 and
+    key_light_1 and reruns them. The other examples are left as "Needs Aaron" (R2 box exhausted). The R3 exact detector
+    uses `0.obj` (except az, whose `0.obj` gives −0.57 at the start: it is not a usable closed surface there).

@@ -1,0 +1,14 @@
+env -u PYTHONPATH conda run -n disasm python scripts/repro_cmgrrt.py --example puzzle/elk --seed 0 --cap-min 60 --train-only --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example puzzle/elk --seed 0 --cap-min 60 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example general/11356 --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example puzzle/key_light_1 --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example general/06397 --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example general/07631 --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example general/08862 --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example general/09301 --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example general/11019 --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example general/11780 --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example general/16505 --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example puzzle/mobius_light --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example puzzle/abc_light --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example puzzle/alpha --seed 0 --cap-min 20 --run-dir experiments/2026-11-22_cmgrrt_repro_clean
