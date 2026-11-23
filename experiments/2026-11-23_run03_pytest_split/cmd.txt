@@ -1,0 +1,1 @@
+env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest tests/test_split.py -q
