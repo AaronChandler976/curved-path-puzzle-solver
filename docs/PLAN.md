@@ -80,3 +80,23 @@ al. (IROS 2022) predicted sampling-planner runtime with GNNs, but not for AbD qu
 - Successes: median 1.1 s and 1 iteration; most parts escape almost straight.
 - Learned-SDF setup ≈ 66 s/query dominated throughput.
 - CMG-RRT solved 3/34 bundled runs under GPU contention; not yet a clean reproduction.
+
+## Run 03 additions (2026-11-23)
+- **Rotation-required:** a (state, part) query needs rotation when CMG-RRT succeeds
+  and a straight-line sweep along every goal-candidate direction (exact detector,
+  same ε, step ≤ ε/2) collides. A state needs rotation when any successful part
+  there does. These flags are for evaluation splits only, never model inputs.
+- **Data scope:** `pilot_v1`, 1,328 assemblies with 3–8 parts. The 1,033 assemblies
+  with interpenetration > ε stay excluded (reported limitation).
+- **Split:** by assembly group (near-duplicates grouped), 70/15/15, stratified;
+  frozen in `data/splits/v1_split.json`. Test is evaluated once.
+- **Model selection:** validation total replay planner cost (not loss); early stopping,
+  weight decay, dropout; equal tuning budget per variant; 5 seeds per variant.
+- **Evaluation:** (1) per-state replay on test using logged v1 queries (main result);
+  (2) live full-disassembly with fresh CMG-RRT queries on ~60 test assemblies
+  (headline total planner time per disassembly). Paired comparisons with bootstrap
+  CIs by assembly, Wilcoxon, Holm.
+- **ASAP baseline:** released weights zero-shot; if not loadable, ASAP's architecture
+  retrained on v1. Required: it's the second open-source SOTA method.
+- **Deferred to run 04:** a 4 h elk run and a multi-seed exact-vs-learned SDF test
+  on bundled puzzles (16505, alpha).

@@ -104,3 +104,12 @@ The Bash tool times out after a few minutes. Start any job longer than about
 PID to a file. Then check progress by reading the log, using `sleep 300` (or
 similar) between checks instead of many quick checks. Jobs must checkpoint and
 be resumable.
+
+## Evaluation rules (added for run 03)
+- **The test split is evaluated once,** after every model and config is frozen.
+  Never tune, select seeds or pick checkpoints on test.
+- **Report every variant and seed you trained.** Never drop a bad seed or variant.
+  Trained models are reported as mean ± std over seeds.
+- The rotation flags and any other evaluation-only labels are never model inputs.
+- Give every comparison a CI and its sample size. If a subset is small, say it is
+  underpowered instead of drawing conclusions from it.
