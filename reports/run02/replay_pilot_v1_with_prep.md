@@ -1,27 +1,27 @@
 # Per-state replay on cached pilot queries (pilot_v1 (planner + prep + setup))
 
-Source labels: `data/labels/pilot_v1/labels.jsonl` (565 logged CMG-RRT queries). Cost = planner time + SDF prep. Bootstrap 95% CIs: 10,000 resamples, seed 0. This replays real logged queries; nothing is simulated. The trajectory through states is fixed by the labelling run, and each ordering only changes how much is spent finding the first success at each state.
+Source labels: `data/labels/pilot_v1/labels.jsonl` (17116 logged CMG-RRT queries). Cost = planner time + SDF prep. Bootstrap 95% CIs: 10,000 resamples, seed 0. This replays real logged queries; nothing is simulated. The trajectory through states is fixed by the labelling run, and each ordering only changes how much is spent finding the first success at each state.
 
-- states with complete query sets: **184** (182 with >= 1 success, 2 with none) across **68** assemblies
-- states with no success (every ordering pays everything): 2, total 182 s, median 91 s/state
+- states with complete query sets: **4685** (4606 with >= 1 success, 79 with none) across **1328** assemblies
+- states with no success (every ordering pays everything): 79, total 7759 s, median 91 s/state
 
 ## Per-state cost to first success (s), states with >= 1 success
 
 | ordering | median [95% CI] | mean [95% CI] |
 |---|---|---|
-| random | 0.96 [0.73, 1.13] | 4.35 [3.10, 5.82] |
-| outside_in | 0.81 [0.63, 1.11] | 3.46 [2.23, 4.98] |
-| fewest_contacts | 0.73 [0.61, 0.98] | 3.00 [1.91, 4.35] |
-| optimal (unattainable lower bound) | 0.32 [0.27, 0.35] | 0.67 [0.45, 0.97] |
+| random | 1.06 [1.00, 1.12] | 5.95 [5.62, 6.30] |
+| outside_in | 0.80 [0.77, 0.84] | 4.69 [4.27, 5.12] |
+| fewest_contacts | 0.71 [0.67, 0.74] | 4.08 [3.71, 4.49] |
+| optimal (unattainable lower bound) | 0.33 [0.32, 0.34] | 0.69 [0.65, 0.74] |
 
 ## Per-assembly cost (s): sum over the visited states with >= 1 success
 
 | ordering | median [95% CI] | mean [95% CI] |
 |---|---|---|
-| random | 2.92 [2.00, 4.62] | 11.82 [7.20, 17.45] |
-| outside_in | 2.58 [2.04, 3.45] | 9.41 [5.57, 14.20] |
-| fewest_contacts | 2.52 [1.99, 3.36] | 8.15 [4.67, 12.61] |
-| optimal | 0.90 [0.67, 1.09] | 1.81 [1.13, 2.68] |
+| random | 5.44 [4.67, 6.57] | 21.06 [19.02, 23.18] |
+| outside_in | 3.46 [3.10, 3.77] | 16.59 [14.55, 18.74] |
+| fewest_contacts | 3.10 [2.90, 3.36] | 14.43 [12.73, 16.30] |
+| optimal | 1.24 [1.17, 1.34] | 2.45 [2.19, 2.75] |
 
 ## Headroom (cost of ordering divided by hindsight-optimal)
 
@@ -29,9 +29,9 @@ Ratio of totals over states, with a bootstrap CI over states. Also the median of
 
 | ordering | ratio of totals [95% CI] | median per-state ratio [95% CI] |
 |---|---|---|
-| random / optimal | 6.54 [5.11, 8.62] | 2.71 [2.23, 3.47] |
-| outside_in / optimal | 5.21 [3.43, 7.88] | 2.04 [1.68, 2.45] |
-| fewest_contacts / optimal | 4.51 [3.05, 6.77] | 1.82 [1.38, 2.23] |
+| random / optimal | 8.59 [8.11, 9.12] | 2.83 [2.69, 2.95] |
+| outside_in / optimal | 6.76 [6.18, 7.40] | 1.75 [1.67, 1.84] |
+| fewest_contacts / optimal | 5.89 [5.36, 6.46] | 1.48 [1.42, 1.53] |
 
 ## Rotation split (assembly has a successful logged path with max rotation > 15 deg)
 
@@ -39,10 +39,15 @@ Caveat: an RRT path can rotate even when a pure translation would work, so this 
 
 | group | assemblies | states | random/optimal (ratio of totals) [95% CI] |
 |---|---|---|---|
-| rotation > thr | 1 | 2 | 1.87 [1.49, 2.77] |
-| translation-like | 66 | 180 | 6.64 [5.18, 8.79] |
+| rotation > thr | 57 | 249 | 6.33 [5.26, 7.99] |
+| translation-like | 1245 | 4357 | 9.01 [8.51, 9.53] |
 
-**State-level rotation subset** (a successful query at the state has max path rotation > 15 deg): 1 states in 1 assemblies.
- Too small for a separate replay (n < 20 states).
+**State-level rotation subset** (a successful query at the state has max path rotation > 15 deg): 70 states in 57 assemblies.
+
+| ordering / optimal (rotation states) | ratio of totals [95% CI] | median per-state ratio |
+|---|---|---|
+| random | 5.34 [4.14, 7.54] | 10.17 |
+| outside_in | 5.31 [3.26, 9.08] | 2.33 |
+| fewest_contacts | 3.90 [2.44, 6.54] | 1.69 |
 
 ![replay](figures/replay_pilot_v1_prep.png)

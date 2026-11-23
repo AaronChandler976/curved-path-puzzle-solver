@@ -240,10 +240,11 @@ def main():
                 start_state(aid)
     log_load(args.outdir, "end")
     print(f"LABEL RUN EXIT stop={STOP} queries_this_run={nq} wall={time.time() - t_start:.0f}s", flush=True)
+    procs = list((getattr(ex, "_processes", None) or {}).values())  # grab before shutdown() sets it to None
     ex.shutdown(wait=False, cancel_futures=True)
     # terminate pool workers explicitly: os._exit skips executor cleanup, and orphaned workers would keep
     # holding their planner slots (found in run 02 R3 dev test; see reports/run02/DECISIONS.md #10)
-    for pr in list(getattr(ex, "_processes", {}).values()):
+    for pr in procs:
         try:
             pr.terminate()
         except Exception:  # noqa: BLE001

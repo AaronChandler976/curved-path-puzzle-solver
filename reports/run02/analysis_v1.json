@@ -26,36 +26,37 @@
   "setup_time_s_p50_p90": null
  },
  "v1": {
-  "queries": 565,
-  "success": 509,
-  "success_rate": 0.9008849557522124,
-  "unsolved": 56,
-  "unsolved_start_invalid": 1,
-  "start_invalid_share_of_unsolved": 0.017857142857142856,
-  "start_valid_rate_all": 0.9982300884955753,
+  "queries": 17116,
+  "success": 14935,
+  "success_rate": 0.8725753680766534,
+  "unsolved": 2181,
+  "unsolved_start_invalid": 73,
+  "start_invalid_share_of_unsolved": 0.033470884915176524,
+  "start_valid_rate_all": 0.9946833372283244,
   "errors": 0,
   "success_time_p10_p50_p90": [
-   0.059,
-   0.545,
-   2.861
+   0.075,
+   0.658,
+   4.302
   ],
   "success_iter_p50_p90_max": [
    1,
    1,
-   70
+   1211
   ],
-  "planner_s_total": 2368.4918882846832,
+  "planner_s_total": 96224.44011712074,
   "prep_s_p50_p90": [
-   0.023,
-   0.069
+   0.024,
+   0.11
   ],
   "setup_time_s_p50_p90": [
    0.024,
-   0.052
+   0.042
   ]
  },
  "v1_status": {
-  "complete": 63,
-  "stuck": 2
+  "complete": 1249,
+  "stuck": 79,
+  "skipped": 1118
  }
 }

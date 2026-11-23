@@ -57,3 +57,12 @@ Each entry: choice / alternatives / why.
     R3 start-valid check confirms), 10 cpu workers (all 10 slots), 4 concurrent assemblies, seed 0, v0 ids first
     (`order_v0_first.txt`), `--stop-at 06:15` so R5 final + R7 fit before 07:15. *R6 skipped by plan*: it needs the
     planner-free machine for ≥ 2 h, which would end labelling at ~04:00 and would also confound labelling times.
+14. **R4 ended by exhausting the eligible list (04:18), not at the 06:15 stop-at.** All eligible 3–8-part assemblies
+    were processed: 1328 labeled (1249 complete, 79 stuck), 1118 skipped (1033 mesh_interpenetration > ε = 0.005,
+    84 no_contacts, 1 non_watertight). After the `LABEL RUN EXIT` line, the cleanup code crashed with
+    `AttributeError` because `ex._processes` is None after `shutdown()`. The labels had already been flushed. Fix in
+    `scripts/label_abd.py`: read the worker list before `shutdown()`. The 04:18–05:58 gap was idle time: the
+    session ended and the next session started at 05:57.
+15. **R6 run** (2 h 01 min to DEADLINE at 05:59, 17k v1 queries ≥ 1,500): same script and flags as run 01 S6, on CPU,
+    with a hard `timeout 2400`. It ran alongside the R5 analysis job, so no timings from it are reported.
+    PIPELINE TEST only.
