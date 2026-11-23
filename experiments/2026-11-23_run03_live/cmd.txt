@@ -1,0 +1,1 @@
+scripts/run_r6.sh experiments/2026-11-23_run03_live experiments/2026-11-23_run03_train_v2/gnn_survival/seed101/best.pt
