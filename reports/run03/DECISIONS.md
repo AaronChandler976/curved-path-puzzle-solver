@@ -47,3 +47,12 @@ Each entry: choice / alternatives / why.
    contacts 14.4, ASAP 16.3, random 68.8, GNN-Surv(v1) 100.0). Nothing was tuned or selected afterwards: the v2 configs, seeds and
    early-stopping rule were fixed before this run, and the R6 checkpoint is chosen by the val metric only. The run is not part of any
    result. Later dev runs use train assemblies only.
+12. **R6 ran without a clean idle window, so its timings are marked CONFOUNDED.** From 09:05 to 11:16, 12 checks (each needs load < 2 AND GPU < 10%
+   for 5 min) all failed, mostly on brief GPU spikes (14–27%) from desktop apps that were already running (Chrome/Discord/Firefox; not
+   project jobs, and outside the project, so not touched). Load average stayed < 1 except one desktop blip (2.35). Per the prompt the run
+   started anyway at 11:16 (`experiments/2026-11-23_run03_live/idle_wait.log`). Planner times come from CMG-RRT CPU work with 10
+   workers on 12 cores; the GPU is not used by the planner. The confounding is likely small but is flagged as required.
+13. **R6 sample:** 60 test assemblies = 20 of the 33 test rot_assemblies (cap 20; seeded subset), plus 40 non-rot stratified
+   by part count proportionally (24/11/5) (`scripts/sample_live.py`, seed 0). GNN-Surv checkpoint = seed 101, the lowest v2 val metric
+   among the 5 seeds (`experiments/2026-11-23_run03_train_v2/best_val_seed.json`). The random method shuffles with a seed derived from
+   (assembly, state). 00014 (DECISIONS #11) is not in the sample.
