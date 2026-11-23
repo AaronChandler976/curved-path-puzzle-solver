@@ -168,11 +168,11 @@ def main():
             L.append(f"| {o} | {m[0]:.2f} [{m[1]:.2f}, {m[2]:.2f}] | {mu[0]:.2f} [{mu[1]:.2f}, {mu[2]:.2f}] |")
         L.append("\n## Headroom (cost of ordering divided by hindsight-optimal)\n")
         L.append("Ratio of totals over states, with a bootstrap CI over states. Also the median of per-state ratios.\n")
-        L.append("| ordering | ratio of totals [95% CI] | median per-state ratio |\n|---|---|---|")
+        L.append("| ordering | ratio of totals [95% CI] | median per-state ratio [95% CI] |\n|---|---|---|")
         for o in ["random", "outside_in", "fewest_contacts"]:
             rr = boot_ratio([r[o] for r in solved], [r["optimal"] for r in solved], rng)
-            med = float(np.median([r[o] / max(r["optimal"], 1e-9) for r in solved]))
-            L.append(f"| {o} / optimal | {rr[0]:.2f} [{rr[1]:.2f}, {rr[2]:.2f}] | {med:.2f} |")
+            md = boot_ci([r[o] / max(r["optimal"], 1e-9) for r in solved], np.median, rng)
+            L.append(f"| {o} / optimal | {rr[0]:.2f} [{rr[1]:.2f}, {rr[2]:.2f}] | {md[0]:.2f} [{md[1]:.2f}, {md[2]:.2f}] |")
         L.append(f"\n## Rotation split (assembly has a successful logged path with max rotation > {args.rot_deg:.0f} deg)\n")
         L.append("Caveat: an RRT path can rotate even when a pure translation would work, so this measures rotation "
                  "*in the logged path*, not rotation that was *needed*.\n")

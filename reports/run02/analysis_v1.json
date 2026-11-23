@@ -1,0 +1,61 @@
+{
+ "v0": {
+  "queries": 2676,
+  "success": 2037,
+  "success_rate": 0.7612107623318386,
+  "unsolved": 639,
+  "unsolved_start_invalid": 546,
+  "start_invalid_share_of_unsolved": 0.8544600938967136,
+  "start_valid_rate_all": 0.7668161434977578,
+  "errors": 0,
+  "success_time_p10_p50_p90": [
+   0.781,
+   1.123,
+   3.041
+  ],
+  "success_iter_p50_p90_max": [
+   1,
+   1,
+   255
+  ],
+  "planner_s_total": 22960.676779270172,
+  "prep_s_p50_p90": [
+   66.096,
+   79.504
+  ],
+  "setup_time_s_p50_p90": null
+ },
+ "v1": {
+  "queries": 565,
+  "success": 509,
+  "success_rate": 0.9008849557522124,
+  "unsolved": 56,
+  "unsolved_start_invalid": 1,
+  "start_invalid_share_of_unsolved": 0.017857142857142856,
+  "start_valid_rate_all": 0.9982300884955753,
+  "errors": 0,
+  "success_time_p10_p50_p90": [
+   0.059,
+   0.545,
+   2.861
+  ],
+  "success_iter_p50_p90_max": [
+   1,
+   1,
+   70
+  ],
+  "planner_s_total": 2368.4918882846832,
+  "prep_s_p50_p90": [
+   0.023,
+   0.069
+  ],
+  "setup_time_s_p50_p90": [
+   0.024,
+   0.052
+  ]
+ },
+ "v1_status": {
+  "complete": 63,
+  "stuck": 2
+ }
+}
