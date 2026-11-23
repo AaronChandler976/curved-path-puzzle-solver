@@ -66,3 +66,7 @@ Each entry: choice / alternatives / why.
 15. **R6 run** (2 h 01 min to DEADLINE at 05:59, 17k v1 queries ≥ 1,500): same script and flags as run 01 S6, on CPU,
     with a hard `timeout 2400`. It ran alongside the R5 analysis job, so no timings from it are reported.
     PIPELINE TEST only.
+16. **Used the idle time after R5/R6 (06:10) for one R3 follow-up:** general/16505 with the exact detector, the same
+    test_list settings, seed 0, and a 60 min wall cap instead of 20. It runs alone. The R3 run was stopped by the wall cap at 1809/5000
+    iterations, so this checks whether it solves within the full iteration budget. Only one run fits before R7 (alpha
+    needs about another hour). Log: `experiments/2026-11-23_exact_bundled_fullbudget/`.
