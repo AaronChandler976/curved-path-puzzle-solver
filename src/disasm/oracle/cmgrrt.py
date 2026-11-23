@@ -226,18 +226,23 @@ def _rotation_deg(q7) -> float:
     return float(np.degrees(2 * np.arccos(w)))
 
 
-def _setup_cd(asm, part, sdf_path, workdir, params, device):
+def _setup_cd(asm, part, sdf_path, workdir, params, device, exact=False):
     import torch
     from taucgl_rrt.cspace import SE3
     from taucgl_rrt.collision_detection import CollisionDetector
     os.makedirs(workdir, exist_ok=True)
-    robot_obj = os.path.join(workdir, f"robot_{asm.id}_{part}.obj")
+    robot_obj = os.path.join(workdir, f"robot_{asm.id}_{part}_{os.getpid()}.obj")
     asm.meshes[part].export(robot_obj)
-    cd = CollisionDetector(params.sdf_N, params.sdf_H, torch.device(device), params.threshold,
-                           params.eta, abs(params.threshold))
+    if exact:   # sdf_path is an ExactUnionSDF; library detector with only the collision model swapped
+        from disasm.oracle.exact_sdf import make_detector
+        cd = make_detector(params, device, sdf_path, q1=SE3())
+    else:
+        cd = CollisionDetector(params.sdf_N, params.sdf_H, torch.device(device), params.threshold,
+                               params.eta, abs(params.threshold))
     cd.set_robot(robot_obj)
     cd.generate_robot_sampling(params.sampling)
-    cd.set_obstacles(sdf_path, SE3())
+    if not exact:
+        cd.set_obstacles(sdf_path, SE3())
     return cd
 
 
@@ -265,9 +270,30 @@ def linear_precheck(asm: Assembly, removed: set, part: int, seed: int, workdir: 
             "time_s": time.time() - t0}
 
 
+_PART_SDF = {}   # per-process cache: (assembly id, part) -> exact PartSDF
+
+
+def exact_union(asm: Assembly, obstacle_ids) -> tuple:
+    """Exact union SDF of the given parts (run 02 oracle). Returns (union, setup_s_this_call, per-part setup
+    times from their first construction)."""
+    from disasm.oracle.exact_sdf import ExactUnionSDF, part_sdf_cached
+    t0 = time.time()
+    parts, first = [], {}
+    if len(_PART_SDF) > 64:
+        _PART_SDF.clear()
+    for i in sorted(obstacle_ids):
+        k = (asm.id, int(i))
+        if k not in _PART_SDF:
+            _PART_SDF[k] = part_sdf_cached(asm, int(i))[0]
+        parts.append(_PART_SDF[k])
+        first[int(i)] = getattr(_PART_SDF[k], "first_setup_s", None)
+    return ExactUnionSDF(parts), time.time() - t0, first
+
+
 def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: int, workdir: str,
           device: str = "cpu", params=None, max_iterations: int | None = None,
-          sdf_device: str = "cuda", save_path: bool = True) -> dict:
+          sdf_device: str = "cuda", save_path: bool = True, detector: str = "learned",
+          eps: float | None = None) -> dict:
     """Can ``part`` leave the sub-assembly (all parts minus ``removed``)? One CMG-RRT query.
 
     Returns {outcome: "success"|"unsolved", time_s, iterations, goal_pose, escape_dir,
@@ -278,10 +304,13 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
     from disasm.oracle.cmgrrt_core import PlannerParams, seed_all
     from taucgl_rrt.cspace import SE3
     from taucgl_rrt.rrt import RRT
+    import dataclasses
     params = params or PlannerParams()
+    if eps is not None:   # contact tolerance: collide iff min SDF < -eps  <=>  threshold = -eps, eps_contact = eps
+        params = dataclasses.replace(params, threshold=-abs(eps))
     asm = assembly
     present = set(asm.part_ids) - set(removed)
-    out = {"outcome": "unsolved", "time_s": 0.0, "iterations": 0, "goal_pose": None, "escape_dir": None,
+    out = {"detector": detector, "epsilon": -params.threshold, "outcome": "unsolved", "time_s": 0.0, "iterations": 0, "goal_pose": None, "escape_dir": None,
            "n_goal_candidates_tried": 0, "path_file": None, "error": None,
            "assembly_id": asm.id, "part_id": int(part), "removed": sorted(int(r) for r in removed),
            "timeout_s": timeout_s, "seed": seed, "device": device}
@@ -295,14 +324,21 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
     try:
         seed_all(seed)
         t_prep0 = time.time()
-        sdf, sdf_stats, t_sdf, cached = obstacle_sdf(asm, obst, device=sdf_device)
-        cd = _setup_cd(asm, part, sdf, workdir, params, device)
-        out["prep_s"] = time.time() - t_prep0
-        out["sdf_train_s"] = t_sdf
-        out["sdf_cached"] = cached
-        out["sdf_sign_agreement"] = sdf_stats.get("sign_agreement_near_surface")
-        out["sdf_p95_err"] = sdf_stats.get("valid_p95_abs_err_near_surface")
-        out["sdf_path"] = sdf
+        if detector == "exact":
+            union, t_union, first = exact_union(asm, obst)
+            cd = _setup_cd(asm, part, union, workdir, params, device, exact=True)
+            out["prep_s"] = time.time() - t_prep0
+            out["union_build_s"] = t_union
+            out["part_setup_s_first"] = first     # one-time per-part setup (amortised over all queries)
+        else:
+            sdf, sdf_stats, t_sdf, cached = obstacle_sdf(asm, obst, device=sdf_device)
+            cd = _setup_cd(asm, part, sdf, workdir, params, device)
+            out["prep_s"] = time.time() - t_prep0
+            out["sdf_train_s"] = t_sdf
+            out["sdf_cached"] = cached
+            out["sdf_sign_agreement"] = sdf_stats.get("sign_agreement_near_surface")
+            out["sdf_p95_err"] = sdf_stats.get("valid_p95_abs_err_near_surface")
+            out["sdf_path"] = sdf
 
         D = asm.bbox_diag + GOAL_MARGIN
         cands = candidate_directions(asm, part, present)

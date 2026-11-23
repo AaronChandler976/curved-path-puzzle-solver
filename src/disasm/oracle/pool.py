@@ -17,6 +17,7 @@ def pin_threads(n: int = 1) -> None:
     """Set BLAS/OpenMP thread caps in THIS process's environment so that spawned workers inherit
     them before numpy/torch/sklearn load (setting them inside a worker after import is too late).
     Without this each worker ran ~24 BLAS/KMeans threads and the machine load hit ~88."""
+    os.environ["IGL_NUM_THREADS"] = str(n)
     for v in THREAD_VARS:
         os.environ[v] = str(n)
 
@@ -25,9 +26,14 @@ def _init(cfg):
     import sys
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
     _CFG.update(cfg)
+    # CLAUDE.md: every planner worker holds one of the 10 global planner slots for its lifetime
+    # (released by the kernel when the worker exits).
+    from disasm.util.slots import acquire_slot
+    _CFG["_slot"] = acquire_slot(tag=cfg.get("slot_tag", "pool_worker"))
     import torch
     torch.set_num_threads(cfg.get("threads", 1))
     os.environ.setdefault("OMP_NUM_THREADS", str(cfg.get("threads", 1)))
+    os.environ.setdefault("IGL_NUM_THREADS", str(cfg.get("threads", 1)))
 
 
 def _run(job):
@@ -41,7 +47,9 @@ def _run(job):
             _ASM[d] = load_assembly(d)
         r = query(_ASM[d], set(job["removed"]), job["part"], job["timeout_s"], job["seed"],
                   _CFG["workdir"], device=_CFG.get("device", "cpu"),
-                  max_iterations=_CFG.get("max_iterations"))
+                  max_iterations=_CFG.get("max_iterations"),
+                  detector=job.get("detector", _CFG.get("detector", "learned")),
+                  eps=job.get("eps", _CFG.get("eps")))
     except Exception as e:  # noqa: BLE001
         r = {"outcome": "unsolved", "error": f"{type(e).__name__}: {e}", "traceback": traceback.format_exc(),
              "part_id": job["part"], "removed": sorted(job["removed"])}

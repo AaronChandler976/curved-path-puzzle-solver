@@ -81,7 +81,10 @@ def main():
     ap.add_argument("--fig-dir", default=os.path.join(ROOT, "reports/figures"))
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--rot-deg", type=float, default=15.0)
-    ap.add_argument("--with-prep", action="store_true", help="add SDF prep time to each query's cost")
+    ap.add_argument("--with-prep", action="store_true",
+                    help="add per-query prep (prep_s) and, if recorded, the amortised per-part setup (setup_time_s)")
+    ap.add_argument("--title", default="pilot_v0")
+    ap.add_argument("--fig-name", default="replay_pilot_v0")
     args = ap.parse_args()
     from disasm.oracle.cmgrrt import load_assembly, contact_graph, neighbors
 
@@ -100,11 +103,15 @@ def main():
         if aid not in asm_cache:
             asm_cache[aid] = load_assembly(os.path.join(ROOT, "data/raw/multi_assembly/multi_assembly", aid))
         a = asm_cache[aid]
-        t = {q["part_id"]: (q["time_s"] or 0.0) + ((q.get("prep_s") or 0.0) if args.with_prep else 0.0) for q in qs}
+        t = {q["part_id"]: (q["time_s"] or 0.0) + (((q.get("prep_s") or 0.0) + (q.get("setup_time_s") or 0.0)
+                                                    if q.get("detector") == "exact" else (q.get("prep_s") or 0.0))
+                                                   if args.with_prep else 0.0) for q in qs}
         s = {q["part_id"]: q["outcome"] == "success" for q in qs}
+        rot_state = False
         for q in qs:
             if q["outcome"] == "success" and (q.get("path_max_rot_deg") or 0) > args.rot_deg:
                 rot_asm[aid] = True
+                rot_state = True
         pres = set(present)
         b = np.array([a.meshes[p].bounds for p in present])
         center = (b[:, 0].min(0) + b[:, 1].max(0)) / 2
@@ -114,7 +121,7 @@ def main():
         fc = sorted(present, key=lambda p: (ncont[p], -dist[p], p))
         k = sum(s.values())
         row = {"assembly_id": aid, "state_key": skey, "n": len(present), "n_success": k,
-               "total_s": sum(t.values())}
+               "total_s": sum(t.values()), "rot_state": rot_state}
         if k:
             row["random"], row["random_method"] = random_expectation(present, t, s, rng)
             row["outside_in"] = first_success_cost(oi, t, s)
@@ -132,7 +139,7 @@ def main():
 
     L = []
     tag = "planner time + SDF prep" if args.with_prep else "planner time only (time_s); SDF prep excluded"
-    L.append("# Per-state replay on cached pilot queries (pilot_v0)\n")
+    L.append(f"# Per-state replay on cached pilot queries ({args.title})\n")
     L.append(f"Source labels: `{os.path.relpath(args.labels, ROOT)}` ({len(labs)} logged CMG-RRT queries). "
              f"Cost = {tag}. Bootstrap 95% CIs: 10,000 resamples, seed {args.seed}. "
              "This replays real logged queries; nothing is simulated. The trajectory through states is fixed by "
@@ -177,6 +184,17 @@ def main():
                 L.append(f"| {g} | {len(set(r['assembly_id'] for r in ss))} | {len(ss)} | {rr[0]:.2f} [{rr[1]:.2f}, {rr[2]:.2f}] |")
             else:
                 L.append(f"| {g} | 0 | 0 | n/a |")
+        rs = [r for r in solved if r["rot_state"]]
+        L.append(f"\n**State-level rotation subset** (a successful query at the state has max path rotation > "
+                 f"{args.rot_deg:.0f} deg): {len(rs)} states in {len(set(r['assembly_id'] for r in rs))} assemblies.")
+        if len(rs) >= 20:
+            L.append("\n| ordering / optimal (rotation states) | ratio of totals [95% CI] | median per-state ratio |\n|---|---|---|")
+            for o in ["random", "outside_in", "fewest_contacts"]:
+                rr = boot_ratio([r[o] for r in rs], [r["optimal"] for r in rs], rng)
+                med = float(np.median([r[o] / max(r["optimal"], 1e-9) for r in rs]))
+                L.append(f"| {o} | {rr[0]:.2f} [{rr[1]:.2f}, {rr[2]:.2f}] | {med:.2f} |")
+        else:
+            L.append(" Too small for a separate replay (n < 20 states).")
         # plots
         try:
             import matplotlib
@@ -197,7 +215,7 @@ def main():
             for a_ in ax:
                 a_.spines[["top", "right"]].set_visible(False)
             fig.tight_layout()
-            fp = os.path.join(args.fig_dir, "replay_pilot_v0" + ("_prep" if args.with_prep else "") + ".png")
+            fp = os.path.join(args.fig_dir, args.fig_name + ("_prep" if args.with_prep else "") + ".png")
             fig.savefig(fp, dpi=130)
             L.append(f"\n![replay]({os.path.relpath(fp, os.path.dirname(args.out_md))})")
         except Exception as e:  # noqa: BLE001

@@ -60,6 +60,11 @@ def main():
     ap.add_argument("--scan", required=True, help="contact scan results.jsonl (scripts/scan_contacts.py)")
     ap.add_argument("--max-pen", type=float, default=0.002, help="skip assemblies with deeper mesh interpenetration")
     ap.add_argument("--stop-at", default="", help="ISO time: start no new state after this")
+    ap.add_argument("--detector", default="learned", choices=["learned", "exact"],
+                    help="exact = run 02 exact union SDF (pilot_v1); learned = run 01 neural SDF (pilot_v0)")
+    ap.add_argument("--eps", type=float, default=None, help="contact tolerance (threshold = -eps); default 0.005")
+    ap.add_argument("--order-file", default="", help="text file of assembly ids: label these first, in this order")
+    ap.add_argument("--only-order", action="store_true", help="label only the ids in --order-file")
     args = ap.parse_args()
     signal.signal(signal.SIGTERM, _sig)
     signal.signal(signal.SIGINT, _sig)
@@ -89,6 +94,12 @@ def main():
     for g in args.groups.split(","):
         lo, hi = map(int, g.split("-"))
         order += sorted((r for r in rows if lo <= len(r["parts"]) <= hi), key=lambda r: r["id"])
+    if args.order_file:
+        first = [l.strip() for l in open(args.order_file) if l.strip()]
+        byid = {r["id"]: r for r in order}
+        rank = {a: i for i, a in enumerate(first)}
+        head = [byid[a] for a in first if a in byid]
+        order = head if args.only_order else head + [r for r in order if r["id"] not in rank]
     queue = [r for r in order if r["id"] not in finished][: max(0, args.max_assemblies - len(finished))]
     root = os.path.join(ROOT, "data/raw/multi_assembly/multi_assembly")
     print(f"{len(finished)} finished, {len(queue)} queued, T={args.T}, git={git}", flush=True)
@@ -115,7 +126,8 @@ def main():
         a["pending"], a["results"], a["t_state0"] = set(), [], time.time()
         for p in present:
             job = {"asm_dir": a["asm"].dir, "removed": list(a["removed"]), "part": p, "timeout_s": args.T,
-                   "seed": qseed(args.seed, aid, a["depth"], p), "assembly_id": aid}
+                   "seed": qseed(args.seed, aid, a["depth"], p), "assembly_id": aid,
+                   "detector": args.detector, "eps": args.eps}
             f = ex.submit(P.run_job, job)
             a["pending"].add(f)
             fut2aid[f] = aid
@@ -186,6 +198,11 @@ def main():
                            "error": r.get("error"), "seed": r.get("seed"), "T": args.T, "device": args.device,
                            "sdf_file": os.path.basename(r.get("sdf_path") or ""), "start_valid": r.get("start_valid"),
                            "sdf_p95_err": r.get("sdf_p95_err"),
+                           "detector": r.get("detector", args.detector), "epsilon": r.get("epsilon"),
+                           "setup_time_s": (sum(r["part_setup_s_first"].values()) / len(r["part_setup_s_first"])
+                                            if r.get("part_setup_s_first") else r.get("sdf_train_s")),
+                           "part_setup_s_first": r.get("part_setup_s_first"), "union_build_s": r.get("union_build_s"),
+                           "worker_wall_s": r.get("worker_wall_s"),
                            "git_hash": git, "timestamp": ts}
                     lf.write(json.dumps(lab) + "\n")
             succ = [r["part_id"] for r in res if r["outcome"] == "success"]
