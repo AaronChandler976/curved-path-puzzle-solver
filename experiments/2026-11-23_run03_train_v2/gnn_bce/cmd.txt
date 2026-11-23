@@ -1,0 +1,1 @@
+scripts/train_ranker.py --enc gnn --head bce --outdir experiments/2026-11-23_run03_train_v2 --grid-seeds 0,1,2 --smooth 5 --min-epochs 10 --patience 25 --max-epochs 150 --seeds 100,101,102,103,104
