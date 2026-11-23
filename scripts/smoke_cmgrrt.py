@@ -14,6 +14,7 @@ import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from disasm.oracle.cmgrrt_core import PlannerParams, run_cmgrrt  # noqa: E402
+from disasm.util.runlog import log_load  # noqa: E402
 from disasm.oracle.sdf_train import SDFTrainConfig, load_obj_merged, train_sdf, train_sdf_union  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -30,12 +31,19 @@ def main():
     ap.add_argument("--sdf-epochs", type=int, default=30)
     ap.add_argument("--sdf-samples", type=int, default=2_000_000)
     ap.add_argument("--sdf-batch", type=int, default=8192)
+    ap.add_argument("--sdf-lr", type=float, default=None,
+                    help="constant Adam lr (upstream train.py: 1e-4, no scheduler); default = cosine 5e-4->2e-5")
+    ap.add_argument("--run-dir", default=None, help="experiment folder for load_info.txt (default: dir of --out)")
     ap.add_argument("--sdf-sign", default="quicksdf", choices=["quicksdf", "robust"],
                     help="quicksdf = upstream labelling; robust = |quicksdf| with winding-number sign")
     ap.add_argument("--threads", type=int, default=0, help="torch CPU threads (0 = torch default)")
     ap.add_argument("--out", required=True, help="jsonl file to append the result to")
     args = ap.parse_args()
 
+    run_dir = args.run_dir or os.path.dirname(os.path.abspath(args.out))
+    from disasm.util.slots import acquire_slot
+    slot = acquire_slot(tag="smoke_cmgrrt")  # CLAUDE.md planner-process cap
+    log_load(run_dir, "start")
     if args.threads:
         import torch
         torch.set_num_threads(args.threads)
@@ -48,10 +56,14 @@ def main():
     cache = os.path.join(args.sdf_cache, args.example.replace("/", "_"))
     os.makedirs(cache, exist_ok=True)
     tag = "" if (args.sdf_batch == 8192 and args.sdf_sign == "quicksdf") else f"_b{args.sdf_batch}_{args.sdf_sign}"
+    if args.sdf_lr is not None:
+        tag += f"_lr{args.sdf_lr:g}"
     pth = os.path.join(cache, f"0_e{args.sdf_epochs}_n{args.sdf_samples}{tag}.pth")
     sdf_stats = None
     if not os.path.exists(pth):
         cfg = SDFTrainConfig(epochs=args.sdf_epochs, num_samples=args.sdf_samples, batch_size=args.sdf_batch)
+        if args.sdf_lr is not None:
+            cfg.lr = cfg.lr_final = args.sdf_lr   # cosine with eta_min == lr  => constant lr
         if args.sdf_sign == "robust":
             sdf_stats = train_sdf_union([load_obj_merged(os.path.join(ex_dir, "0.obj"))], pth, cfg,
                                         device="cuda", far_frac=0.0)
@@ -79,6 +91,7 @@ def main():
     print(json.dumps({k: v for k, v in res.items() if k != "sdf_stats"}), flush=True)
     with open(args.out, "a") as f:
         f.write(json.dumps(res) + "\n")
+    log_load(run_dir, "end")
 
 
 if __name__ == "__main__":

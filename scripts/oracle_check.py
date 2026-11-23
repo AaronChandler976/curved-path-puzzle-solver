@@ -37,6 +37,8 @@ def main():
     from disasm.oracle.cmgrrt import load_assembly, contact_graph
     from disasm.oracle.pool import make_pool
     os.makedirs(args.outdir, exist_ok=True)
+    from disasm.util.runlog import log_load
+    log_load(args.outdir, "start")
     res_path = os.path.join(args.outdir, "results.jsonl")
     sel_path = os.path.join(args.outdir, "selection.jsonl")
     root = os.path.join(ROOT, "data/raw/multi_assembly/multi_assembly")
@@ -82,6 +84,7 @@ def main():
                   f"dir={r.get('escape_dir')} start_sdf={r.get('start_min_sdf')} err={r.get('error')}", flush=True)
     pool.close()
     pool.join()
+    log_load(args.outdir, "end")
     print("ORACLE CHECK DONE", flush=True)
 
 

@@ -67,6 +67,8 @@ def main():
     from disasm.oracle import pool as P
 
     os.makedirs(args.outdir, exist_ok=True)
+    from disasm.util.runlog import log_load
+    log_load(args.outdir, "start")
     os.makedirs(args.labels_dir, exist_ok=True)
     lab_p = os.path.join(args.labels_dir, "labels.jsonl")
     st_p = os.path.join(args.labels_dir, "states.jsonl")
@@ -219,6 +221,7 @@ def main():
                 a["removed"] = a["removed"] + [chosen]
                 a["depth"] += 1
                 start_state(aid)
+    log_load(args.outdir, "end")
     print(f"LABEL RUN EXIT stop={STOP} queries_this_run={nq} wall={time.time() - t_start:.0f}s", flush=True)
     ex.shutdown(wait=False, cancel_futures=True)
     os._exit(0)
