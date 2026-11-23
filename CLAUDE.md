@@ -1,5 +1,8 @@
 # CLAUDE.md — CMPE 258 project rules (read before doing anything)
 
+**Also read `docs/PLAN.md`.** It defines the plan, the oracle, the cost
+definition, Tier A/B labels, metrics and novelty.
+
 ## What this project is
 Solo CMPE 258 (Deep Learning, Fall 2026) term project, Option 1 (train + deploy).
 Two-layer disassembly planner for realistic mechanical CAD assemblies:
@@ -25,14 +28,18 @@ as our contribution.
    report says so. Fabricated results get an automatic 0 in this course.
 2. **Curved/rotational planning stays in.** CMG-RRT is the oracle. A discretized
    or translation-only planner may be used only as a labeled ablation or dev
-   stand-in, never as a replacement.
+   stand-in, never as a replacement. Swapping CMG-RRT's *collision
+   representation* (the exact union SDF in docs/PLAN.md) is allowed as a
+   documented adapter change. Its planning algorithm stays unchanged.
 3. **A sampling planner cannot prove a part is stuck.** A CMG-RRT query that does
    not succeed is `unsolved` (budget exhausted), never "infeasible". Store it as
    censored.
 4. **Never use `sudo`.** If a system package is missing, write it to
    `reports/BLOCKERS.md` with the exact `apt install` line and move on.
 5. **Stay inside this project folder.** Do not modify, move or delete anything
-   outside it. Do not delete anything under `data/` or `experiments/`.
+   outside it. Do not delete anything under `data/` or `experiments/`. One
+   exception: scratch caches that the current run created itself may be
+   deleted, but log each deletion in that run's DECISIONS file.
 6. **Do not edit code under `external/`.** If a third-party repo needs a fix, save
    it as a patch in `patches/`, explain it in `patches/README.md`, and apply it
    from a script.
@@ -48,7 +55,22 @@ as our contribution.
   CMG-RRT. Install packages into it with `conda run -n disasm pip install ...`
   or after `conda activate disasm`. If a third-party repo needs conflicting
   versions, make a separate env (e.g. `ata`) and write down why.
-- Parallel planner runs: at most 10 worker processes, leaving 2 cores free.
+- **Planner process cap: 10 in total across ALL jobs**, leaving 2 cores free.
+  Enforce it in code: every script that starts planner workers takes
+  slots from `src/disasm/util/slots.py`, a file-lock semaphore shared across
+  processes. Before launching anything, check that no other planner jobs are
+  running.
+- **Timing hygiene:** any run whose wall-clock numbers will be reported
+  (smoke tests, timing benchmarks) runs alone. No other GPU or planner jobs
+  may run at the same time. Log `uptime`, `nvidia-smi
+  --query-gpu=utilization.gpu,memory.used --format=csv` and the power profile
+  (`powerprofilesctl get`, expected `performance`) at the start and end of
+  each timed run. Labeling runs report times too, so they log the same load
+  info. Mark any timing taken under contention as confounded.
+- **ROS on this machine sets `PYTHONPATH`, which breaks pytest and imports.**
+  The runner unsets it. If it reappears, prefix commands with
+  `env -u PYTHONPATH`. Run tests as
+  `env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest`.
 
 ## Layout
 ```
@@ -62,7 +84,9 @@ configs/             YAML configs for runs
 tests/               pytest tests
 experiments/<YYYY-MM-DD>_<name>/   one folder per run: config.yaml, cmd.txt,
                      git_hash.txt, stdout.log, results.* (gitignored except small md/csv)
-reports/             STATUS.md, MORNING_REPORT.md, BLOCKERS.md, smoke_test.md, ...
+reports/             run 01 reports at top level; from run 02 on each run uses reports/<run>/
+                     (STATUS.md, REPORT.md, BLOCKERS.md, DECISIONS.md, figures/)
+docs/PLAN.md         the adopted plan
 data/raw, data/processed, data/labels   (gitignored)
 external/            third-party clones (gitignored; versions in reports/external_versions.txt)
 patches/             patches to third-party code
