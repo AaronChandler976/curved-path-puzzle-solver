@@ -219,13 +219,13 @@ def main():
 
     L = ["# Run 03 R5: test-split replay results (evaluated once)\n",
          f"Script `scripts/eval_replay_test.py`; outputs `{os.path.relpath(args.outdir, ROOT)}/` (per-state costs in "
-         "`per_state.jsonl`, all numbers in `results.json`). Checkpoints: `experiments/2026-11-23_run03_train/<variant>/seed<k>/best.pt` "
-         "(selected on val). ASAP scores: `experiments/2026-11-23_run03_asap/scores.jsonl`. Cost = logged CMG-RRT planner time "
+         "`per_state.jsonl`, all numbers in `results.json`). Checkpoints: "
+         f"`{os.path.relpath(args.train_dir, ROOT)}/<variant>/seed<k>/best.pt`, seeds {args.seeds} (selected on val). ASAP scores: `experiments/2026-11-23_run03_asap/scores.jsonl`. Cost = logged CMG-RRT planner time "
          "(time_s) of the queries an ordering makes at a state, up to and including the first success. This replays real logged "
          "queries; nothing is simulated.\n",
          f"- test split: {len(TG)} states over {len(test)} assemblies; **{len(solved)}** states with >= 1 success are scored; "
          f"{len(unsolved)} states have no success. Every ordering pays all of their queries there: {sum(r['total_s'] for r in unsolved):.0f} s in total.",
-         "- trained models: 5 seeds each (configs chosen on val, `experiments/2026-11-23_run03_train/<variant>/selection.json`). "
+         "- trained models: 5 seeds each (configs chosen on val, `<train-dir>/<variant>/selection.json`). "
          "The total is shown with its CI over the seed-averaged per-state cost; 'seeds:' gives mean ± std of the 5 per-seed totals.",
          "- CIs: bootstrap over assemblies (10,000 resamples). Ratios use hindsight-optimal = cheapest successful query at the state.\n",
          "## Main table (all test states with >= 1 success)"]
