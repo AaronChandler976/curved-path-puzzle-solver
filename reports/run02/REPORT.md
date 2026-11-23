@@ -8,7 +8,7 @@
 | R0 review | done (no code bugs; limitations noted) | `reports/run02/run01_review.md` |
 | R1 slots + runlog | **PASS** (slot test: an 11th acquire blocks) | `experiments/2026-11-22_run02_pytest_r1/stdout.log`; re-run at end: 9 passed, `experiments/2026-11-23_run02_pytest_final/stdout.log` |
 | R2 clean repro | **FAIL**: elk not solved (blocker #1) | `reports/run02/smoke_clean.md`, `reports/run02/cmgrrt_reference.md` |
-| R3 exact SDF | **PASS** (start-valid 100%; 2/4 bundled re-solved, 2 cut by the wall cap, documented) | `reports/run02/r3_exact_sdf.md`, `experiments/2026-11-22_exact_sdf_validation/` |
+| R3 exact SDF | **PARTIAL**: start-valid 100% PASS. Bundled: 2 of the 4 R2-solved examples re-solved. 16505 is **not solved even with the full 5,000 iterations** (see below). alpha was cut by the wall cap | `reports/run02/r3_exact_sdf.md`, `experiments/2026-11-22_exact_sdf_validation/` |
 | R4 relabel v1 | **PASS** (1,328 ≥ 50 assemblies) | `experiments/2026-11-22_pilot_v1_labels/stdout.log` |
 | R5 analysis | **PASS** (final pass) | `reports/run02/analysis_v1.md`, `experiments/2026-11-23_analysis_v1_final/` |
 | R6 pipeline test | done; **PIPELINE TEST, not a result** | `experiments/2026-11-23_s6_pipeline_test_v1/pipeline_test.md` |
@@ -29,17 +29,17 @@
 
   The rotation subset has 70 states (57 assemblies) where a logged path rotated more than 15°. There, random / optimal is 5.43 [4.18, 7.76]. This counts rotation in the logged path, not rotation the part needed.
 - **Throughput:** 5,059 queries/hour with 10 CPU workers and T = 30 s (`analysis_v1.md`; load info in `experiments/2026-11-22_pilot_v1_labels/load_info.txt`). The R5 first pass ran alongside for a few minutes near 01:00, so this rate is slightly confounded.
-- **16505 full-budget exact rerun:** see the last section.
+- **16505 with the exact detector at the full budget** (seed 0, test_list settings, run alone): **not solved**, 5,000 iterations in 3,198 s (`experiments/2026-11-23_exact_bundled_fullbudget/results.jsonl`, load info in the same folder). With the learned SDF, R2 solved it at iteration 2,880. With one seed per detector, RRT randomness and a detector effect cannot be separated, so R3's "slower, not wrong" explanation is unproven for 16505.
 
 ## Needs Aaron
 1. **Elk / paper reproduction (blocker #1).** A fair test needs runs of at least 4 h or the authors' parallel code, which is not in the repo. `scripts/repro_cmgrrt.py` has no iteration-limit flag yet. Should I add `--iterations` and run elk for 4 h, alone, overnight?
-2. **Alpha with the exact detector at the full 5,000 iterations** (about 60 min, alone):
-   `env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example puzzle/alpha --seed 0 --cap-min 70 --detector exact --run-dir experiments/<date>_exact_bundled_fullbudget`
+2. **Exact vs learned detector on bundled examples, multiple seeds.** 16505 is solved by the learned SDF (1 seed) and not by the exact one (1 seed, full budget). Run 3 seeds of each for 16505 and alpha, alone (about 1 h per exact run). Alpha example:
+   `env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example puzzle/alpha --seed 1 --cap-min 70 --detector exact --run-dir experiments/<date>_exact_bundled_fullbudget`
 3. **1,033 assemblies are skipped for mesh interpenetration > ε.** Should these be labelled with a per-pair penetration allowance, or stay excluded?
 4. **Overfitting in the R6 pipeline test:** validation loss rises after the first epochs in all four model/head combinations. The real experiment needs early stopping and regularization. This is a pipeline observation, not a model comparison.
 
 ## Decisions made for you
-See `reports/run02/DECISIONS.md` (#1–#16). The main ones: ε = 0.005 (#6–8); `0.obj` as the exact-detector mesh (#11); T = 30 s and `--max-pen` = ε (#13); the labeler exit bug fix (#14); running R6 after labelling finished early (#15).
+See `reports/run02/DECISIONS.md` (#1–#17). The main ones: ε = 0.005 (#6–8); `0.obj` as the exact-detector mesh (#11); T = 30 s and `--max-pen` = ε (#13); the labeler exit bug fix (#14); running R6 after labelling finished early (#15).
 
 ## Proposed next run
 - **Labelling budget:** about 5,000 queries/h at T = 30 s. The eligible 3–8-part list is exhausted. The next sources are 9–12-part assemblies (states grow roughly as n²; estimate the count from `experiments/2026-11-22_contact_scan/` before launching) and the 1,033 interpenetration skips (item 3).

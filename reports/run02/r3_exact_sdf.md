@@ -62,3 +62,9 @@ Success changes by 3 queries per doubling of ε; start validity does not change.
 - On the ATA pilot assemblies the exact detector is *not* slower per query (S3: faster median); on large bundled meshes one
   iteration is 3–5× slower than the learned detector on cuda. Planner time per query therefore depends on mesh size.
 - Setup drops from ~66 s per query (learned, run 01) to ~0.02 s per part (exact).
+
+## Follow-up (run 02, 07:02): 16505 exact at the full 5,000-iteration budget — `experiments/2026-11-23_exact_bundled_fullbudget/results.jsonl`
+Seed 0, same settings, 60 min cap, run alone: **not solved**, stopped at the 5,000-iteration limit after 3,198 s (190,152 tree nodes).
+So the wall cap is *not* the whole explanation for 16505: with a single seed on each side, the learned detector solved it (2,880 it)
+and the exact one did not. That may be RRT seed variance or a real detector effect (the exact detector reports more shallow
+penetrations as collisions than the learned one; see §2, 16505 agreement 90.2%). Multi-seed comparison is listed in REPORT.md "Needs Aaron".

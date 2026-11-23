@@ -70,3 +70,7 @@ Each entry: choice / alternatives / why.
     test_list settings, seed 0, and a 60 min wall cap instead of 20. It runs alone. The R3 run was stopped by the wall cap at 1809/5000
     iterations, so this checks whether it solves within the full iteration budget. Only one run fits before R7 (alpha
     needs about another hour). Log: `experiments/2026-11-23_exact_bundled_fullbudget/`.
+17. **Result of #16:** 16505 with the exact detector was not solved at the full 5,000 iterations (3,198 s). R3's bundled
+    sub-gate is downgraded from "PASS with documented reason" to PARTIAL in REPORT.md. The ε was not changed and v1 was not
+    relabelled. Reasons: there is one seed per detector; ε sensitivity on the ATA assemblies is small (#R3 §5); and v1
+    start-validity is 99.5%. Listed in Needs Aaron.
