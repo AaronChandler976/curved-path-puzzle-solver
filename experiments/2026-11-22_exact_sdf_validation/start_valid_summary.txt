@@ -1,0 +1,7 @@
+assemblies 50, assembled-state part queries: exact 185, paired with v0 185
+start-valid exact (eps 0.005): 100.0% (185/185)
+start-valid learned (v0 labelling SDF, same queries): 67.0% (124/185)
+exact start_min_sdf p1/p5/p50: [-0.00183, -0.00151, -0.0] min -0.0018467033514752984
+sign modes: {'pseudonormal': 185, 'winding_number': 0}
+per-part exact setup s p50/p90/max: [0.0235, 0.0448, 0.1326]
+invalid exact: []

@@ -106,7 +106,8 @@ def poses(args, log):
         seed_all(0)
         d = os.path.join(ROOT, "external/cmg-rrt/resources/models", ex)
         props = json.load(open(os.path.join(d, "properties.json")))
-        pth = os.path.join(ROOT, "data/processed/cmgrrt_bundled_sdf/upstream_defaults", ex.replace("/", "_"), "0_sdf.pth")
+        sd = os.path.join(ROOT, "data/processed/cmgrrt_bundled_sdf/upstream_defaults", ex.replace("/", "_"))
+        pth = os.path.join(sd, "0.pth") if os.path.exists(os.path.join(sd, "0.pth")) else os.path.join(sd, "0_sdf.pth")
         if not os.path.exists(pth):
             log(f"{ex}: no R2 SDF at {pth}, skipped"); continue
         q1, qs = SE3(*props["q1"]), SE3(*props["q2_start"])

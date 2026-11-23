@@ -49,3 +49,11 @@ Each entry: choice / alternatives / why.
     general examples started in collision. **Diagnostic #2** retrains on `0.obj` (train.py's default path) for 11356 and
     key_light_1 and reruns them. The other examples are left as "Needs Aaron" (R2 box exhausted). The R3 exact detector
     uses `0.obj` (except az, whose `0.obj` gives −0.57 at the start: it is not a usable closed surface there).
+12. **R3 gate "bundled solved still solved"**: 16505 and alpha hit the 20 min wall cap at ~1800/5000 iterations with the exact
+    detector (3–5× slower per iteration than the learned cuda SDF). Recorded as a documented speed reason, not reran
+    (≈ 2 h for two full-budget reruns would eat the labelling box). *Alt:* rerun without wall cap now. Listed in Needs Aaron.
+13. **R4 settings:** exact detector, ε = 0.005, T = 30 s (R3 median query ~1 s, 9% of assembled-state queries hit T; no
+    evidence to change T), `--max-pen 0.005` (= ε, instead of run 01's 0.002: a start is valid when penetration ≤ ε, which the
+    R3 start-valid check confirms), 10 cpu workers (all 10 slots), 4 concurrent assemblies, seed 0, v0 ids first
+    (`order_v0_first.txt`), `--stop-at 06:15` so R5 final + R7 fit before 07:15. *R6 skipped by plan*: it needs the
+    planner-free machine for ≥ 2 h, which would end labelling at ~04:00 and would also confound labelling times.
