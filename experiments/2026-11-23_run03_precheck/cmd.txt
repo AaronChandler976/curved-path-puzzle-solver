@@ -1,0 +1,2 @@
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/run_precheck.py --outdir experiments/2026-11-23_run03_precheck --workers 10 --eps 0.005
+scripts/run_precheck.py --outdir experiments/2026-11-23_run03_precheck --workers 10 --eps 0.005
