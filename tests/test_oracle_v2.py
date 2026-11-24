@@ -104,3 +104,29 @@ def test_margin_keeps_start_valid_and_solves(tmp_path, monkeypatch):
     assert r["error"] is None, r.get("traceback")
     assert r["start_valid"] and r["precheck_free"] and r["outcome"] == "success"
     assert r["cmgrrt_ran"] and r["margin"] == 0.0005
+
+
+def test_allowance_uses_own_start_depth(tmp_path, monkeypatch):
+    """A peg that overlaps its hole wall by 0.012 (> eps) at the start: with the pair listed in the allowance the start
+    is valid and the offset equals the query's own start depth, so the planner cannot push deeper than it starts."""
+    from disasm.oracle import cmgrrt, exact_sdf
+    from disasm.oracle.exact_sdf import PartSDF
+    from disasm.oracle.oracle_v2 import query_v2
+    peg = _box([-0.112, -0.1, 0.0], [0.1, 0.1, 0.6])               # 0.012 into the -x wall (wall at -0.102)
+    c = 0.002
+    walls = trimesh.util.concatenate([_box([-0.4, -0.4, -0.2], [0.4, 0.4, 0.0]),
+                                      _box([-0.4, -0.4, 0.0], [-0.1 - c, 0.4, 0.5]),
+                                      _box([0.1 + c, -0.4, 0.0], [0.4, 0.4, 0.5])])
+    aid = "t_allow"
+    asm = cmgrrt.assembly_from_meshes(aid, {0: walls, 1: peg})
+    cmgrrt.contact_graph(asm, cache_dir=str(tmp_path))
+    for p, m in asm.meshes.items():
+        _SDFS[(aid, p)] = PartSDF(np.asarray(m.vertices), np.asarray(m.faces), sign_mode="winding_number")
+    monkeypatch.setattr(exact_sdf, "part_sdf_cached", lambda a, i, *x, **k: (_SDFS[(a.id, int(i))], 0.0, True))
+    r0 = query_v2(asm, set(), 1, 3.0, seed=0, workdir=str(tmp_path), always_cmgrrt=False, save_path=False)
+    assert not r0["start_valid"]                                   # without allowance: start in collision
+    r = query_v2(asm, set(), 1, 3.0, seed=0, workdir=str(tmp_path), always_cmgrrt=False, save_path=False,
+                 allowance={"0-1": 0.012 + EPS})
+    assert r["error"] is None, r.get("traceback")
+    assert r["start_valid"] and 0.009 < r["allowance_offsets"][0] <= 0.0121
+    assert r["outcome"] == "success" and r["stage"] == "precheck"  # straight up, never deeper than at the start

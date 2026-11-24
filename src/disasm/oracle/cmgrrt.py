@@ -313,6 +313,11 @@ def linear_precheck(asm: Assembly, removed: set, part: int, seed: int, workdir: 
 _PART_SDF = {}   # per-process cache: (assembly id, part) -> exact PartSDF
 
 
+def ExactUnionSDF_offsets_zero(u):
+    from disasm.oracle.exact_sdf import ExactUnionSDF
+    return ExactUnionSDF(u.parts, u.band)
+
+
 def exact_union(asm: Assembly, obstacle_ids, moving: int | None = None, allowance: dict | None = None) -> tuple:
     """Exact union SDF of the given parts (run 02 oracle). Returns (union, setup_s_this_call, per-part setup
     times from their first construction). ``allowance`` (run 04 T6) = {"a-b": a_ab} for unordered pairs that
@@ -413,6 +418,16 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
             out["sdf_path"] = sdf
 
         check_union = union if detector == "exact" else None
+        if allowance and detector == "exact":
+            # run 04 T6: allowance = this query's own measured start penetration + eps, per overlapping pair listed in
+            # the allowance file (pairs past the caps are never listed; their assemblies are excluded). Measured on
+            # the planner's own robot samples, so the part can never get deeper into a partner than it starts.
+            S0 = np.asarray(cd.robot["sampling"], dtype=np.float64)
+            listed = union.offsets > 0
+            raw = ExactUnionSDF_offsets_zero(union).per_part_min(S0)
+            union.offsets = np.where(listed, np.maximum(0.0, -raw), 0.0)
+            out["allowance_offsets"] = union.offsets.tolist()
+            out["allowance_rule"] = "own start depth"
         if margin and detector == "exact":
             S0 = np.asarray(cd.robot["sampling"], dtype=np.float64)
             pm = union.per_part_min(S0)                     # start pose = identity
