@@ -1,7 +1,7 @@
 STATE: RUNNING
 DEADLINE: 2026-11-25T08:00:00-08:00
-CURRENT STAGE: T6 untimed scans (9-12 contacts, penetration), then T5 (timed, alone)
-BACKGROUND JOBS: none
+CURRENT STAGE: T5 exact vs learned SDF (timed, alone; started 22:37)
+BACKGROUND JOBS: T5 batch scripts/run_t5.sh -> experiments/2026-11-23_run04_t5_sdf/ (batch_stdout.log; 12 runs one at a time; resumable: rerun the same command)
 MACHINE (T0, 2026-11-23T16:09-08:00): uptime 19:57, load 0.11/0.22/0.23; GPU 11% / 1534 MiB; power profile performance.
   Heavy processes: none from the project. Desktop apps running (firefox, chrome, Discord, gnome-shell), each < 6% CPU.
 DONE SO FAR:
@@ -16,4 +16,6 @@ DONE SO FAR:
   GNN-Surv/fewest contacts ratio of totals 0.595 [0.455, 0.821] (run 03 confounded: 0.613).
 - T4 PASS: reports/run04/oracle_v2.md. Cause = start pose never tested against goals (123/124 root-free); v2a solves 123/124,
   0 invalid successes on recheck (experiments/2026-11-23_run04_oracle_validation/summary.json); v1 paths 18.5% invalid at fine res.
-NEXT ACTION: T6.1/6.2 scans; then T5.
+- T6 PASS: reports/run04/data_pool.md (694 fresh candidates; allowance validated 906/906; plan = label all, ≈11.3 h).
+NEXT ACTION: when T5 finishes: analyse (hybrid fix only if exact clearly worse); then launch T7 (fresh first, then v1)
+  into data/labels/pilot_v2 with scripts/label_abd.py --oracle v2 (command template in reports/run04/data_pool.md / DECISIONS #20).

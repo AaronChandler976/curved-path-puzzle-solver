@@ -109,11 +109,14 @@ def main():
     ap.add_argument("--idle-wait", type=float, default=0.0, help="s of non-busy before planning (run 04: 300)")
     ap.add_argument("--no-guard", action="store_true", help="no idle sampler (pre-run-04 behaviour)")
     ap.add_argument("--unseeded-samples", action="store_true", help="library behaviour: unseeded robot samples")
+    ap.add_argument("--grad-dx", type=float, default=None,
+                    help="run 04 T5 hybrid: exact SDF decisions, guidance gradient by central differences over +-grad_dx")
     args = ap.parse_args()
     from disasm.util.runlog import log_load
     from disasm.util.slots import acquire_slot
     os.makedirs(args.run_dir, exist_ok=True)
-    tag = f"{args.example.replace('/', '_')}_s{args.seed}" + ("_exact" if args.detector == "exact" else "")
+    tag = f"{args.example.replace('/', '_')}_s{args.seed}" + ("_exact" if args.detector == "exact" else "") + \
+        (f"_gdx{args.grad_dx:g}" if args.grad_dx else "")
     logf = open(os.path.join(args.run_dir, f"{tag}.log"), "a")
 
     def log(m):
@@ -171,7 +174,7 @@ def main():
         part = PartSDF(m0.vertices, m0.faces, name=args.example)
         log(f"exact SDF of 0.obj: {json.dumps(part.meta())}")
         pp = PlannerParams(eta=eta, threshold=threshold, steps=steps, sampling=sampling)
-        cd = make_detector(pp, device, ExactUnionSDF([part]), q1=q1)
+        cd = make_detector(pp, device, ExactUnionSDF([part]), q1=q1, grad_dx=args.grad_dx)
         pth = "exact:0.obj"
     else:
         cd = CollisionDetector(cfg["sdf-N"], cfg["sdf-H"], dev, threshold, eta, abs(threshold))
@@ -230,7 +233,7 @@ def main():
            "path_nodes": len(path), "eta": eta, "threshold": threshold, "steps": steps, "sampling": sampling,
            "max_iterations": cfg["iterations"], "cap_min": args.cap_min, "device": device, "sdf": pth,
            "sdf_mesh": args.sdf_mesh, "detector": args.detector, "load_info": os.path.join(args.run_dir, "load_info.txt"),
-           "seeded_samples": not args.unseeded_samples, "fine_path_check": fine, **busy}
+           "seeded_samples": not args.unseeded_samples, "fine_path_check": fine, "grad_dx": args.grad_dx, **busy}
     log("RESULT " + json.dumps(res))
     with open(os.path.join(args.run_dir, "results.jsonl"), "a") as f:
         f.write(json.dumps(res) + "\n")

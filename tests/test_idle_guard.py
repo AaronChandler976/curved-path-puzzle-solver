@@ -79,3 +79,18 @@ def test_cli_help():
     r = subprocess.run([sys.executable, "-m", "disasm.util.idle_guard", "--help"], capture_output=True, text=True,
                        env={**os.environ, "PYTHONPATH": os.path.join(os.path.dirname(__file__), "..", "src")})
     assert r.returncode == 0 and "--wait-idle" in r.stdout
+
+
+def test_own_multithreaded_burner_not_load(tmp_path):
+    """A multithreaded burner in OUR tree must not make the load criterion busy (run 04 T5 artefact)."""
+    code = ("import threading,time\n"
+            "def f():\n t=time.time()\n while time.time()-t<40: pass\n"
+            "ts=[threading.Thread(target=f) for _ in range(4)]\n[x.start() for x in ts]\n[x.join() for x in ts]")
+    burn = subprocess.Popen([sys.executable, "-c", code])
+    try:
+        recs = _run_sampler(tmp_path, os.getpid(), n=8, dt=2.0)
+    finally:
+        burn.kill()
+    r = recs[-1]
+    assert r["our_cores"] > 0.8                    # our CPU use is measured (the GIL burner uses >= 1 core)
+    assert r["our_load"] >= r["our_load_cpu"] > 0.2   # and enters the load criterion (1-min EMA, still rising)

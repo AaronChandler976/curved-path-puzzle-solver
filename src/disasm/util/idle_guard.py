@@ -9,9 +9,10 @@ Definition (exactly as CLAUDE.md states it):
   ``confounded = busy_frac > 0``.
 
 "Ours" = the runner process (the one that owns the sampler) and every descendant of it, plus processes whose command
-name is ``claude``. "Our planner workers" in the load criterion = the number of our threads in run state R/D, smoothed
-with the kernel's own 1-min exponential (factor exp(-5/60) per 5 s sample), so it is directly comparable with
-/proc/loadavg's first field.
+name is ``claude``. "Our planner workers" in the load criterion = the larger of (a) the number of our threads in run
+state R/D and (b) our measured CPU use in cores over the last 5 s, each smoothed with the kernel's own 1-min
+exponential (factor exp(-5/60) per 5 s sample), so it is comparable with /proc/loadavg's first field. (b) was added in
+run 04 T5: a single multithreaded process (igl/BLAS/torch threads) runs in bursts that (a) misses.
 
 Sharing with workers: the sampler (a thread inside the runner) appends every sample to ``<run_dir>/idle_samples.jsonl``
 and atomically rewrites ``<run_dir>/idle_state.json``. Worker processes use :class:`IdleClient` on the same run dir
@@ -133,6 +134,8 @@ class IdleSampler:
         self.hist = []                       # (t, outside_ticks_total) for the 30 s window
         self.prev = {}                       # pid -> (comm, ticks) at the previous sample
         self.our_load = None
+        self.our_load_thr = None
+        self.our_load_cpu = None
         self.last = None
         self._stop = threading.Event()
         self._thread = None
@@ -147,10 +150,14 @@ class IdleSampler:
         # outside CPU = sum over outside processes of tick deltas since the previous sample (new processes count from 0;
         # their ticks before the first sample are only partially in-window, which slightly over-counts -> conservative)
         d_out, top = 0, {}
+        d_our = 0
         cur = {}
         for p, (_pp, comm, ticks, _s) in tab.items():
             cur[p] = (comm, ticks)
             if p in ours:
+                if comm not in OURS_COMM and self.prev:
+                    _pc, pt = self.prev.get(p, (comm, None))
+                    d_our += ticks if pt is None else max(0, ticks - pt)
                 continue
             _pc, pt = self.prev.get(p, (comm, None))
             if pt is None:
@@ -162,8 +169,11 @@ class IdleSampler:
             if delta:
                 d_out += delta
                 top[f"{comm}:{p}"] = delta
+        dt = (t - self.t_prev) if getattr(self, "t_prev", None) else self.sample_s
+        self.t_prev = t
         self.prev = cur
         self.outside_cum += d_out / _CLK
+        our_cores = d_our / _CLK / max(1e-3, dt)
         self.hist.append((t, self.outside_cum))
         while len(self.hist) > 1 and t - self.hist[0][0] > WINDOW_S + 1e-6:
             self.hist.pop(0)
@@ -175,13 +185,18 @@ class IdleSampler:
         our_run = sum(_running_threads(str(p)) for p in ours if p in tab and tab[p][1] not in OURS_COMM)
         # exclude the sampler's own momentary run state (the sampler thread is running while it reads /proc)
         our_run = max(0, our_run - 1)
-        self.our_load = our_run if self.our_load is None else self.our_load * _EXP + our_run * (1 - _EXP)
+        self.our_load_thr = our_run if self.our_load_thr is None else self.our_load_thr * _EXP + our_run * (1 - _EXP)
+        self.our_load_cpu = our_cores if self.our_load_cpu is None else self.our_load_cpu * _EXP + our_cores * (1 - _EXP)
+        # our share of the load average: runnable-thread count sampled at this instant misses bursty multithreaded
+        # work (one process with igl/BLAS/torch threads), so take the larger of it and our measured CPU cores (EMA)
+        self.our_load = max(self.our_load_thr, self.our_load_cpu)
         l1 = loadavg1()
         first = len(self.hist) == 1
         busy = True if first else is_busy(outside_cores, l1, self.our_load)   # no baseline yet -> busy
         rec = {"t": t, "iso": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(t)),
                "outside_cores_30s": round(outside_cores, 4), "load1": l1, "our_load": round(self.our_load, 3),
-               "our_running": our_run, "n_ours": len(ours), "busy": bool(busy),
+               "our_running": our_run, "our_cores": round(our_cores, 3), "our_load_thr": round(self.our_load_thr, 3),
+               "our_load_cpu": round(self.our_load_cpu, 3), "n_ours": len(ours), "busy": bool(busy),
                "top_outside": sorted(top.items(), key=lambda kv: -kv[1])[:3], "tag": self.tag}
         if self.gpu:
             rec["gpu_util"] = gpu_util()

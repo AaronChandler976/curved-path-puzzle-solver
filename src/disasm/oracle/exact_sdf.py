@@ -220,7 +220,7 @@ class ExactUnionSDF:
         return self
 
 
-def make_detector(params, device, union: ExactUnionSDF, q1=None, eps: float | None = None):
+def make_detector(params, device, union: ExactUnionSDF, q1=None, eps: float | None = None, grad_dx: float | None = None):
     """CMG-RRT CollisionDetector with the exact union SDF installed. eps (contact tolerance) defines
     threshold = -eps and eps_contact = eps; default = the planner params (threshold -0.005)."""
     import torch
@@ -235,6 +235,13 @@ def make_detector(params, device, union: ExactUnionSDF, q1=None, eps: float | No
                 self.obstacles = {"sdf": sdf, "q1": q1, "Aq1_inv": np.linalg.inv(q1.to_matrix())}
             else:
                 super().set_obstacles(sdf, q1)
+
+        def get_gradients(self, q2, sampling=None, dx=None):
+            """Run 04 T5 hybrid ("exact decisions, smoothed guidance"): with grad_dx set, the contact-guidance
+            gradient is a central difference of the exact SDF over +-grad_dx in each pose coordinate, i.e. the
+            gradient of the SDF box-filtered at that scale. Every collision decision still uses the exact SDF."""
+            from taucgl_rrt.collision_detection import DX
+            return super().get_gradients(q2, sampling, grad_dx if grad_dx is not None else (DX if dx is None else dx))
 
     thr = params.threshold if eps is None else -abs(eps)
     cd = ExactSDFCollisionDetector(params.sdf_N, params.sdf_H, torch.device(device), thr, params.eta, abs(thr))

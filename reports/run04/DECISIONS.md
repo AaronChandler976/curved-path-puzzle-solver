@@ -114,3 +114,12 @@ Each entry: choice / alternatives / why.
 21. **T6 pilot confounding.** 426/3,269 pilot queries were confounded (Firefox media decoding, 20:40–21:30), 89 still
     after 2 re-runs (2.7%). The pilot is a cost estimate, not a label set, so this only adds noise to the
     estimate. T7 has a < 1% gate and is launched overnight when the desktop is quiet.
+22. **T5: idle-guard "our load" estimate fixed; the first two T5 runs stay flagged confounded.** In T5's single
+    multithreaded process (igl/BLAS/torch threads), counting our running threads at the sample instant missed most of
+    our load, so "1-min load − our workers" read 4–8 while outside CPU stayed ≤ 0.17 cores. 16505 seed 0 learned
+    (busy_frac 0.64) and exact (0.10) were therefore flagged. The sampler now uses max(thread-count EMA, EMA of our
+    measured CPU cores) (`src/disasm/util/idle_guard.py`, test `test_own_multithreaded_burner_not_load`). The batch
+    was stopped two samples into alpha seed 0 (its guard folder is kept as `guard_puzzle_alpha_s0_aborted/`) and
+    resumed. Per CLAUDE.md, single long runs are *marked* confounded rather than re-run; the two flagged runs are
+    reported as confounded with this evidence, and re-run at the end only if time remains.
+    Earlier timed stages used single-threaded workers, where the thread count tracks the load correctly.
