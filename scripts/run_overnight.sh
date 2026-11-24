@@ -2,7 +2,7 @@
 # Runs Claude Code unattended until a deadline, restarting it with fresh context
 # whenever a session ends. State carries over in <run_dir>/STATUS.md.
 # Usage (inside tmux):
-#   systemd-inhibit --what=sleep:idle --why="claude run" scripts/run_overnight.sh <HH:MM> <prompt.md> <run_dir>
+#   systemd-inhibit --what=sleep:idle --why="claude run" scripts/run_overnight.sh <HH:MM | "YYYY-MM-DD HH:MM"> <prompt.md> <run_dir>
 # Example:
 #   systemd-inhibit --what=sleep:idle --why="claude run" scripts/run_overnight.sh 22:00 prompts/run_02.md reports/run02
 set -uo pipefail
@@ -19,9 +19,14 @@ mkdir -p logs/overnight "$RUN_DIR"
 exec 9>logs/runner.lock
 flock -n 9 || { echo "Another runner is already running. Stop it first: pkill -f run_overnight.sh"; exit 1; }
 
-# Deadline: the next occurrence of HH:MM
-END=$(date -d "today $DEADLINE_HHMM" +%s)
-[ "$END" -le "$(date +%s)" ] && END=$(date -d "tomorrow $DEADLINE_HHMM" +%s)
+# Deadline: "HH:MM" = the next occurrence of that time; "YYYY-MM-DD HH:MM" = that exact time (multi-day runs)
+if [[ "$DEADLINE_HHMM" == *-* ]]; then
+  END=$(date -d "$DEADLINE_HHMM" +%s) || { echo "Bad deadline: $DEADLINE_HHMM"; exit 1; }
+  [ "$END" -le "$(date +%s)" ] && { echo "Deadline is in the past: $DEADLINE_HHMM"; exit 1; }
+else
+  END=$(date -d "today $DEADLINE_HHMM" +%s)
+  [ "$END" -le "$(date +%s)" ] && END=$(date -d "tomorrow $DEADLINE_HHMM" +%s)
+fi
 DEADLINE_ISO=$(date -d "@$END" -Iseconds)
 
 # Drop any cached sudo credentials so the agent can't use sudo

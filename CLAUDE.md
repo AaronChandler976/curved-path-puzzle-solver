@@ -31,6 +31,10 @@ as our contribution.
    stand-in, never as a replacement. Swapping CMG-RRT's *collision
    representation* (the exact union SDF in docs/PLAN.md) is allowed as a
    documented adapter change. Its planning algorithm stays unchanged.
+   **Oracle v2 (from run 04):** a straight-pull pre-check runs first, and CMG-RRT
+   runs whenever the pre-check finds no free straight pull. This is allowed because
+   CMG-RRT still decides every part a straight pull can't remove. Its time counts
+   as query cost, and reports say how many removals each stage produced.
 3. **A sampling planner cannot prove a part is stuck.** A CMG-RRT query that does
    not succeed is `unsolved` (budget exhausted), never "infeasible". Store it as
    censored.
@@ -113,3 +117,28 @@ be resumable.
 - The rotation flags and any other evaluation-only labels are never model inputs.
 - Give every comparison a CI and its sample size. If a subset is small, say it is
   underpowered instead of drawing conclusions from it.
+
+## Run 04 rules (added 2026-11-23)
+- **The run 03 test split is spent.** It was evaluated on 2026-11-23 and the method
+  is being changed in response, so it can never again be the final test. The final
+  test set is the test part of the v2 split, built and frozen in run 04 and
+  evaluated exactly once, in run 05. Run 04 trains nothing on v2 and reads no
+  v2 test labels except to check that labelling finished.
+- **Idle guard for timed work.** Planner times are the labels and the metric, so
+  any planner work whose times are kept goes through `src/disasm/util/idle_guard.py`:
+  - "busy" = processes outside this project (not our runner, not our workers, not
+    `claude`) use more than 0.5 CPU core on average over 30 s, or the 1-min load
+    average minus our own planner workers is above 1.5. GPU use is logged but is
+    not a criterion (the planner is CPU-only).
+  - Before a timed batch starts, the machine must be non-busy for 5 minutes.
+  - Labelling and live evaluation dispatch a new query only while non-busy. Each
+    query record stores `busy_frac` (fraction of 5 s samples that were busy during
+    the query) and `confounded = busy_frac > 0`. Confounded queries are re-run at
+    the end (same seed). Keep every attempt in the log; the label uses the first
+    clean attempt. If a query is still confounded after 2 re-runs, keep it, flagged.
+  - Single long timed runs that can't pause (elk, SDF seeds) log busy samples
+    throughout and are marked confounded if `busy_frac > 0.05`.
+- **While timed work runs, nothing else heavy runs:** no training, compiling,
+  pip builds or GPU jobs at the same time. Schedule those between timed stages.
+- **Seeded robot sampling.** Every planner query draws its robot surface samples
+  from a generator seeded by the query seed, so the same query is reproducible.

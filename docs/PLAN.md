@@ -100,3 +100,27 @@ al. (IROS 2022) predicted sampling-planner runtime with GNNs, but not for AbD qu
   retrained on v1. Required: it's the second open-source SOTA method.
 - **Deferred to run 04:** a 4 h elk run and a multi-seed exact-vs-learned SDF test
   on bundled puzzles (16505, alpha).
+
+## Run 04 additions (2026-11-23, decided by Aaron after run 03)
+- **Run 03 becomes a development round.** Its replay and live results are reported
+  as such. The final results come from a fresh test set (run 05).
+- **Write-up metrics:** total planner time (primary, chosen in advance) and the
+  per-assembly paired cost (Hodges–Lehmann median difference, wins/ties/losses) are
+  reported side by side, in both replay and live evaluation.
+- **Oracle v2:** fix the adapter bug(s) behind run 03's 124 linear-free-but-unsolved
+  queries; seeded robot sampling; straight-pull pre-check → CMG-RRT. Every success
+  is path-validated with the exact detector at step ≤ ε/2. Labels record the
+  pre-check result and the CMG-RRT result for every query, so both
+  "CMG-RRT only" and "pre-check → CMG-RRT" can be replayed.
+- **Data v2 (`pilot_v2`):** every v1 assembly relabelled from scratch with oracle v2,
+  plus fresh assemblies that were never in `pilot_v1`: 9–12-part assemblies, and the
+  interpenetrating assemblies that a validated per-pair penetration allowance
+  recovers. Assemblies beyond the allowance cap stay excluded (reported with counts).
+- **Split v2:** the test set is drawn only from fresh assemblies (never in pilot_v1),
+  grouped by near-duplicates, stratified by source and part-count bin. Every
+  run 03 test assembly goes to train/val. 00014 is never in any v2 test set.
+- **Run 05 variants (pre-registered in run 04):** MLP and GNN × BCE and survival;
+  PointNet+GNN (survival) vs the current hand-made features; a tail-aware objective
+  (expected cost including the P(unsolved)·T term); ASAP zero-shot with its own
+  redmax contact graph if redmax installs (else our adapter, with the reason);
+  ASAP's architecture retrained on v2 train with its own objective. 5 seeds each.
