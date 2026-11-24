@@ -45,9 +45,10 @@ def sweep_direction(union, samples: np.ndarray, v: np.ndarray, D: float, eps: fl
         t = min(D, t + step)
 
 
-def precheck(asm, removed, part: int, seed: int, workdir: str, eps: float = 0.005, all_dirs: bool = False) -> dict:
+def precheck(asm, removed, part: int, seed: int, workdir: str, eps: float = 0.005, all_dirs: bool = False,
+             seeded_samples: bool = True) -> dict:
     """Straight-line pull test for one query. Same robot samples and union SDF as cmgrrt.query(detector='exact')."""
-    from disasm.oracle.cmgrrt import GOAL_MARGIN, _setup_cd, candidate_directions, exact_union
+    from disasm.oracle.cmgrrt import GOAL_MARGIN, _setup_cd, candidate_directions, exact_union, robot_sample_seed
     from disasm.oracle.cmgrrt_core import PlannerParams, seed_all
     import dataclasses
     t0 = time.time()
@@ -56,7 +57,8 @@ def precheck(asm, removed, part: int, seed: int, workdir: str, eps: float = 0.00
     obst = present - {part}
     seed_all(seed)                                    # same order of RNG use as cmgrrt.query
     union, _, _ = exact_union(asm, obst)
-    cd = _setup_cd(asm, part, union, workdir, params, "cpu", exact=True)
+    cd = _setup_cd(asm, part, union, workdir, params, "cpu", exact=True,
+                   sample_seed=robot_sample_seed(seed) if seeded_samples else None)
     S = np.asarray(cd.robot["sampling"], dtype=np.float64)     # world frame (q1 = q2_start = identity)
     start_min = float(union.eval_np(S).min())
     D = asm.bbox_diag + GOAL_MARGIN

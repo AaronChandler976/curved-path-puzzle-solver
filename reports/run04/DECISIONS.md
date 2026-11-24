@@ -1,0 +1,36 @@
+# Run 04 decisions made on Aaron's behalf
+
+Each entry: choice / alternatives / why.
+
+1. **T1 "ours" for the idle guard** = the runner process and all its descendants (walked through /proc ppid links at
+   every 5 s sample) plus processes whose command name is `claude`. Commands the agent itself starts (bash, python
+   checks) are NOT ours and count as outside load. *Alt:* exclude the whole Claude tree. *Why:* CLAUDE.md excludes
+   `claude` itself; anything heavy the agent runs during a timed stage really is contention and should be flagged.
+2. **T1 load criterion: "our planner workers"** = number of our threads in run state R/D, smoothed with the kernel's
+   own 1-min exponential (exp(−5/60) per 5 s sample), subtracted from /proc/loadavg's 1-min value. *Alt:* subtract the
+   number of held planner slots. *Why:* load average is a 1-min EMA of runnable threads, so subtracting the same EMA of
+   our runnable threads is the like-for-like comparison; idle workers holding a slot add no load.
+3. **T1 first sample is "busy"** (no CPU baseline yet), and a missing or stale (> 30 s) sampler state is treated as
+   busy by workers. *Why:* conservative; at worst a few seconds of extra waiting.
+4. **T1 busy_frac window:** a 5 s sample at time s covers (s − 5, s]; every sample overlapping the query counts; a
+   query shorter than the sampling gap uses the nearest sample. Each sample's busy flag uses the CLAUDE.md 30 s
+   average, so a burst marks the next ~30 s of queries confounded (conservative by construction).
+5. **T1 seeded robot sampling without a patch.** The installed trimesh (5.2.2) has a `seed` argument, but the
+   unmodified CMG-RRT library calls `sample_surface` without one. Our adapter wraps the call in a context manager
+   (`cmgrrt.seeded_surface_sampling`) that passes `seed=np.random.default_rng(robot_sample_seed(query seed))` and
+   restores the module attribute on exit. Nothing under external/ changes, so no file in patches/ is needed.
+   `robot_sample_seed = sha1("robot-samples-<seed>")[:8]` is logged with every query.
+   *Alt:* a patch to collision_detection.py. *Why:* the prompt prefers the seed argument when trimesh supports it.
+6. **T1 single-thread KMeans for reproducibility.** With samples fixed, the library's KMeans (robot-sample clustering
+   and contact-gradient clustering inside extend) still differed at 1e-16 when multithreaded. `query()` now runs robot
+   sampling and the planning loop under `threadpoolctl.threadpool_limits(1)`. Planner workers were already pinned
+   to 1 thread (pool.pin_threads), so planner timing is unchanged; the test process now matches worker behaviour.
+   Test: `tests/test_seeded_sampling.py` (identical samples, cluster centres, iterations, tree node set hash).
+7. **T1 labelling re-runs keep the trajectory.** In `label_abd.py` the removal choice at each state is made from
+   attempt 0 (its success is a planner-found path). Confounded queries are re-run at the end with the same seed;
+   `attempts.jsonl` keeps every attempt; `labels.jsonl` (consolidation) uses the first clean attempt, else attempt 0
+   flagged `still_confounded`. *Alt:* re-run the whole state/assembly. *Why:* a clean re-run measures the same query
+   again; the visited state stays physically valid because attempt 0's removal was planner-verified.
+8. **T1 live re-run unit = the whole (assembly, method) disassembly.** In a sequential disassembly a re-run query
+   could change the trajectory, so a run with any confounded query is repeated from the start (same seeds) up to 2
+   times; reports use the first clean attempt.

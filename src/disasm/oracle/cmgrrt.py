@@ -226,7 +226,45 @@ def _rotation_deg(q7) -> float:
     return float(np.degrees(2 * np.arccos(w)))
 
 
-def _setup_cd(asm, part, sdf_path, workdir, params, device, exact=False):
+def robot_sample_seed(seed) -> int:
+    """Seed of the robot surface-sample generator for a planner query (run 04: seeded robot sampling)."""
+    return int.from_bytes(hashlib.sha1(f"robot-samples-{int(seed)}".encode()).digest()[:8], "little")
+
+
+class seeded_surface_sampling:
+    """Context manager: inside it, ``trimesh.sample.sample_surface`` called WITHOUT a seed (as the unmodified
+    CMG-RRT library does in ``generate_robot_sampling``) draws from ``np.random.default_rng(seed)`` via trimesh's own
+    ``seed`` argument (trimesh >= 4 supports it; installed 5.2.2). Nothing under external/ is edited; the module
+    attribute is restored on exit. ``seed=None`` = library behaviour (unseeded)."""
+
+    def __init__(self, seed):
+        self.seed = seed
+        self._orig = None
+
+    def __enter__(self):
+        if self.seed is None:
+            return self
+        import trimesh.sample as ts
+        self._orig = ts.sample_surface
+        rng = np.random.default_rng(self.seed)
+        orig = self._orig
+
+        def _seeded(mesh, count, *a, **k):
+            if k.get("seed") is None:
+                k["seed"] = rng
+            return orig(mesh, count, *a, **k)
+
+        ts.sample_surface = _seeded
+        return self
+
+    def __exit__(self, *exc):
+        if self._orig is not None:
+            import trimesh.sample as ts
+            ts.sample_surface = self._orig
+        return False
+
+
+def _setup_cd(asm, part, sdf_path, workdir, params, device, exact=False, sample_seed=None):
     import torch
     from taucgl_rrt.cspace import SE3
     from taucgl_rrt.collision_detection import CollisionDetector
@@ -240,7 +278,9 @@ def _setup_cd(asm, part, sdf_path, workdir, params, device, exact=False):
         cd = CollisionDetector(params.sdf_N, params.sdf_H, torch.device(device), params.threshold,
                                params.eta, abs(params.threshold))
     cd.set_robot(robot_obj)
-    cd.generate_robot_sampling(params.sampling)
+    from threadpoolctl import threadpool_limits
+    with seeded_surface_sampling(sample_seed), threadpool_limits(1):   # 1 BLAS/OpenMP thread: KMeans bit-reproducible
+        cd.generate_robot_sampling(params.sampling)
     if not exact:
         cd.set_obstacles(sdf_path, SE3())
     return cd
@@ -293,7 +333,7 @@ def exact_union(asm: Assembly, obstacle_ids) -> tuple:
 def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: int, workdir: str,
           device: str = "cpu", params=None, max_iterations: int | None = None,
           sdf_device: str = "cuda", save_path: bool = True, detector: str = "learned",
-          eps: float | None = None) -> dict:
+          eps: float | None = None, seeded_samples: bool = True) -> dict:
     """Can ``part`` leave the sub-assembly (all parts minus ``removed``)? One CMG-RRT query.
 
     Returns {outcome: "success"|"unsolved", time_s, iterations, goal_pose, escape_dir,
@@ -313,7 +353,8 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
     out = {"detector": detector, "epsilon": -params.threshold, "outcome": "unsolved", "time_s": 0.0, "iterations": 0, "goal_pose": None, "escape_dir": None,
            "n_goal_candidates_tried": 0, "path_file": None, "error": None,
            "assembly_id": asm.id, "part_id": int(part), "removed": sorted(int(r) for r in removed),
-           "timeout_s": timeout_s, "seed": seed, "device": device}
+           "timeout_s": timeout_s, "seed": seed, "device": device,
+           "robot_sample_seed": robot_sample_seed(seed) if seeded_samples else None}
     if part not in present:
         out["error"] = "part_not_present"
         return out
@@ -326,13 +367,15 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
         t_prep0 = time.time()
         if detector == "exact":
             union, t_union, first = exact_union(asm, obst)
-            cd = _setup_cd(asm, part, union, workdir, params, device, exact=True)
+            cd = _setup_cd(asm, part, union, workdir, params, device, exact=True,
+                           sample_seed=robot_sample_seed(seed) if seeded_samples else None)
             out["prep_s"] = time.time() - t_prep0
             out["union_build_s"] = t_union
             out["part_setup_s_first"] = first     # one-time per-part setup (amortised over all queries)
         else:
             sdf, sdf_stats, t_sdf, cached = obstacle_sdf(asm, obst, device=sdf_device)
-            cd = _setup_cd(asm, part, sdf, workdir, params, device)
+            cd = _setup_cd(asm, part, sdf, workdir, params, device,
+                           sample_seed=robot_sample_seed(seed) if seeded_samples else None)
             out["prep_s"] = time.time() - t_prep0
             out["sdf_train_s"] = t_sdf
             out["sdf_cached"] = cached
@@ -360,6 +403,8 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
             out["error"] = "no_valid_goal"
             return out
 
+        from threadpoolctl import threadpool_limits
+        _tp = threadpool_limits(1)       # contact-gradient KMeans inside extend(): 1 thread = reproducible (workers already use 1)
         rrt = RRT(cd, SE3(), q0, goals[0])
         it, win = 0, None
         t0 = time.time()
@@ -381,8 +426,10 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
             if win is not None or el > timeout_s or (max_iterations and it >= max_iterations):
                 break
         out["time_s"] = time.time() - t0
+        _tp.restore_original_limits()
         out["iterations"] = it
         out["tree_nodes"] = rrt.tree.number_of_nodes()
+        out["tree_hash"] = hashlib.sha1(np.round(np.array(sorted(rrt.tree.nodes)), 9).tobytes()).hexdigest()[:16]
         if win is not None:
             path = [p.to_numpy().tolist() for p in rrt.get_path()]
             out["outcome"] = "success"
