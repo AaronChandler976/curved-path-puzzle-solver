@@ -1,0 +1,1 @@
+scripts/label_abd.py --outdir experiments/2026-11-23_run04_dev_label_rerun --labels-dir experiments/2026-11-23_run04_dev_label_rerun/labels --T 10 --workers 4 --seed 0 --groups 2-12 --scan experiments/2026-11-22_contact_scan/results.jsonl --detector exact --eps 0.005 --max-pen 0.005 --order-file experiments/2026-11-23_run04_dev_label_rerun/order.txt --only-order --idle-wait 0

@@ -1,0 +1,2 @@
+scripts/live_abd.py --assemblies experiments/2026-11-23_run04_dev_live/assemblies.json --gnn-ckpt experiments/2026-11-23_run03_train_v2/gnn_survival/seed101/best.pt --outdir experiments/2026-11-23_run04_dev_live --workers 8 --T 10 --eps 0.005 --idle-wait 0
+scripts/live_abd.py --assemblies experiments/2026-11-23_run04_dev_live/assemblies.json --gnn-ckpt experiments/2026-11-23_run03_train_v2/gnn_survival/seed101/best.pt --outdir experiments/2026-11-23_run04_dev_live --workers 8 --T 10 --eps 0.005 --idle-wait 0

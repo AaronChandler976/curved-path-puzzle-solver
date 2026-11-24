@@ -34,3 +34,30 @@ Each entry: choice / alternatives / why.
 8. **T1 live re-run unit = the whole (assembly, method) disassembly.** In a sequential disassembly a re-run query
    could change the trajectory, so a run with any confounded query is repeated from the start (same seeds) up to 2
    times; reports use the first clean attempt.
+9. **T2.1 redmax builds without sudo, in a separate env `asap` (Python 3.8).** ASAP's bundled pybind11 is 2.9, which
+   does not support Python 3.11 (`disasm`), so redmax cannot go into `disasm`. Build from a *copy* of
+   external/ASAP/simulation in `build/asap_simulation` (gitignored), so no build artefacts land under external/.
+   Three attempts (logs in `experiments/2026-11-23_run04_t2_redmax/build{1,2,3}.log`):
+   (1) CMake 4.2 rejects glfw's `cmake_policy(SET CMP0042 OLD)`; (2) with pip `cmake==3.31.6` in env asap, GCC 15
+   rejects old Eigen under `-Wtemplate-body`; (3) `CXXFLAGS="-Wno-template-body -fpermissive"` builds and installs.
+   No source file was edited, so nothing goes to patches/. Env `asap`: python 3.8, numpy, scipy, networkx,
+   cmake 3.31.6, trimesh 3.10.8, rtree 0.9.7, pyquaternion 0.9.9, matplotlib 3.5.1, tqdm.
+10. **T2.1 result: our run 03 ASAP contact adapter = redmax exactly** on 20 seeded run 03 train assemblies (109/109
+    edges, 20/20 graphs identical; `experiments/2026-11-23_run04_t2_redmax/agreement.json`). Our own GNN contact graph
+    (|d| < 0.01 unit) misses 6 of the 109 redmax edges (3 assemblies). Run 05 uses redmax's own graph for ASAP
+    (`scripts/asap_contact_graphs.py`, env asap) as the prompt asks; the adapter is now validated as equivalent.
+11. **T2.2 ASAP retraining = ASAP's code, our loop.** ASAP's public repo has the model and the objective
+    (`ModelGraph.forward`: BCEWithLogits over nodes, one positive = the removed part; 90° random-axis rotation
+    augmentation on train) but no training loop, optimiser or learning rate. `src/disasm/models/asap_train.py`
+    loads `ModelGraph` by file path (fresh init) and trains with its own `forward` loss. Label mapping: y = 1 for the
+    part our forward disassembly removed at that state (a uniformly random planner success), else 0 — ASAP's
+    one-positive format. *Alt:* multi-label (all successes = 1). *Why:* "its own objective" means ASAP's format;
+    multi-label is what our GNN-BCE already does. Optimiser/lr/batch/epochs are tuned in run 05 under the shared budget.
+    Dry run (2 epochs, 50 train assemblies, Adam 1e-4, batch 16) ran: `experiments/2026-11-23_run04_t2_dryruns/`.
+12. **T2.3 PointNet trained end to end (not a pretrained encoder).** *Alt:* ASAP's released PointNet as a frozen
+    encoder. *Why:* (a) ASAP's pretraining set is built from the same Fusion 360 / ATA assemblies, so it may contain
+    v2 test assemblies, which would contaminate the fresh test set; (b) ~10k distinct parts across ~1,600+ assemblies
+    is enough for a small PointNet (≈ 0.1 M parameters total); (c) the encoder gets the same tuning budget as every
+    other variant. Inputs (`src/disasm/data/pointcloud.py`): 1,024 area-weighted surface samples + face normals,
+    part-local translation (centred on the sample mean), assembly-frame axes, assembly unit scale, seeded by
+    crc32(assembly/part) + seed. Forward/backward on 32 train states ran (`.../t2_dryruns/results.json`).
