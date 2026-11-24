@@ -16,7 +16,7 @@ cd "$PROJ" || { echo "Project folder missing: $PROJ"; exit 1; }
 mkdir -p logs/overnight "$RUN_DIR"
 
 # Only one runner at a time (run 01 accidentally started three)
-exec 9>logs/runner.lock
+exec 9>"${RUNNER_LOCK:-logs/runner.lock}"
 flock -n 9 || { echo "Another runner is already running. Stop it first: pkill -f run_overnight.sh"; exit 1; }
 
 # Deadline: "HH:MM" = the next occurrence of that time; "YYYY-MM-DD HH:MM" = that exact time (multi-day runs)

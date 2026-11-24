@@ -142,3 +142,28 @@ be resumable.
   pip builds or GPU jobs at the same time. Schedule those between timed stages.
 - **Seeded robot sampling.** Every planner query draws its robot surface samples
   from a generator seeded by the query seed, so the same query is reproducible.
+
+## Campaign rules (added 2026-11-24; the campaign runs until 2026-12-13)
+- **The v2 test set is evaluated exactly once**, in campaign Phase 3, after
+  `docs/PREREG_addendum.md` and `configs/final_frozen.yaml` are committed. The
+  marker `data/splits/.v2_test_evaluated` is written at the first read of test
+  labels. After that, nothing may be trained, tuned or selected for the reported
+  comparison; later work (paper, failure analysis, elk) only reads saved outputs
+  or uses non-test data.
+- **Exploratory variants** (developed after `docs/PREREG_run05.md` was committed)
+  may enter the test only through the addendum, labelled "post-registration,
+  exploratory". The registered comparisons and the §7 decision rule never change.
+- **Independent auditor:** after every phase, start a subagent (the Agent tool)
+  whose only instructions are `prompts/audit.md` plus the phase name and the
+  report/run paths. Never pass it your own conclusions or summaries. Save its
+  output in `reports/campaign/AUDITS/`. Fix every BLOCKER/MAJOR finding and re-audit
+  before the phase counts as done.
+- **References and claims:** never cite a paper you have not verified exists
+  (check it with WebSearch/WebFetch). Never write "state of the art", "beats" or
+  "significant" unless the logged numbers and the pre-registered rule support it.
+- **Git:** the campaign branch is pushed after every step. In Phase 5 only, merge
+  it into `main` with a normal merge (`git switch main && git merge --no-ff <branch>`),
+  then push `main`. Never force-push or rewrite history on any branch.
+- **Tools without sudo:** LaTeX via `tectonic` and video via `ffmpeg`, both from
+  conda-forge in a conda env named `paper`. Anything needing sudo goes in
+  `reports/campaign/NEEDS_AARON.md`.
