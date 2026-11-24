@@ -1,0 +1,110 @@
+% CMPE 258 final report. IEEE conference format (IEEEtran), compiled with tectonic (conda env `paper`).
+% Every number in this file must come from a logged run; the source of each table/figure is given in a comment.
+\documentclass[conference]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+
+\newcommand{\videourl}{VIDEO-LINK-PLACEHOLDER} % NEEDS_AARON: replace with the YouTube/Drive link
+\newcommand{\repourl}{https://github.com/AaronChandler976/curved-path-puzzle-solver}
+
+\begin{document}
+\title{Cost-Aware Query Ordering for Assembly-by-Disassembly\\with a Tight-Clearance SE(3) Planner}
+\author{\IEEEauthorblockN{Aaron Chandler}
+\IEEEauthorblockA{CMPE 258 Deep Learning, San Jos\'e State University\\
+Code: \href{\repourl}{\texttt{\repourl}} \quad Video: \href{\videourl}{\texttt{\videourl}}}}
+\maketitle
+
+\begin{abstract}
+% 150--250 words, with the key test numbers from reports/final_eval/ (filled in Phase 5).
+ABSTRACT-PENDING-FINAL-EVAL
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+INTRO-PENDING
+
+\noindent\textbf{Contributions.}
+\begin{itemize}
+\item CONTRIB-PENDING
+\end{itemize}
+
+\section{Related Work}
+\label{sec:related}
+RELATED-PENDING
+
+\section{Method}
+\label{sec:method}
+\subsection{Problem: assembly-by-disassembly with expensive queries}
+An assembly is a set of rigid parts $\mathcal{P}$ in their assembled poses. A state $S\subseteq\mathcal{P}$ is the set
+of parts still present. At each state, assembly-by-disassembly (AbD)~\cite{tian2022ata} looks for one part $i\in S$
+that the motion planner can move out of the others' way; the part is removed and the search continues on
+$S\setminus\{i\}$, so the reversed sequence is an assembly plan. Each test (a \emph{query}) is expensive: our oracle
+returns \textsc{success} with a collision-free SE(3) path or \textsc{unsolved} when its budget $T$ runs out. Because a
+sampling planner cannot prove that a part is stuck, an unsolved query is a right-censored observation of the time the
+planner would have needed, not an infeasibility label. The cost of a state under a query order $\pi$ is
+\begin{equation}
+C(\pi;S)=\sum_{k=1}^{n} t_{\pi_k}\prod_{j<k}\bigl(1-y_{\pi_j}\bigr),
+\label{eq:cost}
+\end{equation}
+the planner time spent until the first success ($y_i\in\{0,1\}$ success, $t_i$ query time). The ranker's job is to
+choose $\pi$ so that the total over all visited states is small.
+
+\subsection{Oracle: straight-pull pre-check, then CMG-RRT}
+The oracle (``oracle v2'') tests one moving part against the union of the remaining parts as a single static
+obstacle. Collision is decided with an exact per-part signed distance field (mesh distance with a winding-number
+sign); the union's SDF is the minimum of the parts' SDFs, and penetration below a contact tolerance
+$\varepsilon=0.005$ (unit frame) counts as contact. Stage~1 sweeps the part straight along each candidate escape
+direction, certified at a step of at most $\varepsilon/2$. If no straight pull is free, stage~2 runs
+CMG-RRT~\cite{livnat_cmgrrt}, a tight-clearance planner that follows the contact manifold with rotations, unchanged
+except for our collision adapter. Every success is re-validated edge by edge at step $\le\varepsilon/2$. The query
+cost is the planner wall-clock time of both stages; the budget is $T=30$\,s.
+
+\subsection{Ranker: GNN with a censoring-aware survival head}
+Each state is a contact graph: nodes are present parts, directed edges join parts in contact. Node features (18) are
+log volume, area, bounding-box extents, position relative to the sub-assembly centre and its norm, contact count and
+fraction, a 6-bin contact-normal histogram and the number of present parts; edge features (5) are the mean
+``away'' direction, contact fraction and contact area. The encoder is a residual GINE network~\cite{hu2020pretrain}
+with LayerNorm. The head predicts, for $K=8$ log-spaced time bins $e_1<\dots<e_K=T$, the discrete hazard
+$h_{ik}=\sigma(z_{ik})$ of part $i$ succeeding in bin $k$~\cite{gensheimer2019}. With $b_i$ the bin of an observed
+success and $c_i$ the censoring time of an unsolved query, the loss is
+\begin{equation}
+\mathcal{L}_{\text{surv}}=-\sum_{i:\,y_i=1}\Bigl[\sum_{j<b_i}\log(1-h_{ij})+\log h_{ib_i}\Bigr]
+-\sum_{i:\,y_i=0}\sum_{j:\,e_j\le c_i}\log(1-h_{ij}).
+\end{equation}
+From the survival curve $S_{ik}=\prod_{j\le k}(1-h_{ij})$ we read $p_i=1-S_{iK}$ (success within $T$) and the expected
+query cost $c_i=\mathbb{E}[\min(t_i,T)]=\sum_k w_k (S_{i,k-1}+S_{ik})/2$. Parts are queried in descending $p_i/c_i$,
+which minimises the expected cost of finding the first success among independent tests~\cite{simon1975}.
+
+\subsection{Tail-aware objective}
+Replay totals are dominated by a few states in which unsolved queries are tried before the first success. The
+tail-aware variant adds the replay cost~(\ref{eq:cost}) of the model's own order, made differentiable with the
+NeuralSort relaxation~\cite{grover2019neuralsort}: with scores $s_i=\log p_i-\log c_i$ and the soft permutation
+$\hat P$, $\tilde y=\hat P y$, $\tilde t=\hat P t$ and
+$\mathcal{L}=\mathcal{L}_{\text{surv}}+\lambda\,\overline{\sum_k \tilde t_k\prod_{j<k}(1-\tilde y_j)}/T$
+($\tau=0.1$, $\lambda\in\{0.1,1\}$).
+
+\subsection{Data: valid states from known feasible disassemblies}
+DATA-PENDING
+
+\section{Experiments}
+\label{sec:exp}
+EXP-PENDING
+
+\section{Failure Analysis, Negative Results and Limitations}
+\label{sec:fail}
+FAIL-PENDING
+
+\section{Conclusion and Future Work}
+\label{sec:concl}
+CONCL-PENDING
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+\end{document}
