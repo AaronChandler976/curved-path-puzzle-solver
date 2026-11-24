@@ -51,7 +51,9 @@ def _run(job):
             r = query_v2(_ASM[d], set(job["removed"]), job["part"], job["timeout_s"], job["seed"], _CFG["workdir"],
                          eps=job.get("eps") or 0.005, always_cmgrrt=job.get("always_cmgrrt", True),
                          save_path=job.get("save_path", True), max_iterations=_CFG.get("max_iterations"),
-                         allowance=job.get("allowance"))
+                         allowance=job.get("allowance"),
+                         **({"fix": tuple(job["fix"])} if job.get("fix") is not None else {}),
+                         **({"margin": job["margin"]} if job.get("margin") is not None else {}))
         else:
             r = query(_ASM[d], set(job["removed"]), job["part"], job["timeout_s"], job["seed"],
                       _CFG["workdir"], device=_CFG.get("device", "cpu"),

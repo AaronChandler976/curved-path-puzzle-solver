@@ -105,6 +105,10 @@ def main():
     ap.add_argument("--detector", default="learned", choices=["learned", "exact"],
                     help="exact = run 02 exact SDF of 0.obj (src/disasm/oracle/exact_sdf.py), same planner")
     ap.add_argument("--run-dir", required=True)
+    ap.add_argument("--iterations", type=int, default=None, help="override test_list.json iterations (run 04 T9 elk)")
+    ap.add_argument("--idle-wait", type=float, default=0.0, help="s of non-busy before planning (run 04: 300)")
+    ap.add_argument("--no-guard", action="store_true", help="no idle sampler (pre-run-04 behaviour)")
+    ap.add_argument("--unseeded-samples", action="store_true", help="library behaviour: unseeded robot samples")
     args = ap.parse_args()
     from disasm.util.runlog import log_load
     from disasm.util.slots import acquire_slot
@@ -118,8 +122,18 @@ def main():
         logf.write(line + "\n"); logf.flush()
 
     slot = acquire_slot(tag=f"repro_{tag}")
+    guard = None
+    if not args.no_guard:   # run 04: single long timed run -> busy samples logged throughout
+        from disasm.util.idle_guard import IdleSampler, IdleClient
+        gdir = os.path.join(args.run_dir, f"guard_{tag}")
+        guard = IdleSampler(gdir, tag=tag).start()
+        if args.idle_wait > 0:
+            log(f"waiting for {args.idle_wait:.0f} s non-busy")
+            guard.wait_idle(args.idle_wait, log=log)
     log_load(args.run_dir, f"start {tag}")
     cfg = json.load(open(TEST_LIST))
+    if args.iterations:
+        cfg["iterations"] = args.iterations
     ex = os.path.join(EX_ROOT, args.example)
     props = json.load(open(os.path.join(ex, "properties.json")))
     sampling = props.get("sampling", cfg["sampling"])
@@ -162,13 +176,16 @@ def main():
     else:
         cd = CollisionDetector(cfg["sdf-N"], cfg["sdf-H"], dev, threshold, eta, abs(threshold))
     cd.set_robot(os.path.join(ex, "1.obj"))
-    cd.generate_robot_sampling(sampling)
+    from disasm.oracle.cmgrrt import robot_sample_seed, seeded_surface_sampling
+    with seeded_surface_sampling(None if args.unseeded_samples else robot_sample_seed(args.seed)):
+        cd.generate_robot_sampling(sampling)
     if args.detector == "learned":
         cd.set_obstacles(pth, q1)
     start_sdf = float(cd.distance_between_objects(qs))
     goal_sdf = float(cd.distance_between_objects(qe))
     setup_s = time.time() - t_s
     rrt = RRT(cd, q1, qs, qe)
+    t_plan0 = time.time()
     log(f"plan {args.example} seed {args.seed} eta {eta} thr {threshold} steps {steps} sampling {sampling} "
         f"iters {cfg['iterations']} cap {args.cap_min} min device {device}; start_sdf {start_sdf:.5f} "
         f"goal_sdf {goal_sdf:.5f}")
@@ -185,17 +202,41 @@ def main():
     path = rrt.get_path() if solved else []
     if solved:
         json.dump([p.to_numpy().tolist() for p in path], open(os.path.join(args.run_dir, f"{tag}_path.json"), "w"))
+    t_plan1 = time.time()
     stop = "solved" if solved else ("iterations" if idx > cfg["iterations"] else "wall_cap")
+    busy = {}
+    if guard is not None:
+        import time as _t
+        _t.sleep(6)
+        bf, nb = IdleClient(guard.run_dir).busy_frac(t_plan0, t_plan1)
+        busy = {"busy_frac": bf, "busy_samples": nb, "confounded": bf > 0.05, "guard_dir": guard.run_dir}
+    fine = None
+    if solved and args.detector == "exact":   # run 04: fine re-check of the path (exact SDF, step <= |thr|/2)
+        from disasm.oracle.path_validate import validate_path
+        S = np.asarray(cd.robot["sampling"], dtype=np.float64)
+        # obstacle frame q1: express the robot poses relative to q1 (Aq2 = inv(A(q1)) A(q2)) -> map samples by q1^-1 q2
+        Ainv = np.linalg.inv(q1.to_matrix())
+        rel = []
+        from scipy.spatial.transform import Rotation as Rr
+        for p_ in path:
+            M = Ainv @ p_.to_matrix()
+            qx = Rr.from_matrix(M[:3, :3]).as_quat()
+            rel.append([*M[:3, 3], qx[3], qx[0], qx[1], qx[2]])
+        v = validate_path(cd.obstacles["sdf"], S, rel, abs(threshold))
+        fine = {"valid": v["valid"], "n_bad": v["n_bad"], "d_min": v["d_min"]}
     res = {"example": args.example, "seed": args.seed, "success": solved, "stop": stop,
            "iterations": idx - 1 if solved else idx - 1, "upstream_idx_counter": idx, "planner_wall_s": wall,
            "setup_s": setup_s, "start_sdf": start_sdf, "goal_sdf": goal_sdf, "tree_nodes": rrt.tree.number_of_nodes(),
            "path_nodes": len(path), "eta": eta, "threshold": threshold, "steps": steps, "sampling": sampling,
            "max_iterations": cfg["iterations"], "cap_min": args.cap_min, "device": device, "sdf": pth,
-           "sdf_mesh": args.sdf_mesh, "detector": args.detector, "load_info": os.path.join(args.run_dir, "load_info.txt")}
+           "sdf_mesh": args.sdf_mesh, "detector": args.detector, "load_info": os.path.join(args.run_dir, "load_info.txt"),
+           "seeded_samples": not args.unseeded_samples, "fine_path_check": fine, **busy}
     log("RESULT " + json.dumps(res))
     with open(os.path.join(args.run_dir, "results.jsonl"), "a") as f:
         f.write(json.dumps(res) + "\n")
     log_load(args.run_dir, f"end {tag}")
+    if guard is not None:
+        guard.stop()
     slot.release()
 
 

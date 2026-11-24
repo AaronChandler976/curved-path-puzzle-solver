@@ -68,3 +68,19 @@ Each entry: choice / alternatives / why.
     nothing of ours running (`experiments/2026-11-23_run04_idle_probe/`: busy for the first ~75 s, then
     0.05–0.1 cores), and relaunched at ~16:50 when it was quiet. The aborted attempt is kept unchanged in
     `experiments/2026-11-23_run04_live_rerun_aborted1/` (10 runs, all `confounded`), and is not used in any table.
+14. **T4.2 diagnosis attempt 1 discarded (code bug, not data).** A misplaced edit in `ExactUnionSDF.__init__` (the
+    margin change) made every job fail with `AttributeError: n_exact`; no planner result was produced. Fixed, tests
+    re-run (25 passed, `experiments/2026-11-23_run04_pytest_t4b/`), relaunched. The failed folder is kept as
+    `experiments/2026-11-23_run04_diagnose_misses_err1/`.
+15. **T4.4 attempt 1 stopped at 1,063/1,872 jobs: path-file collision.** The three configs of one query used one work
+    dir, and the path file name has no config in it, so a recheck could read another config's path (one read a
+    half-written file). Planner outcomes were unaffected, but the independent recheck (part of the gate) could not be
+    trusted. Relaunched with per-config work dirs; attempt 1 is kept in `..._oracle_validation_aborted1/` and not used.
+    The same collision can affect live runs (same seed across methods): `live_abd.py` now uses per-method work dirs,
+    and the caveat is stated in `reports/run04/oracle_v2.md` (T4.1 live rows).
+16. **T4 variants v2a / v2b.** T4.1 showed that 18.5% of v1 successes dip below −ε between valid tree nodes, by under
+    10% of ε. v2a = pre-check → CMG-RRT, with fine confirmation of goal edges and lazy fine validation of paths
+    (invalid edges are removed from the tree and the search continues). v2b = v2a + a planning margin of 0.1ε (nodes
+    must stay above −0.9ε; checks stay at ε; obstacle parts already touched deeper at the start get exactly enough
+    relief to keep the start valid). This is a collision-representation change only (CLAUDE.md rule 2). Both are
+    measured on the T4.4 validation set; the one adopted is recorded in #17.

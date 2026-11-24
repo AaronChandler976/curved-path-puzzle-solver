@@ -25,9 +25,14 @@ def _box(lo, hi):
     return m
 
 
-def _peg_scene(tmp_path, aid="t_peg"):
-    from disasm.oracle import cmgrrt
+_SDFS = {}
+
+
+def _peg_scene(tmp_path, aid="t_peg", monkeypatch=None):
+    from disasm.oracle import cmgrrt, exact_sdf
     from disasm.oracle.exact_sdf import PartSDF
+    if monkeypatch is not None:     # never build/cache test SDFs under data/ even if the adapter's cache is cleared
+        monkeypatch.setattr(exact_sdf, "part_sdf_cached", lambda asm, i, *a, **k: (_SDFS[(asm.id, int(i))], 0.0, True))
     c = 0.002                                   # clearance < eps
     peg = _box([-0.1, -0.1, 0.0], [0.1, 0.1, 0.6])
     walls = trimesh.util.concatenate([
@@ -40,14 +45,15 @@ def _peg_scene(tmp_path, aid="t_peg"):
     asm = cmgrrt.assembly_from_meshes(aid, {0: walls, 1: peg})
     cmgrrt.contact_graph(asm, cache_dir=str(tmp_path))
     for p, m in asm.meshes.items():
-        cmgrrt._PART_SDF[(aid, p)] = PartSDF(np.asarray(m.vertices), np.asarray(m.faces), name=f"{aid}/{p}",
-                                             sign_mode="winding_number")
+        _SDFS[(aid, p)] = PartSDF(np.asarray(m.vertices), np.asarray(m.faces), name=f"{aid}/{p}",
+                                  sign_mode="winding_number")
+        cmgrrt._PART_SDF[(aid, p)] = _SDFS[(aid, p)]
     return asm
 
 
-def test_precheck_solves_peg_at_root(tmp_path):
+def test_precheck_solves_peg_at_root(tmp_path, monkeypatch):
     from disasm.oracle.oracle_v2 import query_v2
-    asm = _peg_scene(tmp_path)
+    asm = _peg_scene(tmp_path, monkeypatch=monkeypatch)
     r = query_v2(asm, set(), 1, 5.0, seed=0, workdir=str(tmp_path), eps=EPS, always_cmgrrt=False, save_path=False)
     assert r["error"] is None, r.get("traceback")
     assert r["start_valid"]
@@ -57,9 +63,9 @@ def test_precheck_solves_peg_at_root(tmp_path):
     assert r["cmgrrt_ran"] is False and r["time_s"] == r["precheck_time_s"]
 
 
-def test_root_fix_alone_solves_peg(tmp_path):
+def test_root_fix_alone_solves_peg(tmp_path, monkeypatch):
     from disasm.oracle.cmgrrt import query
-    asm = _peg_scene(tmp_path, "t_peg2")
+    asm = _peg_scene(tmp_path, "t_peg2", monkeypatch)
     r = query(asm, set(), 1, 5.0, seed=0, workdir=str(tmp_path), detector="exact", eps=EPS, fix=("root",),
               save_path=False)
     assert r["error"] is None, r.get("traceback")
@@ -88,3 +94,13 @@ def test_fine_goal_edge_catches_thin_wall(tmp_path):
     S = np.asarray(cd.robot["sampling"], dtype=np.float64)
     r = check_edge(union, S, qa.to_numpy(), qb.to_numpy(), EPS)
     assert not r["valid"] and r["d_fail"] < -EPS                   # fine: hits it
+
+
+def test_margin_keeps_start_valid_and_solves(tmp_path, monkeypatch):
+    from disasm.oracle.oracle_v2 import query_v2
+    asm = _peg_scene(tmp_path, "t_peg3", monkeypatch)
+    r = query_v2(asm, set(), 1, 5.0, seed=0, workdir=str(tmp_path), eps=EPS, always_cmgrrt=True, save_path=False,
+                 margin=0.0005, max_iterations=3)
+    assert r["error"] is None, r.get("traceback")
+    assert r["start_valid"] and r["precheck_free"] and r["outcome"] == "success"
+    assert r["cmgrrt_ran"] and r["margin"] == 0.0005

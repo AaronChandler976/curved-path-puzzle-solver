@@ -343,7 +343,8 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
           device: str = "cpu", params=None, max_iterations: int | None = None,
           sdf_device: str = "cuda", save_path: bool = True, detector: str = "learned",
           eps: float | None = None, seeded_samples: bool = True, precheck: bool = False,
-          cmgrrt_if_free: bool = True, fix: tuple = (), allowance: dict | None = None) -> dict:
+          cmgrrt_if_free: bool = True, fix: tuple = (), allowance: dict | None = None,
+          margin: float = 0.0) -> dict:
     """Can ``part`` leave the sub-assembly (all parts minus ``removed``)? One CMG-RRT query.
 
     Run 04 options (exact detector only; default = the v1 adapter, unchanged):
@@ -359,6 +360,9 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
       "validate": a found path is validated edge by edge at step <= eps/2; invalid edges are removed from the tree
               and the search continues (lazy validation) until a valid path or the budget.
       The library's tree growth (RRT.step, extend, retract, contact handling) is untouched.
+    - ``margin`` (run 04 variant v2b): CMG-RRT plans on the union SDF minus ``margin`` (nodes need min SDF >= -(eps -
+      margin)), while the pre-check and every fine check use the true union at eps. An obstacle part the robot already
+      touches deeper than eps - margin at the start pose gets exactly enough relief to keep the start valid.
 
     Returns {outcome: "success"|"unsolved", time_s, iterations, goal_pose, escape_dir,
     n_goal_candidates_tried, path_file, error, ...diagnostics}. time_s is planner wall time
@@ -408,6 +412,14 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
             out["sdf_p95_err"] = sdf_stats.get("valid_p95_abs_err_near_surface")
             out["sdf_path"] = sdf
 
+        check_union = union if detector == "exact" else None
+        if margin and detector == "exact":
+            S0 = np.asarray(cd.robot["sampling"], dtype=np.float64)
+            pm = union.per_part_min(S0)                     # start pose = identity
+            relief = np.maximum(0.0, margin + params.threshold - pm)   # margin - eps - s_k where s_k < margin - eps
+            cd.obstacles["sdf"] = union.with_margin(margin, relief)
+            out["margin"] = margin
+            out["margin_relief_parts"] = int((relief > 0).sum())
         D = asm.bbox_diag + GOAL_MARGIN
         cands = candidate_directions(asm, part, present)
         q0 = SE3()
@@ -422,7 +434,7 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
             t_pc = time.time()
             first = None
             for name, v in cands:
-                r = sweep_direction(union, S, np.asarray(v, dtype=np.float64), D, -params.threshold)
+                r = sweep_direction(check_union, S, np.asarray(v, dtype=np.float64), D, -params.threshold)
                 pre_free[name] = bool(r["free"])
                 if r["free"]:
                     first = name
@@ -440,7 +452,7 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
                 out["path_file_precheck"] = pf
             if first is not None and not cmgrrt_if_free:
                 out["cmgrrt_ran"] = False
-                out["start_min_sdf"] = float(union.eval_np(S).min())
+                out["start_min_sdf"] = float(check_union.eval_np(S).min())
                 out["start_valid"] = bool(out["start_min_sdf"] >= params.threshold)
                 return out
         out["cmgrrt_ran"] = True
@@ -476,7 +488,7 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
         def fine_ok(qa, qb):
             nonlocal t_fine
             t1 = time.time()
-            ok = check_edge(union, S, qa.to_numpy(), qb.to_numpy(), eps_, r_max=r_max)["valid"]
+            ok = check_edge(check_union, S, qa.to_numpy(), qb.to_numpy(), eps_, r_max=r_max)["valid"]
             t_fine += time.time() - t1
             return ok
 
@@ -516,7 +528,7 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
                 rrt.q2_end = goals[win]
                 path = rrt.get_path()
                 t1 = time.time()
-                v = validate_path(union, S, [p.to_numpy() for p in path], eps_) if path else {"valid": False, "bad_edges": []}
+                v = validate_path(check_union, S, [p.to_numpy() for p in path], eps_) if path else {"valid": False, "bad_edges": []}
                 t_fine += time.time() - t1
                 if not v["valid"]:
                     n_path_rej += 1

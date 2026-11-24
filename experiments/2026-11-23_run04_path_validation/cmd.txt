@@ -1,0 +1,1 @@
+scripts/validate_paths.py --outdir experiments/2026-11-23_run04_path_validation --labels data/labels/pilot_v1/labels.jsonl --live experiments/2026-11-23_run03_live/results.jsonl --live experiments/2026-11-23_run04_live_rerun/results.jsonl

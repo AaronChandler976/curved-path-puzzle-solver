@@ -155,7 +155,7 @@ class PartSDF:
 class ExactUnionSDF:
     """Callable drop-in for CMG-RRT's ``obstacles['sdf']``: torch (N, 3) -> torch (N, 1), min over parts."""
 
-    def __init__(self, parts: list, band: float = DEFAULT_BAND, offsets=None):
+    def __init__(self, parts: list, band: float = DEFAULT_BAND, offsets=None, margin: float = 0.0):
         """offsets (run 04 T6 per-pair penetration allowance): one constant >= 0 per part, added to that part's SDF.
         With the planner threshold -eps, part k then collides only below -(eps + offset_k): an allowance of
         a_k = eps + offset_k for that pair. None = all zeros (every pair keeps eps)."""
@@ -163,9 +163,28 @@ class ExactUnionSDF:
         self.band = band
         self.offsets = np.zeros(len(self.parts)) if offsets is None else np.asarray(offsets, dtype=np.float64)
         assert len(self.offsets) == len(self.parts) and (self.offsets >= 0).all()
+        # run 04 planning margin: the returned value is min_k (d_k + offset_k) - margin (stricter by `margin`)
+        self.margin = float(margin)
         self.n_calls = 0
         self.n_points = 0
         self.n_exact = 0
+
+    def with_margin(self, margin: float, relief=None) -> "ExactUnionSDF":
+        """Same parts, value min_k (d_k + offset_k + relief_k) - margin (shares the PartSDF objects)."""
+        off = self.offsets + (0.0 if relief is None else np.asarray(relief, dtype=np.float64))
+        return ExactUnionSDF(self.parts, self.band, off, margin)
+
+    def per_part_min(self, P: np.ndarray) -> np.ndarray:
+        """min over points of each part's (d_k + offset_k) (no margin)."""
+        P = np.ascontiguousarray(P, dtype=np.float64)
+        out = []
+        for part, off in zip(self.parts, self.offsets):
+            lb = part.box_lower_bound(P)
+            near = lb <= self.band + off
+            v = lb.min() if not near.any() else min(lb[~near].min() if (~near).any() else np.inf,
+                                                     part.signed(P[near]).min())
+            out.append(float(v) + off)
+        return np.array(out)
 
     def eval_np(self, P: np.ndarray) -> np.ndarray:
         P = np.ascontiguousarray(P, dtype=np.float64)
@@ -181,6 +200,8 @@ class ExactUnionSDF:
             if off:
                 val = val + off
             np.minimum(out, val, out=out)
+        if self.margin:
+            out -= self.margin
         self.n_calls += 1
         self.n_points += len(P)
         return out

@@ -19,12 +19,13 @@ For labels (``always_cmgrrt=True``) CMG-RRT runs even when the pull clears. In l
 from __future__ import annotations
 
 FIX_V2 = ("fine_goal", "validate")
+MARGIN_V2 = 0.0          # set by the T4.4 decision (reports/run04/oracle_v2.md)
 
 LABEL_KEYS = ["precheck_free", "precheck_dir", "precheck_vec", "precheck_time_s", "precheck_dirs_checked",
               "cmgrrt_ran", "cmgrrt_outcome", "cmgrrt_time_s", "cmgrrt_iterations", "cmgrrt_escape_dir",
               "cmgrrt_path_valid", "cmgrrt_path_max_rot_deg", "n_goal_edges_rejected_fine", "n_paths_rejected_fine",
               "fine_check_s", "stage", "cmgrrt_only_outcome", "cmgrrt_only_time_s", "fix", "tree_hash",
-              "path_file_precheck"]
+              "path_file_precheck", "margin", "margin_relief_parts", "allowance_offsets", "start_min_sdf"]
 
 
 def combine(r: dict, always_cmgrrt: bool) -> dict:
@@ -55,9 +56,9 @@ def combine(r: dict, always_cmgrrt: bool) -> dict:
 
 
 def query_v2(asm, removed, part, T, seed, workdir, eps=0.005, always_cmgrrt=True, save_path=True,
-             max_iterations=None, fix=FIX_V2, allowance=None) -> dict:
+             max_iterations=None, fix=FIX_V2, allowance=None, margin=MARGIN_V2) -> dict:
     from disasm.oracle.cmgrrt import query
     r = query(asm, set(removed), part, T, seed, workdir, device="cpu", detector="exact", eps=eps,
               precheck=True, cmgrrt_if_free=always_cmgrrt, fix=tuple(fix), save_path=save_path,
-              max_iterations=max_iterations, allowance=allowance)
+              max_iterations=max_iterations, allowance=allowance, margin=margin)
     return combine(r, always_cmgrrt)

@@ -235,7 +235,9 @@ def main():
             "oracle": args.oracle, "seed_prefix": args.seed_prefix,
             "guard_dir": None if args.no_guard else os.path.abspath(args.outdir)}
     allow = json.load(open(args.allowance_file)) if args.allowance_file else {}
-    jobs = [{**base, "aid": a, "method": m, "attempt": 0, "allowance": allow.get(a)} for a in aids for m in methods
+    # per-method work dirs: the same query (same seed) under two methods must not overwrite each other's path file
+    jobs = [{**base, "aid": a, "method": m, "attempt": 0, "allowance": allow.get(a), "workdir": os.path.join(base["workdir"], m)}
+            for a in aids for m in methods
             if (a, m) not in attempts]
     print(f"{len(jobs)} (assembly, method) runs to do, {len(attempts)} done; workers {args.workers}", flush=True)
     P.pin_threads(1)
@@ -272,7 +274,8 @@ def main():
     run_all(jobs, "main")
     if guard is not None:
         for rnd in range(1, args.max_reruns + 1):
-            rj = [{**base, "aid": a, "method": m, "attempt": rnd, "allowance": allow.get(a)} for (a, m), atts in attempts.items()
+            rj = [{**base, "aid": a, "method": m, "attempt": rnd, "allowance": allow.get(a),
+                   "workdir": os.path.join(base["workdir"], m)} for (a, m), atts in attempts.items()
                   if a in aids and m in methods and len(atts) == rnd and all(x.get("confounded", True) for x in atts)]
             print(f"RERUN round {rnd}: {len(rj)} confounded runs", flush=True)
             if not rj:
