@@ -50,13 +50,14 @@ def _run(job):
             from disasm.oracle.oracle_v2 import query_v2
             r = query_v2(_ASM[d], set(job["removed"]), job["part"], job["timeout_s"], job["seed"], _CFG["workdir"],
                          eps=job.get("eps") or 0.005, always_cmgrrt=job.get("always_cmgrrt", True),
-                         save_path=job.get("save_path", True), max_iterations=_CFG.get("max_iterations"))
+                         save_path=job.get("save_path", True), max_iterations=_CFG.get("max_iterations"),
+                         allowance=job.get("allowance"))
         else:
             r = query(_ASM[d], set(job["removed"]), job["part"], job["timeout_s"], job["seed"],
                       _CFG["workdir"], device=_CFG.get("device", "cpu"),
                       max_iterations=_CFG.get("max_iterations"),
                       detector=job.get("detector", _CFG.get("detector", "learned")),
-                      eps=job.get("eps", _CFG.get("eps")))
+                      eps=job.get("eps", _CFG.get("eps")), allowance=job.get("allowance"))
         r["t_query_start"], r["t_query_end"] = t_q0, time.time()
     except Exception as e:  # noqa: BLE001
         r = {"outcome": "unsolved", "error": f"{type(e).__name__}: {e}", "traceback": traceback.format_exc(),

@@ -111,9 +111,10 @@ def _query(job, asm, removed, p, seed):
     if job.get("oracle", "v1") == "v2":
         from disasm.oracle.oracle_v2 import query_v2
         return query_v2(asm, set(removed), p, job["T"], seed, job["workdir"], eps=job["eps"], always_cmgrrt=False,
-                        save_path=job.get("save_paths", False))
+                        save_path=job.get("save_paths", False), allowance=job.get("allowance"))
     return query(asm, set(removed), p, job["T"], seed, job["workdir"], device="cpu",
-                 detector="exact", eps=job["eps"], save_path=job.get("save_paths", False))
+                 detector="exact", eps=job["eps"], save_path=job.get("save_paths", False),
+                 allowance=job.get("allowance"))
 
 
 def run_abd(job):
@@ -204,6 +205,7 @@ def main():
     ap.add_argument("--idle-wait", type=float, default=300.0, help="s of non-busy before the first query (0 = none)")
     ap.add_argument("--max-reruns", type=int, default=2)
     ap.add_argument("--no-guard", action="store_true", help="DEV ONLY: no idle guard")
+    ap.add_argument("--allowance-file", default="", help="json {assembly_id: {pair: allowance}} (run 04 T6)")
     args = ap.parse_args()
     from disasm.oracle import pool as P
     from disasm.util.runlog import log_load
@@ -232,7 +234,9 @@ def main():
     base = {"T": args.T, "eps": args.eps, "workdir": os.path.join(args.outdir, "work"), "save_paths": args.save_paths,
             "oracle": args.oracle, "seed_prefix": args.seed_prefix,
             "guard_dir": None if args.no_guard else os.path.abspath(args.outdir)}
-    jobs = [{**base, "aid": a, "method": m, "attempt": 0} for a in aids for m in methods if (a, m) not in attempts]
+    allow = json.load(open(args.allowance_file)) if args.allowance_file else {}
+    jobs = [{**base, "aid": a, "method": m, "attempt": 0, "allowance": allow.get(a)} for a in aids for m in methods
+            if (a, m) not in attempts]
     print(f"{len(jobs)} (assembly, method) runs to do, {len(attempts)} done; workers {args.workers}", flush=True)
     P.pin_threads(1)
     ex = ProcessPoolExecutor(args.workers, mp_context=mp.get_context("spawn"), initializer=_init,
@@ -268,7 +272,7 @@ def main():
     run_all(jobs, "main")
     if guard is not None:
         for rnd in range(1, args.max_reruns + 1):
-            rj = [{**base, "aid": a, "method": m, "attempt": rnd} for (a, m), atts in attempts.items()
+            rj = [{**base, "aid": a, "method": m, "attempt": rnd, "allowance": allow.get(a)} for (a, m), atts in attempts.items()
                   if a in aids and m in methods and len(atts) == rnd and all(x.get("confounded", True) for x in atts)]
             print(f"RERUN round {rnd}: {len(rj)} confounded runs", flush=True)
             if not rj:

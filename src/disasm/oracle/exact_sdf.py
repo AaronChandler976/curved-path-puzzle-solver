@@ -40,6 +40,7 @@ import numpy as np
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 CACHE = os.path.join(ROOT, "data", "processed", "exact_sdf_v1")
 DEFAULT_BAND = 0.1
+DEFAULT_EPS = 0.005      # contact tolerance of the oracle (run 02 DECISIONS #6-8)
 BARY_TOL = 1e-6
 
 
@@ -154,9 +155,14 @@ class PartSDF:
 class ExactUnionSDF:
     """Callable drop-in for CMG-RRT's ``obstacles['sdf']``: torch (N, 3) -> torch (N, 1), min over parts."""
 
-    def __init__(self, parts: list, band: float = DEFAULT_BAND):
+    def __init__(self, parts: list, band: float = DEFAULT_BAND, offsets=None):
+        """offsets (run 04 T6 per-pair penetration allowance): one constant >= 0 per part, added to that part's SDF.
+        With the planner threshold -eps, part k then collides only below -(eps + offset_k): an allowance of
+        a_k = eps + offset_k for that pair. None = all zeros (every pair keeps eps)."""
         self.parts = list(parts)
         self.band = band
+        self.offsets = np.zeros(len(self.parts)) if offsets is None else np.asarray(offsets, dtype=np.float64)
+        assert len(self.offsets) == len(self.parts) and (self.offsets >= 0).all()
         self.n_calls = 0
         self.n_points = 0
         self.n_exact = 0
@@ -164,14 +170,16 @@ class ExactUnionSDF:
     def eval_np(self, P: np.ndarray) -> np.ndarray:
         P = np.ascontiguousarray(P, dtype=np.float64)
         out = np.full(len(P), np.inf)
-        for part in self.parts:
+        for part, off in zip(self.parts, self.offsets):
             lb = part.box_lower_bound(P)
-            near = lb <= self.band
+            near = lb <= self.band + off
             val = lb
             if near.any():
                 val = lb.copy()
                 val[near] = part.signed(P[near])
                 self.n_exact += int(near.sum())
+            if off:
+                val = val + off
             np.minimum(out, val, out=out)
         self.n_calls += 1
         self.n_points += len(P)

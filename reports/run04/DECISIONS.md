@@ -57,7 +57,14 @@ Each entry: choice / alternatives / why.
 12. **T2.3 PointNet trained end to end (not a pretrained encoder).** *Alt:* ASAP's released PointNet as a frozen
     encoder. *Why:* (a) ASAP's pretraining set is built from the same Fusion 360 / ATA assemblies, so it may contain
     v2 test assemblies, which would contaminate the fresh test set; (b) ~10k distinct parts across ~1,600+ assemblies
-    is enough for a small PointNet (≈ 0.1 M parameters total); (c) the encoder gets the same tuning budget as every
+    is enough for a small PointNet (the PointNet+GNN model has 61k parameters); (c) the encoder gets the same tuning budget as every
     other variant. Inputs (`src/disasm/data/pointcloud.py`): 1,024 area-weighted surface samples + face normals,
     part-local translation (centred on the sample mean), assembly-frame axes, assembly unit scale, seeded by
     crc32(assembly/part) + seed. Forward/backward on 32 train states ran (`.../t2_dryruns/results.json`).
+13. **T3 attempt 1 aborted after 10 runs (all confounded); relaunched in a fresh folder.** At 16:40 desktop apps
+    (Firefox media decoder "RDD Process", Firefox content process, Chrome) used 0.5–0.72 outside cores once our 10
+    workers were loaded, so every query was busy (busy_frac 1.0). Re-running under those conditions would only have
+    produced more confounded attempts. I stopped the process group (slots verified free), probed the desktop with
+    nothing of ours running (`experiments/2026-11-23_run04_idle_probe/`: busy for the first ~75 s, then
+    0.05–0.1 cores), and relaunched at ~16:50 when it was quiet. The aborted attempt is kept unchanged in
+    `experiments/2026-11-23_run04_live_rerun_aborted1/` (10 runs, all `confounded`), and is not used in any table.

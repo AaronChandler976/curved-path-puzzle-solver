@@ -313,9 +313,11 @@ def linear_precheck(asm: Assembly, removed: set, part: int, seed: int, workdir: 
 _PART_SDF = {}   # per-process cache: (assembly id, part) -> exact PartSDF
 
 
-def exact_union(asm: Assembly, obstacle_ids) -> tuple:
+def exact_union(asm: Assembly, obstacle_ids, moving: int | None = None, allowance: dict | None = None) -> tuple:
     """Exact union SDF of the given parts (run 02 oracle). Returns (union, setup_s_this_call, per-part setup
-    times from their first construction)."""
+    times from their first construction). ``allowance`` (run 04 T6) = {"a-b": a_ab} for unordered pairs that
+    overlap in the assembled pose (a_ab = measured start penetration + eps, capped); obstacle part k gets offset
+    a_{moving,k} - eps, every other pair keeps eps."""
     from disasm.oracle.exact_sdf import ExactUnionSDF, part_sdf_cached
     t0 = time.time()
     parts, first = [], {}
@@ -327,14 +329,36 @@ def exact_union(asm: Assembly, obstacle_ids) -> tuple:
             _PART_SDF[k] = part_sdf_cached(asm, int(i))[0]
         parts.append(_PART_SDF[k])
         first[int(i)] = getattr(_PART_SDF[k], "first_setup_s", None)
-    return ExactUnionSDF(parts), time.time() - t0, first
+    offs = None
+    if allowance and moving is not None:
+        from disasm.oracle.exact_sdf import DEFAULT_EPS
+        offs = []
+        for i in sorted(obstacle_ids):
+            a = allowance.get(f"{min(moving, i)}-{max(moving, i)}")
+            offs.append(max(0.0, a - DEFAULT_EPS) if a is not None else 0.0)
+    return ExactUnionSDF(parts, offsets=offs), time.time() - t0, first
 
 
 def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: int, workdir: str,
           device: str = "cpu", params=None, max_iterations: int | None = None,
           sdf_device: str = "cuda", save_path: bool = True, detector: str = "learned",
-          eps: float | None = None, seeded_samples: bool = True) -> dict:
+          eps: float | None = None, seeded_samples: bool = True, precheck: bool = False,
+          cmgrrt_if_free: bool = True, fix: tuple = (), allowance: dict | None = None) -> dict:
     """Can ``part`` leave the sub-assembly (all parts minus ``removed``)? One CMG-RRT query.
+
+    Run 04 options (exact detector only; default = the v1 adapter, unchanged):
+    - ``precheck``: straight-pull sweep along every candidate direction (linear_precheck.sweep_direction, the same
+      robot samples and union SDF) right after setup; timed separately (``precheck_time_s``). With
+      ``cmgrrt_if_free=False`` CMG-RRT is skipped when a pull clears (live "pre-check -> CMG-RRT" oracle).
+    - ``fix`` (oracle v2 adapter fixes, reports/run04/oracle_v2.md):
+      "root": also test the START pose against every goal (v1 only tested newly added nodes); done with the fine
+              certified check; if ``precheck`` ran, its sweep is exactly this test and is reused;
+      "fine_goal": every goal connection the coarse library check accepts (n = dist/eta // 10, step 4 eps) is
+              confirmed with the fine certified check (path_validate.check_edge, step <= eps/2) before it counts;
+              a rejected goal edge is removed from the tree and the search continues;
+      "validate": a found path is validated edge by edge at step <= eps/2; invalid edges are removed from the tree
+              and the search continues (lazy validation) until a valid path or the budget.
+      The library's tree growth (RRT.step, extend, retract, contact handling) is untouched.
 
     Returns {outcome: "success"|"unsolved", time_s, iterations, goal_pose, escape_dir,
     n_goal_candidates_tried, path_file, error, ...diagnostics}. time_s is planner wall time
@@ -366,7 +390,8 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
         seed_all(seed)
         t_prep0 = time.time()
         if detector == "exact":
-            union, t_union, first = exact_union(asm, obst)
+            union, t_union, first = exact_union(asm, obst, moving=part, allowance=allowance)
+            out["allowance_offsets"] = union.offsets.tolist() if allowance else None
             cd = _setup_cd(asm, part, union, workdir, params, device, exact=True,
                            sample_seed=robot_sample_seed(seed) if seeded_samples else None)
             out["prep_s"] = time.time() - t_prep0
@@ -386,6 +411,40 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
         D = asm.bbox_diag + GOAL_MARGIN
         cands = candidate_directions(asm, part, present)
         q0 = SE3()
+        S = None
+        if precheck or fix:
+            if detector != "exact":
+                raise ValueError("precheck / fix need the exact detector")
+            S = np.ascontiguousarray(cd.robot["sampling"], dtype=np.float64)
+        pre_free = {}
+        if precheck:
+            from disasm.oracle.linear_precheck import sweep_direction
+            t_pc = time.time()
+            first = None
+            for name, v in cands:
+                r = sweep_direction(union, S, np.asarray(v, dtype=np.float64), D, -params.threshold)
+                pre_free[name] = bool(r["free"])
+                if r["free"]:
+                    first = name
+                    break          # first clearing direction in candidate order (blocked ones swept fully)
+            out["precheck_time_s"] = time.time() - t_pc
+            out["precheck_free"] = first is not None
+            out["precheck_dir"] = first
+            out["precheck_dirs_checked"] = len(pre_free)
+            if first is not None:
+                out["precheck_vec"] = np.asarray(dict(cands)[first]).tolist()
+            if first is not None and save_path:
+                g = (D * np.asarray(dict(cands)[first])).tolist() + [1.0, 0.0, 0.0, 0.0]
+                pf = os.path.join(workdir, f"path_{asm.id}_{obstacle_key(obst)}__{part}_s{seed}_pre.json")
+                json.dump({"scale": asm.scale, "path": [SE3().to_numpy().tolist(), g], "stage": "precheck"}, open(pf, "w"))
+                out["path_file_precheck"] = pf
+            if first is not None and not cmgrrt_if_free:
+                out["cmgrrt_ran"] = False
+                out["start_min_sdf"] = float(union.eval_np(S).min())
+                out["start_valid"] = bool(out["start_min_sdf"] >= params.threshold)
+                return out
+        out["cmgrrt_ran"] = True
+        out["fix"] = sorted(fix)
         out["start_min_sdf"] = float(cd.distance_between_objects(q0))
         out["start_valid"] = bool(out["start_min_sdf"] >= params.threshold)
         goals, names, dirs = [], [], []
@@ -407,31 +466,86 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
         _tp = threadpool_limits(1)       # contact-gradient KMeans inside extend(): 1 thread = reproducible (workers already use 1)
         rrt = RRT(cd, SE3(), q0, goals[0])
         it, win = 0, None
+        n_goal_rej = n_path_rej = 0
+        t_fine = 0.0
+        eps_ = -params.threshold
+        if fix:
+            from disasm.oracle.path_validate import check_edge, validate_path
+            r_max = float(np.linalg.norm(S, axis=1).max())
+
+        def fine_ok(qa, qb):
+            nonlocal t_fine
+            t1 = time.time()
+            ok = check_edge(union, S, qa.to_numpy(), qb.to_numpy(), eps_, r_max=r_max)["valid"]
+            t_fine += time.time() - t1
+            return ok
+
         t0 = time.time()
-        while True:
+        root_path = None
+        if "root" in fix:
+            # iteration 0: straight connection from the start pose to each goal, in candidate order
+            if precheck:
+                hit = next((gi for gi, n in enumerate(names) if pre_free.get(n)), None)
+            else:
+                hit = next((gi for gi, g in enumerate(goals) if fine_ok(q0, g)), None)
+            if hit is not None:
+                win = hit
+                root_path = [q0, goals[hit]]
+        while win is None:
             it += 1
             if rrt.step(params.eta, params.threshold, params.steps):
                 win = 0
-            elif rrt.last_edge is not None and len(rrt.last_edge) > 1:
+                if "fine_goal" in fix and not fine_ok(rrt.last_edge[-1], goals[0]):
+                    rrt.tree.remove_edge(rrt.last_edge[-1].to_tuple(), goals[0].to_tuple())
+                    n_goal_rej += 1
+                    win = None
+            if win is None and rrt.last_edge is not None and len(rrt.last_edge) > 1:
                 node = rrt.last_edge[-1]
                 for gi in range(1, len(goals)):
                     g = goals[gi]
                     if cd.is_edge_valid(node, g, n=int(node.distance(g) / params.eta) // 10,
                                         threshold=params.threshold):
+                        if "fine_goal" in fix and not fine_ok(node, g):
+                            n_goal_rej += 1
+                            continue
                         rrt.tree.add_edge(node.to_tuple(), g.to_tuple(), weight=g.distance(node))
                         rrt.q2_end = g
                         win = gi
                         break
+            if win is not None and "validate" in fix:
+                rrt.q2_end = goals[win]
+                path = rrt.get_path()
+                t1 = time.time()
+                v = validate_path(union, S, [p.to_numpy() for p in path], eps_) if path else {"valid": False, "bad_edges": []}
+                t_fine += time.time() - t1
+                if not v["valid"]:
+                    n_path_rej += 1
+                    for b in v["bad_edges"]:
+                        e = (path[b["edge"]].to_tuple(), path[b["edge"] + 1].to_tuple())
+                        if rrt.tree.has_edge(*e):
+                            rrt.tree.remove_edge(*e)
+                    if not path:     # goal reached from a node cut off from the root: drop that goal edge
+                        node = rrt.last_edge[-1]
+                        if rrt.tree.has_edge(node.to_tuple(), goals[win].to_tuple()):
+                            rrt.tree.remove_edge(node.to_tuple(), goals[win].to_tuple())
+                    win = None
+                    rrt.q2_end = goals[0]      # the library's own goal test inside RRT.step targets goals[0]
             el = time.time() - t0
             if win is not None or el > timeout_s or (max_iterations and it >= max_iterations):
                 break
+        out["n_goal_edges_rejected_fine"] = n_goal_rej
+        out["n_paths_rejected_fine"] = n_path_rej
+        out["fine_check_s"] = t_fine
+        out["solved_at_root"] = root_path is not None
         out["time_s"] = time.time() - t0
         _tp.restore_original_limits()
         out["iterations"] = it
         out["tree_nodes"] = rrt.tree.number_of_nodes()
         out["tree_hash"] = hashlib.sha1(np.round(np.array(sorted(rrt.tree.nodes)), 9).tobytes()).hexdigest()[:16]
         if win is not None:
-            path = [p.to_numpy().tolist() for p in rrt.get_path()]
+            if root_path is None:
+                rrt.q2_end = goals[win]
+            path = [p.to_numpy().tolist() for p in (root_path or rrt.get_path())]
             out["outcome"] = "success"
             out["goal_pose"] = goals[win].to_numpy().tolist()
             out["escape_dir"] = names[win]
