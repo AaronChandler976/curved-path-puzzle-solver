@@ -1,0 +1,1 @@
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/allowance_check.py --labels data/labels/pilot_v2_allowance_check/labels.jsonl --allowance experiments/2026-11-23_run04_t6_pool/allowance.json --outdir experiments/2026-11-23_run04_allowance_check2

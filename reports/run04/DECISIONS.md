@@ -87,3 +87,30 @@ Each entry: choice / alternatives / why.
 17. **Oracle v2 = v2a (no planning margin).** On the T4.4 validation set, v2a and v2b both give 0 invalid
     successes and 99.2% of the misses; v2b is no better on success (554 vs 555 of 624) and rejects more goal
     edges. The simpler variant is adopted: `oracle_v2.FIX_V2 = ("fine_goal", "validate")`, `MARGIN_V2 = 0`.
+18. **T6 allowance caps: absolute 0.03 (unit frame) AND relative 0.2 × the thinner part's smallest bbox extent.**
+    Per-pair penetration was measured with the oracle's exact part SDFs at vertices + 20,000 surface samples per
+    part (`experiments/2026-11-23_run04_penetration/`). Overlapping pairs (> ε): median 0.022, p75 0.040, p90 0.071;
+    relative to the thinner part's smallest extent: median 0.20, p75 0.47. *Alt:* an absolute cap only (0.05 would
+    recover 1,011 of 1,358). *Why:* many overlaps are a large fraction of a thin part's thickness. With a relative
+    cap of 0.2, a sample point allowed to sink in can never reach a part's mid-plane, which rules out passing
+    through it; the absolute cap 0.03 (≈ p65 of overlapping pairs) bounds the geometric error.
+    Result: 439 recovered (342 with 3–8 parts, 97 with 9–12), 919 excluded (566 absolute cap, 353 relative cap)
+    (`experiments/2026-11-23_run04_t6_pool/allowance_meta.json`).
+19. **T6 allowance rule: the query's own start depth + ε, not the dense pair measurement.** The first allowance check
+    (dense pen + ε as a fixed offset; `experiments/2026-11-23_run04_allowance_check/`) passed start validity,
+    non-overlapping pairs at the global ε and end-pose clearance on 928/928 paths. But 30 paths (10 of the 30
+    CMG-RRT-stage paths) went deeper into an overlapping partner than at the start, by up to 0.017: the dense offset
+    exceeded the start depth seen by the query's own samples, so the planner could squeeze in. Now each listed pair's
+    offset = max(0, −d_k(start)) on the planner's own samples (`cmgrrt.query`), i.e. "its measured start
+    penetration + ε" measured where it matters. Start validity and no-deepening then hold by construction; the
+    dense measurement only decides the caps. Re-validated on the same 50 assemblies (#20).
+20. **T6 labelling plan: label everything.** Cost pilot (110 assemblies, oracle v2, T = 30 s, idle guard;
+    `experiments/2026-11-23_run04_cost_pilot/estimate.txt`), in worker-seconds per assembly: v1 83 (11.3 queries),
+    fresh 9–12 683 (57.8), fresh allowance 276 (23.9; a 39/11 mix of 3–8 / 9–12 parts). Projection at 10 workers:
+    v1 1,328 → 3.1 h; clean 9–12 255 → 4.8 h; allowance 439 (342 × ≈ 161 + 97 × ≈ 683 worker-s; 161 solved from the pilot mix) → 3.4 h; total
+    ≈ 11.2 planner-hours, within the ~12 h budget. So all 694 fresh assemblies are labelled (the test set ≈ half
+    ≈ 340 ≥ 250) and all 1,328 v1 assemblies. Pilot labels are NOT reused in pilot_v2: the allowance rule changed
+    (#19), and relabelling keeps a single run with a single code version.
+21. **T6 pilot confounding.** 426/3,269 pilot queries were confounded (Firefox media decoding, 20:40–21:30), 89 still
+    after 2 re-runs (2.7%). The pilot is a cost estimate, not a label set, so this only adds noise to the
+    estimate. T7 has a < 1% gate and is launched overnight when the desktop is quiet.
