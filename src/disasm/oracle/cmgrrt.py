@@ -264,7 +264,7 @@ class seeded_surface_sampling:
         return False
 
 
-def _setup_cd(asm, part, sdf_path, workdir, params, device, exact=False, sample_seed=None):
+def _setup_cd(asm, part, sdf_path, workdir, params, device, exact=False, sample_seed=None, grad_dx=None):
     import torch
     from taucgl_rrt.cspace import SE3
     from taucgl_rrt.collision_detection import CollisionDetector
@@ -273,7 +273,7 @@ def _setup_cd(asm, part, sdf_path, workdir, params, device, exact=False, sample_
     asm.meshes[part].export(robot_obj)
     if exact:   # sdf_path is an ExactUnionSDF; library detector with only the collision model swapped
         from disasm.oracle.exact_sdf import make_detector
-        cd = make_detector(params, device, sdf_path, q1=SE3())
+        cd = make_detector(params, device, sdf_path, q1=SE3(), grad_dx=grad_dx)
     else:
         cd = CollisionDetector(params.sdf_N, params.sdf_H, torch.device(device), params.threshold,
                                params.eta, abs(params.threshold))
@@ -349,7 +349,7 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
           sdf_device: str = "cuda", save_path: bool = True, detector: str = "learned",
           eps: float | None = None, seeded_samples: bool = True, precheck: bool = False,
           cmgrrt_if_free: bool = True, fix: tuple = (), allowance: dict | None = None,
-          margin: float = 0.0) -> dict:
+          margin: float = 0.0, grad_dx: float | None = None) -> dict:
     """Can ``part`` leave the sub-assembly (all parts minus ``removed``)? One CMG-RRT query.
 
     Run 04 options (exact detector only; default = the v1 adapter, unchanged):
@@ -402,7 +402,8 @@ def query(assembly: Assembly, removed: set, part: int, timeout_s: float, seed: i
             union, t_union, first = exact_union(asm, obst, moving=part, allowance=allowance)
             out["allowance_offsets"] = union.offsets.tolist() if allowance else None
             cd = _setup_cd(asm, part, union, workdir, params, device, exact=True,
-                           sample_seed=robot_sample_seed(seed) if seeded_samples else None)
+                           sample_seed=robot_sample_seed(seed) if seeded_samples else None, grad_dx=grad_dx)
+            out["grad_dx"] = grad_dx
             out["prep_s"] = time.time() - t_prep0
             out["union_build_s"] = t_union
             out["part_setup_s_first"] = first     # one-time per-part setup (amortised over all queries)

@@ -11,7 +11,8 @@ import json
 
 import numpy as np
 
-CONFIGS = {"v1": None, "v2a": 0.0, "v2b": 0.0005}
+CONFIGS = {"v1": None, "v2a": 0.0, "v2b": 0.0005, "v2h": 0.0}
+GRAD_DX = {"v2h": 0.005}      # run 04 T5 hybrid: exact decisions, guidance gradient smoothed over +-0.005
 _ASM = {}
 
 
@@ -32,7 +33,7 @@ def val_job(job: dict) -> dict:
         r = query(asm, removed, part, job["T"], seed, job["workdir"], detector="exact", eps=0.005, save_path=True)
     else:
         r = query_v2(asm, removed, part, job["T"], seed, job["workdir"], eps=0.005, always_cmgrrt=True,
-                     save_path=True, margin=CONFIGS[cfg])
+                     save_path=True, margin=CONFIGS[cfg], grad_dx=GRAD_DX.get(cfg))
     keep = ["outcome", "time_s", "iterations", "error", "start_valid", "start_min_sdf", "escape_dir", "path_file",
             "precheck_free", "precheck_dir", "precheck_time_s", "cmgrrt_outcome", "cmgrrt_time_s", "cmgrrt_iterations",
             "n_goal_edges_rejected_fine", "n_paths_rejected_fine", "fine_check_s", "stage", "path_file_precheck",

@@ -123,3 +123,10 @@ Each entry: choice / alternatives / why.
     resumed. Per CLAUDE.md, single long runs are *marked* confounded rather than re-run; the two flagged runs are
     reported as confounded with this evidence, and re-run at the end only if time remains.
     Earlier timed stages used single-threaded workers, where the thread count tracks the load correctly.
+23. **T5: hybrid fix not triggered; oracle v2 unchanged.** On 16505 the learned SDF "solved" 3/3 and exact 0/3,
+    but all 3 learned paths penetrate the obstacle (27–49% of edges, up to −0.149 against ε = 0.005) when checked
+    with the exact SDF. Counting valid solutions it is 0/3 vs 0/3 on both puzzles, so the exact detector is not
+    "clearly worse"; it rejects what the learned SDF wrongly accepts. *Alt:* run the hybrid on the same 6 seeds
+    (~5.5 h at exact speed) plus a 200-query ATA sample before T7. *Why not:* the trigger condition is not met on
+    valid solutions, and the 5.5 h would push T7 into Aaron's working day, where the idle guard stalls labelling.
+    The hybrid code is in place for a later run (Needs Aaron).

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 FIX_V2 = ("fine_goal", "validate")
 MARGIN_V2 = 0.0          # set by the T4.4 decision (reports/run04/oracle_v2.md)
+GRAD_DX_V2 = None        # T5: None = exact-SDF guidance gradient (library dx); a float = hybrid smoothed guidance
 
 LABEL_KEYS = ["precheck_free", "precheck_dir", "precheck_vec", "precheck_time_s", "precheck_dirs_checked",
               "cmgrrt_ran", "cmgrrt_outcome", "cmgrrt_time_s", "cmgrrt_iterations", "cmgrrt_escape_dir",
@@ -56,9 +57,9 @@ def combine(r: dict, always_cmgrrt: bool) -> dict:
 
 
 def query_v2(asm, removed, part, T, seed, workdir, eps=0.005, always_cmgrrt=True, save_path=True,
-             max_iterations=None, fix=FIX_V2, allowance=None, margin=MARGIN_V2) -> dict:
+             max_iterations=None, fix=FIX_V2, allowance=None, margin=MARGIN_V2, grad_dx=GRAD_DX_V2) -> dict:
     from disasm.oracle.cmgrrt import query
     r = query(asm, set(removed), part, T, seed, workdir, device="cpu", detector="exact", eps=eps,
               precheck=True, cmgrrt_if_free=always_cmgrrt, fix=tuple(fix), save_path=save_path,
-              max_iterations=max_iterations, allowance=allowance, margin=margin)
+              max_iterations=max_iterations, allowance=allowance, margin=margin, grad_dx=grad_dx)
     return combine(r, always_cmgrrt)

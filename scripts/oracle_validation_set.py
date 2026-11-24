@@ -21,6 +21,8 @@ def main():
     ap.add_argument("--configs", default="v1,v2a,v2b")
     ap.add_argument("--workers", type=int, default=10)
     ap.add_argument("--idle-wait", type=float, default=300)
+    ap.add_argument("--no-misses", action="store_true", help="random queries only (run 04 T5 ATA sample)")
+    ap.add_argument("--sample-seed", type=int, default=0)
     a = ap.parse_args()
     from diagnose_misses import misses
     from disasm.util.guarded_pool import run_guarded
@@ -29,7 +31,9 @@ def main():
     mk = {(m["assembly_id"], m["state_key"], m["part_id"]) for m in ms}
     lab = [json.loads(l) for l in open(os.path.join(ROOT, "data/labels/pilot_v1/labels.jsonl"))]
     pool = [x for x in lab if (x["assembly_id"], x["state_key"], x["part_id"]) not in mk]
-    rnd = random.Random(0).sample(pool, a.n_random)
+    rnd = random.Random(a.sample_seed).sample(pool, a.n_random)
+    if a.no_misses:
+        ms = []
     qs = [("miss", m["assembly_id"], m["state_key"], m["part_id"], m["removed"], m["seed"]) for m in ms] + \
          [("random", x["assembly_id"], x["state_key"], x["part_id"], x["removed"], x["seed"]) for x in rnd]
     qs.sort(key=lambda q: (q[1], q[2], q[3]))
