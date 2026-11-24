@@ -1,7 +1,7 @@
 STATE: RUNNING
 DEADLINE: 2026-11-25T08:00:00-08:00
-CURRENT STAGE: T4 oracle v2 (T4.1 path validation running, untimed)
-BACKGROUND JOBS: T4.1 validate_paths (experiments/2026-11-23_run04_path_validation/, started 17:22, untimed CPU, 10 slots)
+CURRENT STAGE: T6 untimed scans (9-12 contacts, penetration), then T5 (timed, alone)
+BACKGROUND JOBS: none
 MACHINE (T0, 2026-11-23T16:09-08:00): uptime 19:57, load 0.11/0.22/0.23; GPU 11% / 1534 MiB; power profile performance.
   Heavy processes: none from the project. Desktop apps running (firefox, chrome, Discord, gnome-shell), each < 6% CPU.
 DONE SO FAR:
@@ -14,4 +14,6 @@ DONE SO FAR:
 - T3 PASS: reports/run04/live_rerun.md, experiments/2026-11-23_run04_live_rerun/ (238/240 runs clean first try, 1 fixed by re-run,
   1 still confounded: 08111/fewest_contacts busy_frac 0.015; aborted attempt 1 kept in ..._live_rerun_aborted1, DECISIONS #13).
   GNN-Surv/fewest contacts ratio of totals 0.595 [0.455, 0.821] (run 03 confounded: 0.613).
-NEXT ACTION: T4.1 report; T4.2 diagnosis (scripts/diagnose_misses.py, guarded); T6 scans (untimed) when slots free.
+- T4 PASS: reports/run04/oracle_v2.md. Cause = start pose never tested against goals (123/124 root-free); v2a solves 123/124,
+  0 invalid successes on recheck (experiments/2026-11-23_run04_oracle_validation/summary.json); v1 paths 18.5% invalid at fine res.
+NEXT ACTION: T6.1/6.2 scans; then T5.

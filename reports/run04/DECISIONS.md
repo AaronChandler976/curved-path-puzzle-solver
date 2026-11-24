@@ -84,3 +84,6 @@ Each entry: choice / alternatives / why.
     must stay above −0.9ε; checks stay at ε; obstacle parts already touched deeper at the start get exactly enough
     relief to keep the start valid). This is a collision-representation change only (CLAUDE.md rule 2). Both are
     measured on the T4.4 validation set; the one adopted is recorded in #17.
+17. **Oracle v2 = v2a (no planning margin).** On the T4.4 validation set, v2a and v2b both give 0 invalid
+    successes and 99.2% of the misses; v2b is no better on success (554 vs 555 of 624) and rejects more goal
+    edges. The simpler variant is adopted: `oracle_v2.FIX_V2 = ("fine_goal", "validate")`, `MARGIN_V2 = 0`.

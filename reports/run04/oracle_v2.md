@@ -62,4 +62,31 @@ the adapter alone as `fix=("root",)`. Goal edges accepted by the coarse check ar
 
 ## T4.4 Validation set
 
-(filled in below from `experiments/2026-11-23_run04_oracle_validation/`)
+`experiments/2026-11-23_run04_oracle_validation/` (`results.jsonl` every attempt; `summary.json` from
+`scripts/oracle_validation_report.py`; `idle_samples.jsonl`). 624 queries = the 124 misses + 500 random v1 queries
+(seed 0), each under v1 / v2a / v2b, T = 30 s, the queries' v1 seeds, seeded samples, idle guard: 1,872 jobs; 60 were
+confounded and re-run clean; **0 still confounded**, 0 errors. Every reported success's saved path was re-checked
+independently at fine resolution (exact SDF, ε, step ≤ ε/2, the query's own samples).
+
+| set | config | successes | success rate | total query time (s) | median (s) | invalid successes on recheck | decided by pre-check / CMG-RRT | "CMG-RRT only" successes (time s) |
+|---|---|---|---|---|---|---|---|---|
+| 124 misses | v1 | 52 | 41.9% | 3,028 | 30.1 | 5 | — | — |
+| 124 misses | **v2a** | **123** | **99.2%** | 144 | 0.39 | **0** | 123 / 0 | 47 (3,225) |
+| 124 misses | v2b | 123 | 99.2% | 145 | 0.39 | 0 | 123 / 0 | 41 (3,351) |
+| 500 random | v1 | 434 | 86.8% | 2,907 | 0.89 | 23 | — | — |
+| 500 random | **v2a** | **432** | **86.4%** | **2,352** | **0.037** | **0** | 424 / 8 | 428 (3,402) |
+| 500 random | v2b | 431 | 86.2% | 2,330 | 0.035 | 0 | 424 / 7 | 429 (3,304) |
+
+- **Gate: PASS.** 123/124 misses (99.2% ≥ 95%) are solved by oracle v2. The remaining one (05832, state 0-1-2-3,
+  part 0) has an invalid start pose under its seeded sample draw (start min SDF −0.0105 < −ε), so neither stage
+  can move it; that is a mesh-penetration case, not an adapter miss. 0 invalid successes at fine resolution in the
+  validation set (v2a and v2b, both stages), against 28 for v1.
+- **v1 vs v2a on random queries:** the same success rate within 2 queries (v2a rejects invalid v1-style successes);
+  19% less total time; the median query drops from 0.89 s to 0.037 s because the pre-check decides 424 of 432
+  successes. The pre-check's own cost is 0.22 s per query on average (110.6 s over 500).
+- **"CMG-RRT only" (secondary config)** with the v2 fixes: 428/500 random queries and 47/124 misses. It still lacks
+  the start-pose test, which is exactly what the pre-check stage adds.
+- Fine checks at work in v2a: 84 goal edges and 66 paths were rejected and the search continued.
+- **Decision: oracle v2 = v2a** (margin 0; DECISIONS #17). The margin gives no gain in success or invalid rate and
+  rejects more goal edges (193 vs 84).
+
