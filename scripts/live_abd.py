@@ -20,6 +20,9 @@ Run 04 additions:
   (up to --max-reruns = 2). Every attempt is a line in results.jsonl (field "attempt"); reports use the first clean
   attempt per (assembly, method), else attempt 0 flagged. The re-run unit is the whole disassembly because a re-run
   query inside it could change the trajectory.
+- run 05: methods outside_in, asap_zs (released weights; ASAP's own redmax contact graph via --redmax) and every
+  method named in --model-spec ({name: {variant, ckpt}}, e.g. "gnn_survival#s100"; train_v2 variants or asap_retrained).
+  The random shuffle and planner seeds use --seed-prefix (run 05: "run05-live", PREREG §6).
 - --oracle v2: straight-pull pre-check -> CMG-RRT (src/disasm/oracle/oracle_v2.py); default v1 = CMG-RRT only.
 """
 import argparse
@@ -71,6 +74,38 @@ def _asap():
     return _W["asap"]
 
 
+def _spec_model(method):
+    """Run 05: a trained model from --model-spec ({method: {"variant", "ckpt"}}), loaded once per worker."""
+    key = ("model", method)
+    if key not in _W:
+        import torch
+        spec = _W["model_spec"][method]
+        d = torch.load(os.path.join(ROOT, spec["ckpt"]), weights_only=False, map_location="cpu")
+        if spec["variant"] == "asap_retrained":
+            from disasm.models.asap_train import new_asap_model
+            m = new_asap_model(0)
+            m.load_state_dict(d["model_state_dict"]); m.eval()
+            _W[key] = ("asap", m, None)
+        else:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            from train_v2 import build_model
+            assert d["variant"] == spec["variant"], (spec, d["variant"])
+            m = build_model(spec["variant"], d["cfg"], 30.0)
+            m.load_state_dict(d["state_dict"]); m.eval()
+            _W[key] = (spec["variant"], m, d["norm"])
+    return _W[key]
+
+
+def _asap_inputs(asm, aid, cache):
+    from disasm.search.asap_baseline import asap_contact_pairs, asap_node_inputs
+    if "asap_in" not in cache:
+        rm = _W.get("redmax") or {}
+        pairs = {tuple(sorted(e)) for e in rm[aid]} if aid in rm else asap_contact_pairs(asm)
+        cache["asap_in"] = (pairs, asap_node_inputs(os.path.join(RAW, aid), aid))
+        cache["asap_pairs_source"] = "redmax" if aid in rm else "adapter"
+    return cache["asap_in"]
+
+
 def order_parts(method, asm, present, aid, skey, cache):
     import torch
     from disasm.data.graph import state_graph_v3
@@ -78,8 +113,47 @@ def order_parts(method, asm, present, aid, skey, cache):
     info = {}
     if method == "random":
         o = list(pres)
-        random.Random(hashlib.sha1(f"run03-live-random-{aid}-{skey}".encode()).hexdigest()).shuffle(o)
+        random.Random(hashlib.sha1(f"{_W.get('seed_prefix', 'run03-live')}-random-{aid}-{skey}".encode()).hexdigest()).shuffle(o)
         return o, info
+    if method == "outside_in":
+        idx = sorted(range(len(pres)), key=lambda i: (-X[i, 8], pres[i]))
+        return [pres[i] for i in idx], info
+    if method == "asap_zs":
+        from disasm.search.asap_baseline import asap_scores
+        pairs, ni = _asap_inputs(asm, aid, cache)
+        s = asap_scores(_asap(), ni, pairs, pres)
+        info["score"] = dict(zip(pres, map(float, s))); info["asap_pairs"] = cache["asap_pairs_source"]
+        idx = np.lexsort((np.arange(len(pres)), -s))
+        return [pres[i] for i in idx], info
+    if method in (_W.get("model_spec") or {}):
+        kind, m, norm = _spec_model(method)
+        with torch.no_grad():
+            if kind == "asap":
+                from disasm.search.asap_baseline import asap_scores
+                pairs, ni = _asap_inputs(asm, aid, cache)
+                s = asap_scores(m, ni, pairs, pres)
+                info["score"] = dict(zip(pres, map(float, s)))
+            else:
+                from train_v2 import Batcher, VARIANTS, forward, order_score
+                cl = None
+                if VARIANTS[kind][3]:
+                    if "clouds" not in cache:
+                        from disasm.data.pointcloud import assembly_clouds
+                        cache["clouds"] = {aid: {p: torch.tensor(v) for p, v in assembly_clouds(asm).items()}}
+                    cl = cache["clouds"]
+                g = {"aid": aid, "present": pres, "x": torch.tensor(X), "ei": torch.tensor(ei), "ea": torch.tensor(ea),
+                     "succ": torch.zeros(len(pres), dtype=torch.bool), "cens_t": torch.zeros(len(pres)),
+                     "time_s": torch.zeros(len(pres))}
+                b = Batcher(norm, "cpu", cl)([g])
+                p, c = m.predict(forward(m, b)) if hasattr(m, "predict") else (None, None)
+                p = p.numpy(); c = None if c is None else c.numpy()
+                rule = "p" if VARIANTS[kind][1] == "bce" else "p_over_c"
+                s = order_score(p, c, rule)
+                info["p"] = dict(zip(pres, map(float, p)))
+                if c is not None:
+                    info["c"] = dict(zip(pres, map(float, c)))
+        idx = np.lexsort((np.arange(len(pres)), -np.asarray(s)))
+        return [pres[i] for i in idx], info
     if method == "fewest_contacts":
         idx = sorted(range(len(pres)), key=lambda i: (X[i, 9], -X[i, 8], pres[i]))
         return [pres[i] for i in idx], info
@@ -193,7 +267,9 @@ def run_abd(job):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--assemblies", required=True, help="json list of test assembly ids (the R6 sample)")
-    ap.add_argument("--gnn-ckpt", required=True)
+    ap.add_argument("--gnn-ckpt", default="", help="run 03/04 method gnn_surv only")
+    ap.add_argument("--model-spec", default="", help="run 05: json {method_name: {variant, ckpt}}")
+    ap.add_argument("--redmax", default="", help="run 05: asap_contact_graphs.py jsonl (ASAP's own contact graph)")
     ap.add_argument("--outdir", required=True)
     ap.add_argument("--methods", default=",".join(METHODS))
     ap.add_argument("--workers", type=int, default=10)
@@ -243,7 +319,11 @@ def main():
     P.pin_threads(1)
     ex = ProcessPoolExecutor(args.workers, mp_context=mp.get_context("spawn"), initializer=_init,
                              initargs=({"workdir": os.path.join(args.outdir, "work"), "device": "cpu", "threads": 1,
-                                        "slot_tag": "live_abd", "gnn_ckpt": os.path.abspath(args.gnn_ckpt)},))
+                                        "slot_tag": "live_abd", "gnn_ckpt": os.path.abspath(args.gnn_ckpt) if args.gnn_ckpt else "",
+                                        "model_spec": json.load(open(args.model_spec)) if args.model_spec else {},
+                                        "redmax": ({r["assembly_id"]: r["edges"] for r in map(json.loads, open(args.redmax))}
+                                                   if args.redmax else {}),
+                                        "seed_prefix": args.seed_prefix},))
     t0 = time.time()
     n = 0
 
