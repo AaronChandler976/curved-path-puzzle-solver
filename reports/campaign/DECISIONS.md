@@ -78,8 +78,9 @@
    - *Wording:* §7 verdicts are printed only for test/main; other configs and val are "descriptive". The random
      ordering's "solved within T" is shown as "—". Resample counts are stated in the md header.
 10. **Freeze inclusion rule, written 2026-11-24 22:43 before the exploratory variants' full CV results exist.**
-    (Seen by then: one fold × one seed per exploratory variant, from a partial summary: fold-0 ratios GT 0.717,
-    GATv2 0.797, ListNet 0.850. The rule below doesn't use them.)
+    (Seen by then: the partial summary showed one fold × one seed per variant, fold-0 ratios GT 0.717, GATv2 0.797,
+    ListNet 0.850. Correction after audit phase2_1: 2–4 seeds of fold 0 per variant were already on disk in
+    `cv_log.txt`, though not read. All of it is train+val data; the rule below doesn't use them.)
     - *Replay on test:* all three exploratory variants (GATv2-Surv, GT-Surv, GNN-Surv-ListNet) enter the test replay
       as "post-registration, exploratory", whatever their CV result. Reporting all of them avoids choosing on CV noise;
       replay is cheap.
@@ -91,3 +92,16 @@
       registered live runs: fewest contacts and GNN-Surv under the policy.
     - The registered comparisons, the §7 rule and the 11-comparison Holm family are unchanged. Exploratory results get
       their own table, with uncorrected p-values marked as such.
+11. **Phase 2 audit fixes (phase2_1: 1 MAJOR, 6 MINOR).**
+    - *MAJOR:* `reports/explore/REPORT.md` §2 no longer says "beats" or "help". The CV numbers are point estimates (no
+      per-assembly data was saved, so no CI). ASAP-retrained is named as not in the CV (~4 h; worse than fewest
+      contacts on val).
+    - DECISIONS #10 now states that 2–4 fold-0 seeds were on disk when the rule was written.
+    - Addendum B.4 cites the campaign shrink order, not PREREG §6. `final_frozen.yaml` gains the states path and a comment
+      that the label hashes are integrity hashes of files that also contain test labels.
+    - The exploratory training folder hash (b6d5ee8) and the per-variant hashes (4cc5cd7) are 19 s apart with no change to
+      `scripts/train_v2.py` or `src/`. Per-variant cmd/git_hash files are now committed.
+    - The val evaluation ran from a dirty tree; the auditor reproduced it exactly at HEAD.
+    - New unit test `test_listnet_term_prefers_cheap_successes`.
+    These edits to the addendum and the yaml are wording or provenance only, made before any test label was read.
+    Every checkpoint sha256 is unchanged.

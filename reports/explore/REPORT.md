@@ -13,16 +13,21 @@ epochs). The group CV with inner early stopping is the unbiased check. Nothing h
 | 5-fold group CV over train+val, 5 seeds, inner early stopping | `reports/explore/cv.md`, `experiments/2026-11-24_run06_cv/` | pooled ratio vs fewest contacts: PN 0.788, ListNet 0.832, GT 0.848, GNN-Surv 0.874, Tail 0.891, GATv2 0.895, GNN-BCE 0.928, MLP-Surv 0.939, MLP-BCE 0.975; outside-in 1.310, random 2.091 |
 | EV-battery CAD case study (optional) | — | not done: no public battery-module CAD found that downloads without a login in the time spent. Low priority by the campaign list |
 
-## 2. What the CV says about the val ranking
-- **Val overstated the tail-aware objective.** Tail was the best registered variant on val (1,637 s vs 1,835 s), but
-  in CV it is no better than plain survival (0.891 vs 0.874). It also had the most val selection (16 configs vs 8).
-- **The intervention ordering holds out of sample:**
-  - GNN beats MLP (survival 0.874 vs 0.939; BCE 0.928 vs 0.975).
-  - Survival beats BCE (GNN 0.874 vs 0.928; MLP 0.939 vs 0.975).
-  - PointNet features help (0.788).
-- **All learned rankers beat fewest contacts on pooled held-out totals,** but fold 2 is a loss for every variant except
-  PN (per-fold ratios in `cv.md`).
-- **Per-seed spread** of the pooled ratio is 0.02–0.05, the same size as the gaps between neighbouring variants.
+## 2. What the CV says about the val ranking (point estimates; no CI or test was computed on the CV)
+The CV saves only per-fold totals, so the numbers below are pooled point estimates with their spread over seeds and
+folds. They support no "beats" or "significant" claim; that is what the test evaluation is for.
+- **The val advantage of the tail-aware objective did not reappear.** Tail was the best registered variant on val
+  (1,637 s vs 1,835 s), but its CV pooled ratio is 0.891 vs GNN-Surv's 0.874. It also had the most val selection
+  (16 configs vs 8).
+- **The intervention contrasts point the same way out of sample as on val, by margins about the size of the seed
+  spread:**
+  - GNN vs MLP: 0.874 vs 0.939 (survival), 0.928 vs 0.975 (BCE).
+  - Survival vs BCE: 0.874 vs 0.928 (GNN), 0.939 vs 0.975 (MLP).
+  - PointNet features: 0.788 vs 0.874.
+  - The per-seed standard deviation of the pooled ratio is 0.02–0.05.
+- **Every CV'd learned ranker has a pooled ratio below 1 vs fewest contacts** (0.788–0.975). Fold 2 is above 1 for
+  every one except PN (0.953). ASAP-retrained was **not** in the CV: at about 9 minutes per run, 25 runs would have taken
+  about 4 h. On val it is costlier than fewest contacts (3,145 vs 2,275 s), so it is the exception to this pattern.
 
 ## 3. What enters the test
 `docs/PREREG_addendum.md` §B: all three exploratory variants in replay, GT-Surv and ListNet also live, and the T' = 3 s

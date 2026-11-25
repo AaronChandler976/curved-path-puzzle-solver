@@ -61,6 +61,7 @@ change the §7 decision, which uses only GNN-Surv vs the val-chosen best heurist
 configuration, Holm over the registered family of 11.
 
 **B.4 Other fixed test-time settings.** Scoring on CPU (bit-reproducible, DECISIONS #9). §7 heuristic = fewest
-contacts (chosen on val, DECISIONS #8). Live priority (§6 shrink order, if time runs short): P1 every method at its
+contacts (chosen on val, DECISIONS #8). Live priority (the shrink order of `prompts/campaign.md` Phase 3, "replay > live with all methods at 1 seed
+(val-chosen) > live with all 5 seeds", extended to the exploratory rows; PREREG §6 itself has no shrink order): P1 every method at its
 val-best seed → P2 the remaining seeds of the registered trained variants → P3 exploratory live variants → P4 budget
 policy. Any part not run is reported as a deviation.

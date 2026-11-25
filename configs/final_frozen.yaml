@@ -3,6 +3,8 @@ rules: 'docs/PREREG_run05.md (registered) + docs/PREREG_addendum.md (A: clean-te
 data:
   labels: data/labels/pilot_v2/labels.jsonl
   labels_sha256: a2d582bb421340ea9290efa8ae55d5c137915b29f1be0019634be2e11c6d6766
+  states: data/labels/pilot_v2/states.jsonl
+  # integrity hashes only: labels/states contain the test labels too; hashing reads bytes, not label values
   states_sha256: 33ba9d6edcbf2958b8e8a3e12bbf86aa6d87a1ea012b4b8ddcd8f809d7c8435d
   split: data/splits/v2_split.json
   split_sha256: 1407f5773737c2fed73d34b497e0c7a20005989090b5c846a082df7be7ae2f9a

@@ -49,3 +49,17 @@ def test_grouped_tail_term_equals_loop():
     b = tail_term_grouped(s, y, t, batch, 30.0, 0.1)
     gb, = torch.autograd.grad(b, s)
     assert torch.allclose(a, b, atol=1e-6) and torch.allclose(ga, gb, atol=1e-5)   # float32 rounding of the 12x12 sort
+
+
+def test_listnet_term_prefers_cheap_successes():
+    from disasm.models.tail_loss import listnet_term
+    s = torch.tensor([0.0, 0.0, 0.0, 0.0], requires_grad=True)
+    y = torch.tensor([True, True, False, True])
+    t = torch.tensor([10.0, 0.5, 30.0, 0.5])
+    b = torch.tensor([0, 0, 0, 1])                 # state 1 has one part: CE = 0
+    v = listnet_term(s, y, t, b)
+    v.backward()
+    assert s.grad[1] < 0 and s.grad[1] == s.grad[:3].min() and s.grad[2] > 0   # cheap success up (most), failure down
+    assert abs(float(s.grad[3])) < 1e-7
+    n = torch.tensor([False, False, False, False])
+    assert float(listnet_term(s.detach(), n, t, b)) == 0.0   # no state with a success -> 0
