@@ -180,13 +180,14 @@ def order_parts(method, asm, present, aid, skey, cache):
     raise ValueError(method)
 
 
-def _query(job, asm, removed, p, seed):
+def _query(job, asm, removed, p, seed, T=None):
     from disasm.oracle.cmgrrt import query
+    T = job["T"] if T is None else T
     if job.get("oracle", "v1") == "v2":
         from disasm.oracle.oracle_v2 import query_v2
-        return query_v2(asm, set(removed), p, job["T"], seed, job["workdir"], eps=job["eps"], always_cmgrrt=False,
+        return query_v2(asm, set(removed), p, T, seed, job["workdir"], eps=job["eps"], always_cmgrrt=False,
                         save_path=job.get("save_paths", False), allowance=job.get("allowance"))
-    return query(asm, set(removed), p, job["T"], seed, job["workdir"], device="cpu",
+    return query(asm, set(removed), p, T, seed, job["workdir"], device="cpu",
                  detector="exact", eps=job["eps"], save_path=job.get("save_paths", False),
                  allowance=job.get("allowance"))
 
@@ -197,8 +198,15 @@ def run_abd(job):
     from disasm.util.idle_guard import IdleClient, SAMPLE_S
     client = IdleClient(job["guard_dir"]) if job.get("guard_dir") else None
     aid, method = job["aid"], job["method"]
+    # campaign Phase 2/3 exploratory budget policy: "<method>@b<T'>" = pass 1 at budget T' (CMG-RRT budget; the
+    # pre-check always runs first), then, if no part succeeded, pass 2 over the same order at the full budget T
+    # (same seeds: the planner restarts)
+    budgets = [None]
+    if "@b" in method:
+        method, tp = method.split("@b")
+        budgets = [float(tp), None]
     t_wall0 = time.time()
-    out = {"assembly_id": aid, "method": method, "states": [], "error": None}
+    out = {"assembly_id": aid, "method": job["method"], "states": [], "error": None}
     try:
         asm = load_assembly(os.path.join(RAW, aid))
         cache, removed = {}, []
@@ -216,11 +224,13 @@ def run_abd(job):
             order_s += o_s
             st = {"state_key": skey, "order": order, "order_s": o_s, "queries": [], **info}
             chosen = None
-            for p in order:
+            for p, Tq, pas in [(p, Tq, k) for k, Tq in enumerate(budgets) for p in order]:
+                if chosen is not None:
+                    break
                 w = client.wait_not_busy() if client else 0.0
                 busy_wait_s += w
                 tq0 = time.time()
-                r = _query(job, asm, removed, p, qseed(aid, skey, p, job.get("seed_prefix", "run03-live")))
+                r = _query(job, asm, removed, p, qseed(aid, skey, p, job.get("seed_prefix", "run03-live")), Tq)
                 tq1 = time.time()
                 calls += 1
                 planner_s += r["time_s"] or 0.0
@@ -230,12 +240,11 @@ def run_abd(job):
                                       "escape_dir": r.get("escape_dir"), "path_max_rot_deg": r.get("path_max_rot_deg"),
                                       "path_file": r.get("path_file"), "t_query_start": tq0, "t_query_end": tq1,
                                       "busy_wait_s": w, "robot_sample_seed": r.get("robot_sample_seed"),
-                                      "tree_hash": r.get("tree_hash"),
+                                      "tree_hash": r.get("tree_hash"), "pass": pas, "budget": Tq or job["T"],
                                       **{k: r.get(k) for k in ("stage", "precheck_free", "precheck_time_s",
                                                                "cmgrrt_outcome", "cmgrrt_time_s") if k in r}})
                 if r["outcome"] == "success":
                     chosen = p
-                    break
             st["chosen"] = chosen
             out["states"].append(st)
             if chosen is None:
