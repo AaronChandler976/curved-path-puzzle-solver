@@ -24,5 +24,13 @@
   "total": 2656.5799791812897,
   "ratio_vs_fewest": 0.6481921395401942,
   "best_epoch": 5
+ },
+ {
+  "fold": 0,
+  "variant": "gnn_survival_listnet",
+  "seed": 102,
+  "total": 2948.3538529872894,
+  "ratio_vs_fewest": 0.7193834957223357,
+  "best_epoch": 5
  }
 ]

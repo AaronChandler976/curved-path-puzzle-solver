@@ -32,5 +32,13 @@
   "total": 2895.792360305786,
   "ratio_vs_fewest": 0.7065587561452689,
   "best_epoch": 4
+ },
+ {
+  "fold": 0,
+  "variant": "gt_survival",
+  "seed": 103,
+  "total": 3024.2882549762726,
+  "ratio_vs_fewest": 0.7379111074922299,
+  "best_epoch": 4
  }
 ]
