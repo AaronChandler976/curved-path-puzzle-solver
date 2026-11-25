@@ -1,38 +1,88 @@
-# Run 04 report: oracle v2, data v2, frozen fresh test set (IN PROGRESS)
+# Run 04 report: oracle v2, data v2, frozen fresh test set (DONE; T9 deferred)
 
-**Ready for run 05?** Not yet: T5 (exact vs learned SDF) is running; T7 (labelling), T8 (split + PREREG) and T9 (elk)
-follow. This file is refreshed before each deadline; STATUS.md has the live state.
+**Ready for run 05?** Yes. Oracle v2 is validated, `pilot_v2` is labelled (2,022 assemblies, 0 confounded after
+re-runs), the v2 split is frozen (test = 347 fresh assemblies) and `docs/PREREG_run05.md` was committed
+(2026-11-23 23:50) before any v2 training. The only stage not run is T9 (elk, 4 h reproduction check). The campaign
+moved it to Phase 5 so it cannot delay the test (`prompts/campaign.md`).
 
-## Gates
+## 1. Gates
 | stage | gate | evidence |
 |---|---|---|
 | T0 orient | done | `reports/run04/STATUS.md` |
-| T1 tooling | **PASS** (idle guard, seeded sampling, guarded runners; tests pass) | `src/disasm/util/idle_guard.py`, `tests/test_idle_guard.py`, `tests/test_seeded_sampling.py`, `experiments/2026-11-23_run04_pytest_t6/stdout.log` |
-| T2 ASAP + PointNet prep | **PASS** (redmax built; adapter = redmax on 20/20; ASAP retrain + PointNet dry runs) | `experiments/2026-11-23_run04_t2_redmax/agreement.json`, `experiments/2026-11-23_run04_t2_dryruns/results.json`, DECISIONS #9–#12 |
-| T3 unconfounded live rerun | **PASS** (238/240 runs clean on the first try, 1 fixed by a re-run, 1 still confounded) | `reports/run04/live_rerun.md` |
-| T4 oracle v2 | **PASS** (123/124 misses solved, the last one explained; 0 invalid successes) | `reports/run04/oracle_v2.md` |
-| T5 exact vs learned SDF | running | `experiments/2026-11-23_run04_t5_sdf/` |
+| T1 tooling | **PASS** | `src/disasm/util/idle_guard.py`, `tests/test_idle_guard.py`, `tests/test_seeded_sampling.py` |
+| T2 ASAP + PointNet prep | **PASS** (redmax = our adapter on 20/20; ASAP retrain + PointNet dry runs) | `experiments/2026-11-23_run04_t2_redmax/agreement.json`, `experiments/2026-11-23_run04_t2_dryruns/results.json` |
+| T3 unconfounded live rerun | **PASS** (238/240 clean first try; 1 fixed by re-run; 1 still confounded) | `reports/run04/live_rerun.md` |
+| T4 oracle v2 | **PASS** (123/124 misses solved, the last explained; 0 invalid successes) | `reports/run04/oracle_v2.md` |
+| T5 exact vs learned SDF | **PASS** (hybrid not triggered; oracle unchanged) | `reports/run04/sdf_puzzles.md` |
 | T6 data pool | **PASS** (694 fresh candidates; allowance validated 906/906) | `reports/run04/data_pool.md` |
-| T7 label pilot_v2 | pending | |
-| T8 split + PREREG | pending (PREREG drafted: `docs/PREREG_run05.md`) | |
-| T9 elk | pending | |
+| T7 label pilot_v2 | **PASS** (2,022/2,022 labelled, 0 errors, 0.00% confounded after re-runs) | `reports/run04/labels_v2.md`, `experiments/2026-11-24_run04_label_v2/` |
+| T8 split + PREREG | **PASS** (split committed, `tests/test_split_v2.py` passes, PREREG predates v2 training) | `data/splits/v2_split.json`, `experiments/2026-11-24_run04_t8_split/`, `experiments/2026-11-24_run04_pytest_t8/stdout.log` (34 passed) |
+| T9 elk 4 h | **DEFERRED to campaign Phase 5** (not run) | `experiments/2026-11-24_run04_elk/launch_cmd.txt` (prepared only) |
+| T10 report | this file | |
 
-## T3: unconfounded live rerun (run 03 models, development test set)
+## 2. T3: unconfounded live rerun (run 03 models, development test set)
 GNN-Surv used **0.595× [0.455, 0.821]** of fewest contacts' planner time (HL −3.5 s per assembly, 43/2/11
 wins/ties/losses) and 0.637× [0.463, 0.876] of ASAP zero-shot's, over 56 assemblies. The confounded run 03 numbers
-were 0.613 and 0.670; method totals moved by under 3%. So run 03's confounding did not change the conclusion.
+were 0.613 and 0.670, and method totals moved by under 3%, so run 03's confounding did not change its conclusion
+(`reports/run04/live_rerun.md`).
 
-## T4: the oracle bug and the fix
-The v1 adapter never tested the start pose's straight connection to any goal; it only tested newly added tree
-nodes, which are rotated by a few degrees and collide on the way out of tight fits. Oracle v2 = straight-pull
-pre-check (exactly that test, certified at step ≤ ε/2) → CMG-RRT, with goal edges confirmed and paths validated at
-step ≤ ε/2. Validation set (124 misses + 500 random): misses solved 123/124 (v1: 52); random queries 86.4% vs 86.8%
-success, 19% less total time, median query 0.037 s vs 0.89 s; **0 invalid successes** (v1: 28). Separately, 18.5% of
-the v1 label successes fail the fine path check, almost all by under 10% of ε.
+## 3. T4/T5: the oracle bug, the fix, the SDF decision
+- **Bug:** the v1 adapter never tested the start pose's straight connection to a goal. Only newly added
+  (rotated) tree nodes were tested, and in tight fits those collide on the way out. 123 of the 124 misses had a free
+  straight pull from the start.
+- **Oracle v2:** a straight-pull pre-check (exactly that test, certified at step ≤ ε/2), then CMG-RRT. Goal edges are
+  confirmed and paths validated at step ≤ ε/2.
+- **Validation (124 misses + 500 random queries):** 123/124 misses solved (v1: 52). On the random queries, success was
+  86.4% vs 86.8%, total time 19% lower, median query 0.037 s vs 0.89 s, and **0 invalid successes** (v1: 28).
+  Separately, 18.5% of v1 label successes fail the fine path check (`reports/run04/oracle_v2.md`).
+- **T5 (16505, alpha; 3 seeds × {exact, learned}):** the learned SDF "solved" 16505 3/3 and exact 0/3, but all 3 learned
+  paths penetrate the part when checked with the exact SDF (27–49% of edges, down to −0.149 against ε = 0.005).
+  Counting valid solutions it is 0/3 vs 0/3 on both puzzles. The hybrid fix was not triggered and oracle v2 is
+  unchanged (DECISIONS #23).
 
-## Needs Aaron (so far)
-1. 18.5% of v1 successes are invalid at fine resolution (marginal dips below −ε). This makes v1 labels and run 03
-   results slightly optimistic about removability; v2 replaces them.
+## 4. T6/T7: data v2
+- **Pool:** 255 clean 9–12-part assemblies plus 439 interpenetrating assemblies recovered by the per-pair allowance;
+  919 stay excluded as over the caps (`reports/run04/data_pool.md`). All 1,328 v1 assemblies were relabelled.
+- **Labels:** 2,022 assemblies (1,866 complete, 156 stuck), 41,913 queries, 0 errors.
+  - Confounded: 2,128 queries (5.1%) on the first pass; all fixed by re-runs, 0 left.
+  - Wall time 12.6 h (05:47–18:30, 2026-11-24) with 2,001 s of busy waits.
+  - Every summary line carries git `dc8767e`.
+- **Pre-check share:** the straight pull produced 95–98% of the successes in every source × size bin. Main-config
+  success rate is 0.71–0.89 by bin; CMG-RRT-only success is 0.01–0.03 lower.
+- **v1 vs v2 on 15,903 shared queries:**
+  - success → unsolved: 147; unsolved → success: 134.
+  - Planner time: v1 23.96 h, v2 main 18.85 h, v2 CMG-RRT-only 27.95 h.
+  - Full table: `reports/run04/labels_v2.md`.
 
-## Decisions made on his behalf
-`reports/run04/DECISIONS.md` #1–#22.
+## 5. T8: split sizes and pre-registration
+`data/splits/v2_split.json` (seed 0; 1,996 duplicate groups):
+
+| split | assemblies | v1 / fresh-9to12 / fresh-allowance |
+|---|---|---|
+| train | 1,425 | 1,129 / 109 / 187 |
+| val | 250 | 199 / 19 / 32 |
+| test | 347 | 0 / 127 / 220 |
+
+- **Test:** fresh assemblies only, no pilot_v1 assembly, 00014 not in test (asserted in the builder and in
+  `tests/test_split_v2.py`).
+- **Pre-registration:** `docs/PREREG_run05.md`, with §8 filled from these counts. Since its first commit only §8 has
+  changed (`git diff b0d4bf8 090863e -- docs/PREREG_run05.md`).
+- **Found during T8:** contact-graph sampling was unseeded (trimesh ignores `np.random.seed`). Labels are unaffected
+  because every assembly's cached contact graph is used. The cache is frozen by a sha256 manifest and the sampling is
+  now seeded (`reports/campaign/DECISIONS.md` #3).
+
+## 6. T9: elk
+Not run. Deferred to campaign Phase 5 (timed, alone, through the idle guard), reported in the paper.
+
+## 7. Needs Aaron
+1. 18.5% of v1 successes are invalid at fine resolution (marginal dips below −ε). v1 labels and run 03 results are
+   therefore slightly optimistic about removability. v2 replaces them, and the paper reports it as a negative result.
+2. Nothing else here needs Aaron. Campaign items go in `reports/campaign/NEEDS_AARON.md`.
+
+## 8. Decisions made on his behalf
+`reports/run04/DECISIONS.md` #1–#23, and `reports/campaign/DECISIONS.md` #3 (contact sampling).
+
+## 9. Run 05 outline (follows PREREG)
+Build train/val graphs (`scripts/build_dataset_v2.py`), train the 7 variants with the registered grid and seeds
+(`scripts/train_v2.py`, `scripts/train_asap_v2.py`), evaluate on val only (`scripts/eval_v2.py --split val`), then
+profile latency and memory. This is campaign Phase 1, in `reports/run05/`.

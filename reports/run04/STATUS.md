@@ -1,7 +1,7 @@
-STATE: RUNNING
+STATE: DONE (T9 elk deferred to campaign Phase 5)
 DEADLINE: 2026-11-25T08:00:00-08:00
-CURRENT STAGE: T7 labelling pilot_v2 (timed, started 05:47 on 11-24; ~11-12 h planned)
-BACKGROUND JOBS: T7 label_abd PID 1620794 -> data/labels/pilot_v2, run folder experiments/2026-11-24_run04_label_v2/ (launch_cmd.txt; resumable: rerun the same command)
+CURRENT STAGE: none (all stages passed; T9 deferred). Final report: reports/run04/REPORT.md
+BACKGROUND JOBS: none (T7 PID 1620794 exited 18:30 on 11-24)
 MACHINE (T0, 2026-11-23T16:09-08:00): uptime 19:57, load 0.11/0.22/0.23; GPU 11% / 1534 MiB; power profile performance.
   Heavy processes: none from the project. Desktop apps running (firefox, chrome, Discord, gnome-shell), each < 6% CPU.
 DONE SO FAR:
@@ -19,4 +19,6 @@ DONE SO FAR:
 - T6 PASS: reports/run04/data_pool.md (694 fresh candidates; allowance validated 906/906; plan = label all, ≈11.3 h).
 - T5 PASS: reports/run04/sdf_puzzles.md (16505: exact 0/3, learned 3/3 but all 3 learned paths penetrate; alpha 0/3 both;
   hybrid not triggered, DECISIONS #23).
-NEXT ACTION: wait for T7; then scripts/labels_v2_report.py; T8 split (scripts/build_split_v2.py) + PREREG sizes; T9 elk 4 h.
+- T7 PASS: reports/run04/labels_v2.md (2,022 assemblies, 41,913 queries, 0 confounded after re-runs).
+- T8 PASS: data/splits/v2_split.json (test 347 fresh), PREREG §8, experiments/2026-11-24_run04_pytest_t8/stdout.log (34 passed).
+NEXT ACTION: none in run 04 (campaign Phase 5 runs T9).
