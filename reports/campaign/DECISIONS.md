@@ -49,3 +49,7 @@
    its first grid run; its folder is kept as `experiments/2026-11-24_run05_train/gnn_survival_tail_aborted1/`, not used.
    The other variants are unaffected: train_v2.py's only other change is `.detach()` in logging (they loaded the
    script at launch).
+7. **`experiments/2026-11-24_run05_eval_val_dev/` is a pipeline check, not a result.** It is eval_v2 on val with the
+   5 variants finished at 19:30 (2,000 bootstrap resamples), run to catch bugs before the full evaluation. Phase 1 reports
+   the full val evaluation with all 7 variants and 10,000 resamples. This folder is kept (never deleted) and not cited
+   for any number.
