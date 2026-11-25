@@ -37,7 +37,28 @@ INTRO-PENDING
 
 \section{Related Work}
 \label{sec:related}
-RELATED-PENDING
+\textbf{Assembly-by-disassembly and learned part ordering.}
+Assemble Them All~\cite{tian2022ata} plans assembly by disassembling real CAD assemblies with a physics-based
+planner and released a large Fusion~360 benchmark, which our data comes from. Cebulla et al.~\cite{cebulla2023} showed
+that a GNN predicting each part's removability can reorder the removal tests of AbD and cut failed attempts. ASAP~\cite{tian2024asap}
+guides a disassembly tree search with a GNN (PointNet~\cite{qi2017pointnet} part features and GATv2~\cite{brody2022gatv2}
+layers) trained on simulator labels, and adds gravitational stability. GRACE~\cite{atad2023} and graph-transformer
+models predict sequences step by step. These methods learn \emph{whether} a part comes out and count tests. None of
+them models \emph{how long} a test takes or treats a planner timeout as a censored observation, and their testers are
+discretised physics simulators rather than a continuous tight-clearance planner.
+
+\textbf{Tight-clearance motion planning.} CMG-RRT~\cite{livnat_cmgrrt} plans the separation of tightly fitting parts by
+following the critical manifold of contact with an SDF-based oracle. It handles motions that need rotation, but a
+query can take from milliseconds to the full budget, which is what makes query ordering matter.
+
+\textbf{Predicting planner cost.} Odense et al.~\cite{odense2022} predict the runtime of sampling-based planners with a
+GNN to pick a planner from a portfolio. Jiang et al.~\cite{jiang2026checkorder} order narrow-phase collision checks by an
+expected-time criterion with learned priors, one level below our queries. We bring cost prediction to the AbD test
+order. Learned survival models~\cite{gensheimer2019} give both quantities that the classical optimal order for
+sequential tests needs~\cite{simon1975}: the success probability and the expected (censored) cost.
+
+\textbf{Learning to rank.} Our tail-aware objective relaxes the order's replay cost with NeuralSort~\cite{grover2019neuralsort};
+a listwise ranking loss~\cite{cao2007listnet} is an exploratory alternative.
 
 \section{Method}
 \label{sec:method}
