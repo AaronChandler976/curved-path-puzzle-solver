@@ -1,8 +1,8 @@
 STATE: RUNNING
 DEADLINE: 2026-12-13T08:00:00-08:00
-CURRENT PHASE: 0 → 1. Phase 0 work done; Phase 0 audit running (reports/campaign/AUDITS/phase0_1.md when done).
+CURRENT PHASE: 0. Audit 1 FAIL (1 MAJOR: 41 test assemblies seen in T6) -> fixed (PREREG_addendum §A, REPORT disclosures); re-audit phase0_2 running.
 BACKGROUND JOBS:
-- Phase 0 auditor (subagent), output reports/campaign/AUDITS/phase0_1.md
+- Phase 0 re-auditor (subagent) -> reports/campaign/AUDITS/phase0_2.md
 - redmax ASAP contact graphs, PIDs in experiments/2026-11-24_run05_redmax/pids.txt (3 chunks) -> asap_graphs.jsonl
 DONE SO FAR:
 - Phase 0: run 04 T7 PASS (reports/run04/labels_v2.md), T8 PASS (data/splits/v2_split.json, PREREG §8), REPORT
