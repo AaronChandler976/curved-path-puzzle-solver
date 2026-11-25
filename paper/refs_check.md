@@ -15,3 +15,4 @@
 | hu2020pretrain | Strategies for Pre-training Graph Neural Networks; W. Hu, B. Liu, J. Gomes, M. Zitnik, P. Liang, V. Pande, J. Leskovec; ICLR 2020 | https://arxiv.org/abs/1905.12265 | 2026-11-24 | GINE (GIN with edge features) source as used by PyG GINEConv |
 | brody2022gatv2 | How Attentive are Graph Attention Networks?; S. Brody, U. Alon, E. Yahav; ICLR 2022 | https://arxiv.org/abs/2105.14491 | 2026-11-24 | GATv2 (ASAP's GNN) |
 | qi2017pointnet | PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation; C. R. Qi, H. Su, K. Mo, L. J. Guibas; CVPR 2017 | https://arxiv.org/abs/1612.00593 | 2026-11-24 | |
+| cao2007listnet | Learning to Rank: From Pairwise Approach to Listwise Approach; Z. Cao, T. Qin, T.-Y. Liu, M.-F. Tsai, H. Li; ICML 2007, pp. 129–136 | https://bibtex.github.io/ICML-2007-CaoQLTL.html ; https://www.icml.cc/imls/conferences/2007/proceedings/abstracts/139.htm | 2026-11-24 | exploratory listwise loss |
