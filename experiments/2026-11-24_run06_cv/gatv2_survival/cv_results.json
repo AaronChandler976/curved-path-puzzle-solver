@@ -32,5 +32,221 @@
   "total": 3394.8691477775574,
   "ratio_vs_fewest": 0.8283309795307173,
   "best_epoch": 39
+ },
+ {
+  "fold": 0,
+  "variant": "gatv2_survival",
+  "seed": 103,
+  "total": 3327.6506729125977,
+  "ratio_vs_fewest": 0.8119300100960329,
+  "best_epoch": 23
+ },
+ {
+  "fold": 0,
+  "variant": "gatv2_survival",
+  "seed": 104,
+  "total": 3277.825515270233,
+  "ratio_vs_fewest": 0.7997729224915842,
+  "best_epoch": 15
+ },
+ {
+  "fold": 1,
+  "n_states": 1347,
+  "n_assemblies": 334,
+  "variant": "heuristics",
+  "random": 7225.564429831597,
+  "outside_in": 4552.399657249451,
+  "fewest_contacts": 3492.410881280899,
+  "optimal": 164.37017488479614
+ },
+ {
+  "fold": 1,
+  "variant": "gatv2_survival",
+  "seed": 100,
+  "total": 2799.2104411125183,
+  "ratio_vs_fewest": 0.8015123467047102,
+  "best_epoch": 8
+ },
+ {
+  "fold": 1,
+  "variant": "gatv2_survival",
+  "seed": 101,
+  "total": 2998.2262091636658,
+  "ratio_vs_fewest": 0.858497556869373,
+  "best_epoch": 16
+ },
+ {
+  "fold": 1,
+  "variant": "gatv2_survival",
+  "seed": 102,
+  "total": 3011.2299468517303,
+  "ratio_vs_fewest": 0.8622209840748498,
+  "best_epoch": 34
+ },
+ {
+  "fold": 1,
+  "variant": "gatv2_survival",
+  "seed": 103,
+  "total": 2718.6649305820465,
+  "ratio_vs_fewest": 0.7784493357164582,
+  "best_epoch": 10
+ },
+ {
+  "fold": 1,
+  "variant": "gatv2_survival",
+  "seed": 104,
+  "total": 3219.198450565338,
+  "ratio_vs_fewest": 0.9217696771648599,
+  "best_epoch": 21
+ },
+ {
+  "fold": 2,
+  "n_states": 1355,
+  "n_assemblies": 329,
+  "variant": "heuristics",
+  "random": 9327.251165198055,
+  "outside_in": 5620.884238243103,
+  "fewest_contacts": 3858.482245206833,
+  "optimal": 264.463383436203
+ },
+ {
+  "fold": 2,
+  "variant": "gatv2_survival",
+  "seed": 100,
+  "total": 3333.2816672325134,
+  "ratio_vs_fewest": 0.8638841532504794,
+  "best_epoch": 59
+ },
+ {
+  "fold": 2,
+  "variant": "gatv2_survival",
+  "seed": 101,
+  "total": 4249.666581630707,
+  "ratio_vs_fewest": 1.1013829561895274,
+  "best_epoch": 24
+ },
+ {
+  "fold": 2,
+  "variant": "gatv2_survival",
+  "seed": 102,
+  "total": 3750.5642278194427,
+  "ratio_vs_fewest": 0.972030966963383,
+  "best_epoch": 9
+ },
+ {
+  "fold": 2,
+  "variant": "gatv2_survival",
+  "seed": 103,
+  "total": 3728.8457980155945,
+  "ratio_vs_fewest": 0.9664022175164139,
+  "best_epoch": 23
+ },
+ {
+  "fold": 2,
+  "variant": "gatv2_survival",
+  "seed": 104,
+  "total": 4262.2027797698975,
+  "ratio_vs_fewest": 1.1046319534227695,
+  "best_epoch": 21
+ },
+ {
+  "fold": 3,
+  "n_states": 1342,
+  "n_assemblies": 327,
+  "variant": "heuristics",
+  "random": 9587.540714183695,
+  "outside_in": 5021.432595252991,
+  "fewest_contacts": 4611.645397186279,
+  "optimal": 150.0676474571228
+ },
+ {
+  "fold": 3,
+  "variant": "gatv2_survival",
+  "seed": 100,
+  "total": 4498.255164384842,
+  "ratio_vs_fewest": 0.9754121960741776,
+  "best_epoch": 10
+ },
+ {
+  "fold": 3,
+  "variant": "gatv2_survival",
+  "seed": 101,
+  "total": 4128.89945936203,
+  "ratio_vs_fewest": 0.8953202390368546,
+  "best_epoch": 37
+ },
+ {
+  "fold": 3,
+  "variant": "gatv2_survival",
+  "seed": 102,
+  "total": 4164.117440223694,
+  "ratio_vs_fewest": 0.9029569885759999,
+  "best_epoch": 54
+ },
+ {
+  "fold": 3,
+  "variant": "gatv2_survival",
+  "seed": 103,
+  "total": 4210.297481298447,
+  "ratio_vs_fewest": 0.9129707769524715,
+  "best_epoch": 28
+ },
+ {
+  "fold": 3,
+  "variant": "gatv2_survival",
+  "seed": 104,
+  "total": 4011.9889430999756,
+  "ratio_vs_fewest": 0.8699690885920729,
+  "best_epoch": 38
+ },
+ {
+  "fold": 4,
+  "n_states": 1374,
+  "n_assemblies": 329,
+  "variant": "heuristics",
+  "random": 7549.677487286056,
+  "outside_in": 5150.534608840942,
+  "fewest_contacts": 4360.446667909622,
+  "optimal": 171.5887212753296
+ },
+ {
+  "fold": 4,
+  "variant": "gatv2_survival",
+  "seed": 100,
+  "total": 3917.4637911319733,
+  "ratio_vs_fewest": 0.8984088304444249,
+  "best_epoch": 13
+ },
+ {
+  "fold": 4,
+  "variant": "gatv2_survival",
+  "seed": 101,
+  "total": 3538.24037361145,
+  "ratio_vs_fewest": 0.811439892075934,
+  "best_epoch": 21
+ },
+ {
+  "fold": 4,
+  "variant": "gatv2_survival",
+  "seed": 102,
+  "total": 3616.1866385936737,
+  "ratio_vs_fewest": 0.8293156444743898,
+  "best_epoch": 23
+ },
+ {
+  "fold": 4,
+  "variant": "gatv2_survival",
+  "seed": 103,
+  "total": 3894.414606332779,
+  "ratio_vs_fewest": 0.8931228616997954,
+  "best_epoch": 10
+ },
+ {
+  "fold": 4,
+  "variant": "gatv2_survival",
+  "seed": 104,
+  "total": 4310.136965036392,
+  "ratio_vs_fewest": 0.9884622593268987,
+  "best_epoch": 9
  }
 ]

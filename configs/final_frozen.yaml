@@ -1,0 +1,162 @@
+frozen_at: campaign Phase 2 freeze (see git log of this file)
+rules: 'docs/PREREG_run05.md (registered) + docs/PREREG_addendum.md (A: clean-test sensitivity; B: exploratory variants)'
+data:
+  labels: data/labels/pilot_v2/labels.jsonl
+  labels_sha256: a2d582bb421340ea9290efa8ae55d5c137915b29f1be0019634be2e11c6d6766
+  states_sha256: 33ba9d6edcbf2958b8e8a3e12bbf86aa6d87a1ea012b4b8ddcd8f809d7c8435d
+  split: data/splits/v2_split.json
+  split_sha256: 1407f5773737c2fed73d34b497e0c7a20005989090b5c846a082df7be7ae2f9a
+  contacts_manifest: experiments/2026-11-24_run04_t8_split/contacts_v2_manifest.json
+  redmax: experiments/2026-11-24_run05_redmax/asap_graphs.jsonl
+  redmax_sha256: 82181dc0a14a87e6fa61facc504d05eeeae4fa635282e115ac54c17d7a32f790
+  clean_test: experiments/2026-11-24_run04_t8_split/t6_test_overlap.json
+  clean_test_sha256: 127de3f2938a65caaf7ef7bf4a95c78d419761e8be8c1b004ed01a37aa63a59a
+asap_zero_shot:
+  ckpt: data/raw/asap_ckpt/pretrained_model.pt
+  sha256: 430a51253c25170e8f845ee21834a1e33714225fdf5f87b7cb687e4fe260d99a
+best_heuristic_val: fewest_contacts
+budget_policies_exploratory:
+- 3.0
+scoring_device: cpu
+registered:
+  mlp_bce:
+  - ckpt: experiments/2026-11-24_run05_train/mlp_bce/seed100/best.pt
+    sha256: 7ebc4bd5cd463906144642ed30c954593dd138728ca94f0292023aec4035334a
+  - ckpt: experiments/2026-11-24_run05_train/mlp_bce/seed101/best.pt
+    sha256: 83b667d4d7720516805a6ea4a9843884cad4f8c42efabde3aae81a5748837247
+  - ckpt: experiments/2026-11-24_run05_train/mlp_bce/seed102/best.pt
+    sha256: 5479f47d16ab86eced2c7d194dd7b9c1e6771544ad731b4d55e93ec11cc79fe0
+  - ckpt: experiments/2026-11-24_run05_train/mlp_bce/seed103/best.pt
+    sha256: 9a9a70f6977f1004bfabdf1be02083471d734f37ecb1afce5ab27f56e0b30d10
+  - ckpt: experiments/2026-11-24_run05_train/mlp_bce/seed104/best.pt
+    sha256: 84e127ab19c0179e0909d13a811851c41ee26f80f6651ab7bdd03868e7404dde
+  mlp_survival:
+  - ckpt: experiments/2026-11-24_run05_train/mlp_survival/seed100/best.pt
+    sha256: 82de7590d80fd953f981f15c2dd0b0de83972eeac8c47f8eadcfbc43882279a0
+  - ckpt: experiments/2026-11-24_run05_train/mlp_survival/seed101/best.pt
+    sha256: 132858169411146db67149f961333674d857e642767a980ccd8857ba904f8ee3
+  - ckpt: experiments/2026-11-24_run05_train/mlp_survival/seed102/best.pt
+    sha256: 1b0d1b12b35d082448aa484e57c72262849e0d822b4b5b28620b567435d74fea
+  - ckpt: experiments/2026-11-24_run05_train/mlp_survival/seed103/best.pt
+    sha256: b40b41d1d52c99152df06285689a62f47615a3819ec7c16b1ac44e6e3b1e7128
+  - ckpt: experiments/2026-11-24_run05_train/mlp_survival/seed104/best.pt
+    sha256: 9ec59f7d420b6ff19b03a5e27c81cecce084412790fa920789a2689ab877be12
+  gnn_bce:
+  - ckpt: experiments/2026-11-24_run05_train/gnn_bce/seed100/best.pt
+    sha256: 4bf797cde1af1c6bb44ca8cbf057be08574b527edcac91a0ce5a3a26720a5ea3
+  - ckpt: experiments/2026-11-24_run05_train/gnn_bce/seed101/best.pt
+    sha256: d3ce12fb40f14f9281bf33a35acd6ffb3e37741540ad8ae9b572bf6b83f1e18e
+  - ckpt: experiments/2026-11-24_run05_train/gnn_bce/seed102/best.pt
+    sha256: eb41592fa4f93061ed286f4cf5a4a7042cecefbc2324951ff49b005ae0cc4a1a
+  - ckpt: experiments/2026-11-24_run05_train/gnn_bce/seed103/best.pt
+    sha256: 44c461a09c651b297eb0d4bbdfd339c5b6515dfdcec89c76675eecae383aa5b3
+  - ckpt: experiments/2026-11-24_run05_train/gnn_bce/seed104/best.pt
+    sha256: 0295065ef1b6db4b89234e17660df8d4772fb58909bd1e0f178db72e14bc697e
+  gnn_survival:
+  - ckpt: experiments/2026-11-24_run05_train/gnn_survival/seed100/best.pt
+    sha256: 30d52477d82805aed47a30ae538cbbd8e3736296ddec3307598406028f7cdc3d
+  - ckpt: experiments/2026-11-24_run05_train/gnn_survival/seed101/best.pt
+    sha256: 8e7cbfee6075d4ef653a4c12ef593611c8fa02c075319142ebe1ce7bdeb0e5bb
+  - ckpt: experiments/2026-11-24_run05_train/gnn_survival/seed102/best.pt
+    sha256: 3f282a3e80ee13f1a39fc707bed597433fbed034a57be301bba66e8dd9a90a14
+  - ckpt: experiments/2026-11-24_run05_train/gnn_survival/seed103/best.pt
+    sha256: f2c547981a4d661d99e00dbf6209c919d405431fb4584404d8624938cc59858d
+  - ckpt: experiments/2026-11-24_run05_train/gnn_survival/seed104/best.pt
+    sha256: 2691b6e60979d9221523fab8f1897e028076f84a4ad6aa450defbc07984e7af9
+  gnn_survival_tail:
+  - ckpt: experiments/2026-11-24_run05_train/gnn_survival_tail/seed100/best.pt
+    sha256: edb82b6391573f6925d47c671282d5b50d2bdcd4a9a081e87c4c4dbf05329c69
+  - ckpt: experiments/2026-11-24_run05_train/gnn_survival_tail/seed101/best.pt
+    sha256: 30a47fbe015583ca2de54fb4b83a8230c903a188fb8a159e01b1116dc0eb0296
+  - ckpt: experiments/2026-11-24_run05_train/gnn_survival_tail/seed102/best.pt
+    sha256: ad36ccbe463191ce7d8aaafdfb0434034a6175b3f1c29af1211481dc6903402e
+  - ckpt: experiments/2026-11-24_run05_train/gnn_survival_tail/seed103/best.pt
+    sha256: bb1b87fd036bace6700c7dcc789e6a69055ab9c8a436c035f1ef54d80ad77573
+  - ckpt: experiments/2026-11-24_run05_train/gnn_survival_tail/seed104/best.pt
+    sha256: f56f6d19b6771b9b399cb1e1e0b114926ab81761cd15f84545ff554fc67aaf59
+  pn_gnn_survival:
+  - ckpt: experiments/2026-11-24_run05_train/pn_gnn_survival/seed100/best.pt
+    sha256: 5ef2177997389a28b512ec64cbfcac9fb561158519e08b38bff79ae1a9aec8c0
+  - ckpt: experiments/2026-11-24_run05_train/pn_gnn_survival/seed101/best.pt
+    sha256: c906deec8e5c13dbddc3c0a2bc27dc0d7f7d661d068d292d22a07702da082eb7
+  - ckpt: experiments/2026-11-24_run05_train/pn_gnn_survival/seed102/best.pt
+    sha256: 8255f91e9011f771cd03ea0700327efb26239314fcd8ec37d9c593e9bca915c5
+  - ckpt: experiments/2026-11-24_run05_train/pn_gnn_survival/seed103/best.pt
+    sha256: 711ebe505eda073a325a3a2393ed8c8ee7bbc7b0d0877d0aa0167271b0ffac40
+  - ckpt: experiments/2026-11-24_run05_train/pn_gnn_survival/seed104/best.pt
+    sha256: c8ac926a99e114ee9741742d13c155961e3ace42fba6507f3750e3a282d264dd
+  asap_retrained:
+  - ckpt: experiments/2026-11-24_run05_train/asap_retrained/seed100/best.pt
+    sha256: a7eb9d59b3bb6c57810cc28a67926e69d3a62adaef9e1b682ddf429d99e39cdf
+  - ckpt: experiments/2026-11-24_run05_train/asap_retrained/seed101/best.pt
+    sha256: f0d86f478965ecb4058a296ec1991d9c11957f442900eec4e91e0b68c38575ee
+  - ckpt: experiments/2026-11-24_run05_train/asap_retrained/seed102/best.pt
+    sha256: 3f5fd784ef239b9d4bfa7c5fcd9b36caeeebdb529856ca372d31c1974025eeca
+  - ckpt: experiments/2026-11-24_run05_train/asap_retrained/seed103/best.pt
+    sha256: 1b69726028aa6fbf6652bab08c7e30121dd2209a4a6ab10a45d9b358c247c8b1
+  - ckpt: experiments/2026-11-24_run05_train/asap_retrained/seed104/best.pt
+    sha256: e02e2707b45f85e3ea0dd810f1a3f4810714e7acbcb9b5e0e0b329e7d9a1db59
+exploratory:
+  gatv2_survival:
+  - ckpt: experiments/2026-11-24_run06_explore_train/gatv2_survival/seed100/best.pt
+    sha256: 9411921cff5592ff1b1992d13c442c72f5d87a35a50d5a6746247547e215072d
+  - ckpt: experiments/2026-11-24_run06_explore_train/gatv2_survival/seed101/best.pt
+    sha256: be5297269ec29d1c3057ac3711abbfb3e74bc5eb3e1da7e5cc362f89631a2fc0
+  - ckpt: experiments/2026-11-24_run06_explore_train/gatv2_survival/seed102/best.pt
+    sha256: 79cf04f7787451ec427b2fc9401c8024349a31a263d11177d306632846d7e80e
+  - ckpt: experiments/2026-11-24_run06_explore_train/gatv2_survival/seed103/best.pt
+    sha256: 913fc485045801b43b73185ea6256b78296c2462c37b8344b20b8af70a95f0e7
+  - ckpt: experiments/2026-11-24_run06_explore_train/gatv2_survival/seed104/best.pt
+    sha256: 62f131bc1b5a4020a10288564959d7b8386a345fb6835ac08d6c2c9d098d5561
+  gt_survival:
+  - ckpt: experiments/2026-11-24_run06_explore_train/gt_survival/seed100/best.pt
+    sha256: 46167b0e84b3c1734da80bd1200c128aa075aed2172b3a90ce326077614f0073
+  - ckpt: experiments/2026-11-24_run06_explore_train/gt_survival/seed101/best.pt
+    sha256: 660287db3beadb95c19236b56eb6ef410245009abee3da79068c45a1102a5acf
+  - ckpt: experiments/2026-11-24_run06_explore_train/gt_survival/seed102/best.pt
+    sha256: 3d443d842feb51fc152b2ab05a512e957d2b17b71c7e5a1bd4bf371b73c13595
+  - ckpt: experiments/2026-11-24_run06_explore_train/gt_survival/seed103/best.pt
+    sha256: 46b675c0a32a091abb1fde9a34e5ca0063091a8eb9b89b9842c39466c32c0397
+  - ckpt: experiments/2026-11-24_run06_explore_train/gt_survival/seed104/best.pt
+    sha256: b095ce67b6cbeb7c3a1691c3990f94fdef20fb3b05873a02885cf97c6fd40eaa
+  gnn_survival_listnet:
+  - ckpt: experiments/2026-11-24_run06_explore_train/gnn_survival_listnet/seed100/best.pt
+    sha256: f9dd08fa49d51e750cc044d1385d65da07a95a66a5b06a5cce0789b01eda0d45
+  - ckpt: experiments/2026-11-24_run06_explore_train/gnn_survival_listnet/seed101/best.pt
+    sha256: 4f52a1ce97e91de86deb1342d224b7c4be22b4293e31f944bb34eb6832aafb0a
+  - ckpt: experiments/2026-11-24_run06_explore_train/gnn_survival_listnet/seed102/best.pt
+    sha256: e391728e3b3f67a55b23bcba462e2c9854eeffb843fc9c9fd32302c2924c20e6
+  - ckpt: experiments/2026-11-24_run06_explore_train/gnn_survival_listnet/seed103/best.pt
+    sha256: 22b7518153f3f72ce81036627d7d1ccbced15bfef78cc47867a0f016964a47bc
+  - ckpt: experiments/2026-11-24_run06_explore_train/gnn_survival_listnet/seed104/best.pt
+    sha256: f49be629a8af005174a6112c829e7ea849608cc424328ff76ce1939f189c177d
+val_best_seed:
+  mlp_bce: 103
+  mlp_survival: 100
+  gnn_bce: 104
+  gnn_survival: 101
+  gnn_survival_tail: 102
+  pn_gnn_survival: 103
+  asap_retrained: 103
+  gatv2_survival: 103
+  gt_survival: 102
+  gnn_survival_listnet: 102
+live:
+  seed_prefix: run05-live
+  oracle: v2 (pre-check -> CMG-RRT, CMG-RRT only when the pull fails)
+  T: 30.0
+  workers: 10
+  idle_guard: true
+  max_reruns: 2
+  priority:
+  - 'P1: random, outside_in, fewest_contacts, asap_zs, every registered trained variant at its val-best seed'
+  - 'P2: the remaining 4 seeds of every registered trained variant'
+  - 'P3: exploratory gt_survival and gnn_survival_listnet (CV rule, DECISIONS #10), val-best seed, then remaining seeds'
+  - 'P4: budget policy T''=3: fewest_contacts@b3 and gnn_survival (val-best seed)@b3'
+  exploratory_live:
+  - gt_survival
+  - gnn_survival_listnet
+commands:
+  replay: env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/eval_v2.py --split test --methods configs/final_methods.json
+    --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --outdir experiments/<date>_final_eval_replay --md reports/final_eval/replay.md
+    --fig-dir reports/final_eval/figures --best-heuristic-val fewest_contacts --budget-policies 3 --boot 10000 --device cpu
