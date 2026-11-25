@@ -19,3 +19,5 @@
 - 2026-11-24 21:50 (corrected from git commit times; was mis-typed 22:00) Phase 1 audit 1 FAIL (2 MAJOR) -> fixed (CPU eval bit-reproducible, bias caveats, CV inner early stopping, profile re-run). Re-audit started.
 - 2026-11-24 21:55 (corrected; was mis-typed 22:15) Phase 1 re-audit PASS. Phase 2 started: gatv2_survival, gt_survival, gnn_survival_listnet training; ordering explorer.
 - 2026-11-24 22:42 exploratory trainings done (gatv2, gt, listnet); CV launched for them.
+- 2026-11-24 23:13 Phase 3: replay done once (marker 23:08:45). Live launched (experiments/2026-11-24_final_eval_live, P1 3,817 runs); idle guard waiting: Firefox media decoding (RDD process) keeps outside load ≈0.5 cores.
+- 2026-11-25 00:10 live P1 at 251/3,817 runs after 35 min (~7/min → P1 ≈ 9 h, all P ≈ 41 h + re-runs). 23% confounded: outside desktop apps ≈0.55 cores, just over 0.5 (NEEDS_AARON).
