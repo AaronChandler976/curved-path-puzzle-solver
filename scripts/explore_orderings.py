@@ -122,6 +122,20 @@ def main():
             res[f"{var}/{name}"] = {"total": sum(c for _, c, _ in st), "seed_totals": tot_seeds}
             per_asm[f"{var}/{name}"] = by
         print(var, {k.split("/")[1]: round(v["total"]) for k, v in res.items() if k.startswith(var + "/")}, flush=True)
+    # heuristics under the same budget policies (the policy is orthogonal to the ordering; a fair comparison needs both)
+    from disasm.eval.replay3 import heuristic_orders
+    for hname in ("fewest_contacts", "outside_in"):
+        for name in ["pc"] + [f"trunc{x:g}" for x in pols]:
+            st = []
+            for g in G:
+                t, s = g["time_s"].numpy().astype(float), g["succ"].numpy().astype(bool)
+                o = heuristic_orders(g)[hname]
+                st.append((g["aid"], trunc_cost(o, t, s, float(name[5:])) if name.startswith("trunc") else cost_order(o, t, s)))
+            by = defaultdict(float)
+            for aid, c in st:
+                by[aid] += c
+            res[f"{hname}/{name}"] = {"total": sum(c for _, c in st), "seed_totals": [sum(c for _, c in st)] * 2}
+            per_asm[f"{hname}/{name}"] = by
     aids = sorted(per_asm[f"{a.variants.split(',')[0]}/pc"])
     L = ["# Phase 2 exploration (VAL only): ordering keys and budget policies\n",
          f"Script `scripts/explore_orderings.py`; raw `{os.path.relpath(a.outdir, ROOT)}/results.json`. {len(G)} val states with ≥ 1 "
@@ -130,11 +144,21 @@ def main():
          "| variant / key | total (s, seed-mean) | seeds mean ± std | ratio vs p/c [95% CI] | HL vs p/c (s) | W/T/L |", "|---|---|---|---|---|---|"]
     for k, v in res.items():
         var = k.split("/")[0]
-        ref = per_asm[f"{var}/pc"]
+        ref = per_asm[f"{var}/pc"]      # for heuristics, "<h>/pc" = the plain heuristic order at full budget
         pr = paired([per_asm[k][i] for i in aids], [ref[i] for i in aids], 10000, hl_boot=False)
         v["vs_pc"] = pr
         L.append(f"| {k} | {v['total']:.0f} | {np.mean(v['seed_totals']):.0f} ± {np.std(v['seed_totals'], ddof=1):.0f} | "
                  f"{pr['ratio']:.3f} [{pr['ratio_ci'][0]:.3f}, {pr['ratio_ci'][1]:.3f}] | {pr['hl']:+.2f} | {pr['wins']}/{pr['ties']}/{pr['losses']} |")
+    L += ["\nSame policy, learned vs heuristic (paired by assembly; the policy is held fixed):\n",
+          "| A vs B | ratio of totals [95% CI] | HL (s) | W/T/L | Wilcoxon p (uncorrected) |", "|---|---|---|---|---|"]
+    res["_cross"] = []
+    for pol in ["pc"] + [f"trunc{x:g}" for x in pols]:
+        for var in a.variants.split(","):
+            A, B = per_asm[f"{var}/{pol}"], per_asm[f"fewest_contacts/{pol}"]
+            pr = paired([A[i] for i in aids], [B[i] for i in aids], 10000, hl_boot=False)
+            pr.update({"a": f"{var}/{pol}", "b": f"fewest_contacts/{pol}"}); res["_cross"].append(pr)
+            L.append(f"| {var} vs fewest contacts, both {pol} | {pr['ratio']:.3f} [{pr['ratio_ci'][0]:.3f}, {pr['ratio_ci'][1]:.3f}] | "
+                     f"{pr['hl']:+.2f} | {pr['wins']}/{pr['ties']}/{pr['losses']} | {pr['p']:.2g} |")
     json.dump(res, open(os.path.join(a.outdir, "results.json"), "w"), indent=1, default=float)
     open(a.md, "w").write("\n".join(L) + "\n")
     log_load(a.outdir, "end")
