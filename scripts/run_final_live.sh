@@ -25,7 +25,7 @@ for grp in ("registered", "exploratory"):
             if grp == "registered":
                 P[1 if seed == best else 2].append(name)
             elif v in c["live"]["exploratory_live"]:
-                P[3].append(name)
+                P[3].insert(0, name) if seed == best else P[3].append(name)    # val-best seed first
         if v == "gnn_survival":
             P[4].append(f"gnn_survival#s{best}@b3")
 json.dump(spec, open(f"{out}/model_spec.json", "w"), indent=1)

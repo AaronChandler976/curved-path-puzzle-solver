@@ -105,3 +105,7 @@
     - New unit test `test_listnet_term_prefers_cheap_successes`.
     These edits to the addendum and the yaml are wording or provenance only, made before any test label was read.
     Every checkpoint sha256 is unchanged.
+12. **Freeze commit = a13b397** (the last commit that touched `docs/PREREG_addendum.md`, `configs/final_frozen.yaml` and
+    `configs/final_methods.json` before the test marker). The first freeze commit was a4eff4a; a13b397 only changed
+    wording and provenance (audit phase2_2). Phase 2 audit phase2_2: PASS. MINOR fixes: ASAP CV time estimate corrected
+    (about 2 h, not 4 h); exploratory live seeds now run val-best seed first (`scripts/run_final_live.sh`).

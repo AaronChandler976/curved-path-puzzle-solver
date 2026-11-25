@@ -26,8 +26,9 @@ folds. They support no "beats" or "significant" claim; that is what the test eva
   - PointNet features: 0.788 vs 0.874.
   - The per-seed standard deviation of the pooled ratio is 0.02–0.05.
 - **Every CV'd learned ranker has a pooled ratio below 1 vs fewest contacts** (0.788–0.975). Fold 2 is above 1 for
-  every one except PN (0.953). ASAP-retrained was **not** in the CV: at about 9 minutes per run, 25 runs would have taken
-  about 4 h. On val it is costlier than fewest contacts (3,145 vs 2,275 s), so it is the exception to this pattern.
+  every one except PN (0.953). ASAP-retrained was **not** in the CV: its logged runs took 310 s on average (561 s at most), so 25 CV runs
+  would have taken roughly 2 h (less with the smaller CV training folds). It was left out to save time, which is a
+  choice and not a necessity. On val it is costlier than fewest contacts (3,145 vs 2,275 s), so it is the exception to this pattern.
 
 ## 3. What enters the test
 `docs/PREREG_addendum.md` §B: all three exploratory variants in replay, GT-Surv and ListNet also live, and the T' = 3 s
