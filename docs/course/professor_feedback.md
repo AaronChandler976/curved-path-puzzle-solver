@@ -14,6 +14,6 @@ heuristics, an MLP and the GNN using the same motion planner.
 |---|---|
 | link to industrial disassembly (EV battery teardown, recycling) | realistic mechanical CAD (Fusion 360) instead of puzzles; framed as the planning-query cost of automated disassembly. No battery-module CAD in the evaluation (optional Phase 2 case study, qualitative only) |
 | realistic CAD geometry | Fusion 360 assemblies (Assemble Them All / ASAP), 3–12 parts |
-| valid states from known feasible sequences | every state is reached from the real assembled product by planner-found, path-validated removals, so every state is physically valid. The sequences are found by our planner, not given by the dataset, and 156/2,022 assemblies get stuck before full disassembly (reported) |
+| valid states from known feasible sequences | every state is reached from the real assembled product by planner-found, path-validated removals. For the 439 allowance-recovered assemblies the assembled CAD state itself has small interpenetrations (tolerated per pair up to the measured start depth + ε), so those states are valid only up to that allowance. The sequences are found by our planner, not given by the dataset, and 156/2,022 assemblies get stuck before full disassembly (reported) |
 | GNN ranks the next expensive query | GNN over the contact graph scores parts; queried in p/c order |
 | compare random / heuristics / MLP / GNN, same planner | all orderings use oracle v2 (pre-check → CMG-RRT), same T |

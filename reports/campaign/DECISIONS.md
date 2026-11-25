@@ -33,7 +33,8 @@
    path, not used by oracle v2).
 4. **Phase 1 preparation overlaps the Phase 0 audit; Phase 1 results don't.** While the Phase 0 auditor runs I compute
    ASAP's redmax contact graphs (geometry only, all 2,022 v2 assemblies, no labels) and build and test the train/val
-   graphs. No model is trained and no val number is produced before the Phase 0 audit passes. *Why:* the prompt wants the
+   graphs. No registered training run and no val number happen before the Phase 0 audit passes. (Correction after audit
+   phase0_2: three 3-epoch smoke models were trained on a dev split of 300 train-only assemblies, to test the code.) *Why:* the prompt wants the
    machine kept busy and the order "phase starts after audit" protects results. Nothing here is a result.
    *Alt:* idle until the audit ends.
 5. **Phase 0 audit MAJOR (41 test assemblies seen in T6): split kept, overlap disclosed, sensitivity analysis on the 306

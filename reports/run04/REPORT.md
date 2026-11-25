@@ -79,8 +79,8 @@ because both tables draw from one bootstrap random generator. They are the same 
   model or ordering was chosen on them; they informed oracle settings common to all methods. The split is kept. A
   sensitivity analysis of the §7 rule on the 306 other test assemblies is pre-registered in `docs/PREREG_addendum.md`
   §A. List: `experiments/2026-11-24_run04_t8_split/t6_test_overlap.json`.
-- **Distribution shift:** test is 63% allowance-recovered and 37% 9–12-part assemblies, while train is 79% v1
-  (3–8 parts, no allowance). Test performance therefore measures transfer to larger and interpenetrating assemblies,
+- **Distribution shift:** by source, test is 63% allowance-recovered (fresh-allowance) and 37% from the clean 9–12-part
+  source. By part count, 51% of test (176/347) has 9–12 parts. Train is 79% v1 (3–8 parts, no allowance). Test performance therefore measures transfer to larger and interpenetrating assemblies,
   not in-distribution accuracy.
 - **Pre-registration:** `docs/PREREG_run05.md`, with §8 filled from these counts. Since its first commit only §8 has
   changed (`git diff b0d4bf8 090863e -- docs/PREREG_run05.md`).

@@ -1,7 +1,9 @@
 # Pre-registration addendum for the final test (run 05 / campaign)
 
 This file extends `docs/PREREG_run05.md`. It never changes a registered comparison, metric or the §7 decision rule.
-Part A was committed on 2026-11-24, before any v2 model was trained and before any v2 val number existed. Part B (which
+Part A was committed on 2026-11-24 at 18:49, before any v2 val or test number existed and before the registered
+training began. (Three 3-epoch pipeline smoke models had been trained at 18:42–18:43 on a dev split made of 300 *train*
+assemblies only, `experiments/2026-11-24_run05_dev_smoke/`; they produced no v2 val/test number and are not used.) Part B (which
 exploratory variants enter the test) is added in campaign Phase 2, before the freeze.
 
 ## A. Disclosure: 41 test assemblies were seen during run 04 T6 development (added after the Phase 0 audit)
@@ -11,7 +13,10 @@ exploratory variants enter the test) is added in campaign Phase 2, before the fr
 (50 recovered assemblies, used to validate and revise the per-pair allowance rule, run 04 DECISIONS #18–#19). The v2
 split builder (T8) did not exclude them. **41 of the 347 test assemblies** are in one of these samples, 26 of them in
 the allowance check. List: `experiments/2026-11-24_run04_t8_split/t6_test_overlap.json` (`union`; the 306 others are
-`clean_test`). Found by the Phase 0 independent audit (`reports/campaign/AUDITS/phase0_1.md`).
+`clean_test`), made by `experiments/2026-11-24_run04_t8_split/make_t6_overlap.py` (re-run gives an identical file).
+Wording note: `docs/PREREG_run05.md` §0 says the test set is fresh assemblies "never in pilot_v1". Precisely, no test
+assembly has a pilot_v1 query label; 171 have a pilot_v1 `skipped` summary line (they were excluded from v1 for
+interpenetration). Found by the Phase 0 independent audit (`reports/campaign/AUDITS/phase0_1.md`).
 
 **What was and was not chosen on them.** No model, ordering, feature or hyperparameter was chosen on them. They
 informed two oracle settings that apply to every method equally: the allowance caps and rule, and the labelling
