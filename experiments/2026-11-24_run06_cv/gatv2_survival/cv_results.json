@@ -24,5 +24,13 @@
   "total": 3764.7477326393127,
   "ratio_vs_fewest": 0.918579491967948,
   "best_epoch": 20
+ },
+ {
+  "fold": 0,
+  "variant": "gatv2_survival",
+  "seed": 102,
+  "total": 3394.8691477775574,
+  "ratio_vs_fewest": 0.8283309795307173,
+  "best_epoch": 39
  }
 ]

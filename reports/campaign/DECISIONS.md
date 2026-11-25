@@ -77,12 +77,14 @@
      a list of what is and isn't timed; re-run alone.
    - *Wording:* §7 verdicts are printed only for test/main; other configs and val are "descriptive". The random
      ordering's "solved within T" is shown as "—". Resample counts are stated in the md header.
-10. **Freeze inclusion rule, written 2026-11-24 22:43 before the exploratory variants' CV results exist.**
+10. **Freeze inclusion rule, written 2026-11-24 22:43 before the exploratory variants' full CV results exist.**
+    (Seen by then: one fold × one seed per exploratory variant, from a partial summary: fold-0 ratios GT 0.717,
+    GATv2 0.797, ListNet 0.850. The rule below doesn't use them.)
     - *Replay on test:* all three exploratory variants (GATv2-Surv, GT-Surv, GNN-Surv-ListNet) enter the test replay
       as "post-registration, exploratory", whatever their CV result. Reporting all of them avoids choosing on CV noise;
       replay is cheap.
     - *Live on test:* an exploratory variant also enters the live evaluation only if its CV pooled ratio vs fewest
-      contacts is lower than GNN-Surv's (0.874, ). Live time is limited; the registered
+      contacts is lower than GNN-Surv's (0.874, `reports/explore/cv.md`). Live time is limited; the registered
       methods have priority.
     - *Budget policy:* the two-pass policy with T' = 3 s (best of the pre-listed {1, 3, 10} on val for most orderings,
       including fewest contacts) is replayed on test for EVERY ordering, as exploratory. Live, if time allows after the
