@@ -17,3 +17,4 @@
 - 2026-11-24 20:04 conda env paper (tectonic 0.17.0, ffmpeg 9.1) ready; paper skeleton compiles.
 - 2026-11-24 21:35 Phase 1 work done (training 18:54–21:17, val eval, profile). Phase 1 audit started.
 - 2026-11-24 22:00 Phase 1 audit 1 FAIL (2 MAJOR) -> fixed (CPU eval bit-reproducible, bias caveats, CV inner early stopping, profile re-run). Re-audit started.
+- 2026-11-24 22:15 Phase 1 re-audit PASS. Phase 2 started: gatv2_survival, gt_survival, gnn_survival_listnet training; ordering explorer.
