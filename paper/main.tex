@@ -210,8 +210,8 @@ $c\le3.7$\,s and then ran unsolved for more than 30\,s. These are confident erro
 
 \textbf{Root cause: shift in size and geometry.} The training set is 79\% 3--8-part assemblies; the test set is 51\%
 9--12-part and 63\% assemblies whose CAD interpenetrates slightly (tolerated per pair). The 20 largest losses are all
-in the fresh sources, 15 of them with 9--12 parts. Validation (80\% small assemblies) and cross-validation had fewer than
-30 large assemblies per subset and could not reveal this. Calibration on the test set is still good on average
+in the fresh sources, 15 of them with 9--12 parts. Validation (80\% small assemblies) had fewer than 30 large assemblies in
+every size subset, and the cross-validation was only summarised in aggregate, so neither revealed this. Calibration on the test set is still good on average
 (ECE 0.038) and the within-state C-index is 0.674 (ASAP: 0.593), so the failure is in the tail, where it matters.
 
 \textbf{Negative results along the way.}
