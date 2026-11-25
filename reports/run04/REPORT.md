@@ -24,7 +24,8 @@ moved it to Phase 5 so it cannot delay the test (`prompts/campaign.md`).
 GNN-Surv used **0.595× [0.455, 0.821]** of fewest contacts' planner time (HL −3.5 s per assembly, 43/2/11
 wins/ties/losses) and 0.637× [0.463, 0.876] of ASAP zero-shot's, over 56 assemblies. The confounded run 03 numbers
 were 0.613 and 0.670, and method totals moved by under 3%, so run 03's confounding did not change its conclusion
-(`reports/run04/live_rerun.md`).
+(`reports/run04/live_rerun.md`). That file shows two slightly different CIs for the same ratio in two tables,
+because both tables draw from one bootstrap random generator. They are the same statistic with Monte-Carlo noise.
 
 ## 3. T4/T5: the oracle bug, the fix, the SDF decision
 - **Bug:** the v1 adapter never tested the start pose's straight connection to a goal. Only newly added
@@ -34,16 +35,23 @@ were 0.613 and 0.670, and method totals moved by under 3%, so run 03's confoundi
   confirmed and paths validated at step ≤ ε/2.
 - **Validation (124 misses + 500 random queries):** 123/124 misses solved (v1: 52). On the random queries, success was
   86.4% vs 86.8%, total time 19% lower, median query 0.037 s vs 0.89 s, and **0 invalid successes** (v1: 28).
-  Separately, 18.5% of v1 label successes fail the fine path check (`reports/run04/oracle_v2.md`).
+  Separately, 18.5% of v1 label successes fail the fine path check. Caveat: v1 used unseeded samples, so the
+  check used a seeded draw of the same size. Run 04's own T3 live rerun (oracle v1, seeded) had 9.7% invalid
+  successes at fine resolution (`reports/run04/oracle_v2.md`), which is why T3's timings are a development result only.
 - **T5 (16505, alpha; 3 seeds × {exact, learned}):** the learned SDF "solved" 16505 3/3 and exact 0/3, but all 3 learned
   paths penetrate the part when checked with the exact SDF (27–49% of edges, down to −0.149 against ε = 0.005).
   Counting valid solutions it is 0/3 vs 0/3 on both puzzles. The hybrid fix was not triggered and oracle v2 is
-  unchanged (DECISIONS #23).
+  unchanged (DECISIONS #23). 4 of the 12 T5 runs are flagged confounded (busy_frac 0.06–0.64, `sdf_puzzles.md`). The
+  table's "path fine-valid" column is empty; the path re-check is in its own table below it.
 
 ## 4. T6/T7: data v2
 - **Pool:** 255 clean 9–12-part assemblies plus 439 interpenetrating assemblies recovered by the per-pair allowance;
   919 stay excluded as over the caps (`reports/run04/data_pool.md`). All 1,328 v1 assemblies were relabelled.
-- **Labels:** 2,022 assemblies (1,866 complete, 156 stuck), 41,913 queries, 0 errors.
+- **Labels:** 2,022 assemblies (1,866 complete, 156 stuck), 41,913 queries, 0 errors. `labels_v2.md` describes the
+  whole pool, test included. It was written as the T7 labelling check before the split existed, and nothing was
+  chosen from it.
+- **Code version:** the run folder's `git_hash.txt` says `b0d4bf8` (dirty) because it was written at launch. The code
+  that ran is `dc8767e`, committed 21 s later and carried on every summary line.
   - Confounded: 2,128 queries (5.1%) on the first pass; all fixed by re-runs, 0 left.
   - Wall time 12.6 h (05:47–18:30, 2026-11-24) with 2,001 s of busy waits.
   - Every summary line carries git `dc8767e`.
@@ -63,8 +71,17 @@ were 0.613 and 0.670, and method totals moved by under 3%, so run 03's confoundi
 | val | 250 | 199 / 19 / 32 |
 | test | 347 | 0 / 127 / 220 |
 
-- **Test:** fresh assemblies only, no pilot_v1 assembly, 00014 not in test (asserted in the builder and in
+- **Test:** fresh assemblies only. No test assembly has any pilot_v1 query label; 171 of them have a pilot_v1
+  `skipped` summary line (excluded from v1 for interpenetration). 00014 is not in test (asserted in the builder and in
   `tests/test_split_v2.py`).
+- **Disclosure (Phase 0 audit, MAJOR finding):** **41 test assemblies were labelled during T6 development**
+  (cost pilot 110, allowance check 50; 26 of the 41 are in the allowance check that revised the allowance rule). No
+  model or ordering was chosen on them; they informed oracle settings common to all methods. The split is kept. A
+  sensitivity analysis of the §7 rule on the 306 other test assemblies is pre-registered in `docs/PREREG_addendum.md`
+  §A. List: `experiments/2026-11-24_run04_t8_split/t6_test_overlap.json`.
+- **Distribution shift:** test is 63% allowance-recovered and 37% 9–12-part assemblies, while train is 79% v1
+  (3–8 parts, no allowance). Test performance therefore measures transfer to larger and interpenetrating assemblies,
+  not in-distribution accuracy.
 - **Pre-registration:** `docs/PREREG_run05.md`, with §8 filled from these counts. Since its first commit only §8 has
   changed (`git diff b0d4bf8 090863e -- docs/PREREG_run05.md`).
 - **Found during T8:** contact-graph sampling was unseeded (trimesh ignores `np.random.seed`). Labels are unaffected

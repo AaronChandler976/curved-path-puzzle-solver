@@ -36,3 +36,7 @@
    graphs. No model is trained and no val number is produced before the Phase 0 audit passes. *Why:* the prompt wants the
    machine kept busy and the order "phase starts after audit" protects results. Nothing here is a result.
    *Alt:* idle until the audit ends.
+5. **Phase 0 audit MAJOR (41 test assemblies seen in T6): split kept, overlap disclosed, sensitivity analysis on the 306
+   clean test assemblies pre-registered** in `docs/PREREG_addendum.md` §A (committed before any v2 training).
+   *Alt:* re-split (a data-dependent change after a committed split) or drop the 41 (shrinks test, changes strata).
+   The overlap informed only oracle settings shared by every method.
