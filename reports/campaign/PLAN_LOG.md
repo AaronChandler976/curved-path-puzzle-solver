@@ -22,3 +22,4 @@
 - 2026-11-24 23:13 Phase 3: replay done once (marker 23:08:45). Live launched (experiments/2026-11-24_final_eval_live, P1 3,817 runs); idle guard waiting: Firefox media decoding (RDD process) keeps outside load ≈0.5 cores.
 - 2026-11-25 00:10 live P1 at 251/3,817 runs after 35 min (~7/min → P1 ≈ 9 h, all P ≈ 41 h + re-runs). 23% confounded: outside desktop apps ≈0.55 cores, just over 0.5 (NEEDS_AARON).
 - 2026-11-25 02:11 live P1 919/3,817 (5.1 runs/min; 57 confounded, 0 errors). Projection: P1 ~11:30 today; all P ~Fri 11-27.
+- 2026-11-25 07:47 live P1 DONE (29,331 s wall); P2 started (9,716 runs ≈ 22 h at 7.4/min).
