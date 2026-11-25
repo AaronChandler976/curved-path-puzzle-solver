@@ -92,7 +92,13 @@ def main():
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--boot", type=int, default=10000)
     ap.add_argument("--procs", type=int, default=10)
+    ap.add_argument("--best-heuristic-val", default="", choices=["", "outside_in", "fewest_contacts"],
+                    help="PREREG §7: the best heuristic chosen on VAL (required with --split test)")
+    ap.add_argument("--sensitivity", default=os.path.join(ROOT, "experiments/2026-11-24_run04_t8_split/t6_test_overlap.json"),
+                    help="PREREG_addendum §A: json with 'clean_test'; the §7 rule is also evaluated on those assemblies (test only)")
     a = ap.parse_args()
+    if a.split == "test" and not a.best_heuristic_val:
+        raise SystemExit("--best-heuristic-val is required with --split test (PREREG §7: chosen on val)")
     os.makedirs(a.outdir, exist_ok=True)
     from disasm.util.runlog import log_load
     log_load(a.outdir, "start")
@@ -239,7 +245,9 @@ def main():
         cres = {"n_scored": len(sc), "n_unscored": len(un), "unscored_total_s": sum(r[f"{cf}/total_s"] for r in un)}
         cres["all"], _, _ = table(sc, cf, "All scored states")
         cres["paired"] = comparisons(sc, cf, "all scored states")
-        heur = min(("outside_in", "fewest_contacts"), key=lambda k: cres["all"][k]["total"][0])
+        # PREREG §7: on test the best heuristic is the one chosen on VAL (main config), passed in; on val it is computed
+        heur = a.best_heuristic_val if a.split == "test" else \
+            min(("outside_in", "fewest_contacts"), key=lambda k: results["configs"].get("main", cres)["all"][k]["total"][0])
         cres["best_heuristic"] = heur
         if MAIN in S:
             ax, ay = per_asm(sc, f"{cf}/{MAIN}"), per_asm(sc, f"{cf}/{heur}")
@@ -255,6 +263,23 @@ def main():
                      f"{pr['ratio']:.3f} [{pr['ratio_ci'][0]:.3f}, {pr['ratio_ci'][1]:.3f}], HL {pr['hl']:+.2f} s, Holm p "
                      f"{ph if ph is None else f'{ph:.2g}'} → (a) {ca}, (b) {cb}: **{cres['decision_rule_s7']['verdict']}**"
                      + (" (val: development only; the registered rule applies to test)" if a.split == "val" else ""))
+        # PREREG_addendum §A: §7 on the clean test assemblies (not seen in run 04 T6); heuristic = the one chosen on val
+        if a.split == "test" and a.sensitivity and MAIN in S:
+            clean = set(json.load(open(a.sensitivity))["clean_test"])
+            heur_val = heur
+            sub = [r for r in sc if r["assembly_id"] in clean]
+            L.append(f"\n### Sensitivity (PREREG_addendum §A): {len({r['assembly_id'] for r in sub})} clean test assemblies ({cf})")
+            fam = comparisons(sub, cf, "clean test assemblies")
+            ax, ay = per_asm(sub, f"{cf}/{MAIN}"), per_asm(sub, f"{cf}/{heur_val}")
+            aids = sorted(ax)
+            pr = paired([ax[i] for i in aids], [ay[i] for i in aids], a.boot)
+            ph = next((q["p_holm"] for q in fam if q["b"] == heur_val and q["a"] == MAIN), None)
+            ca, cb = pr["ratio_ci"][1] < 1.0, ph is not None and ph < 0.05 and pr["hl"] < 0
+            v = "beats" if (ca and cb) else ("cheaper on the typical assembly, not on total time" if cb else "does not beat")
+            cres["sensitivity_clean"] = {"n_assemblies": len(aids), "paired": fam, "vs_best_heuristic": pr,
+                                         "best_heuristic": heur_val, "verdict": v}
+            L.append(f"\n**§7 on clean test:** GNN-Surv / {NAMES[heur_val]} = {pr['ratio']:.3f} [{pr['ratio_ci'][0]:.3f}, "
+                     f"{pr['ratio_ci'][1]:.3f}], HL {pr['hl']:+.2f} s, Holm p {ph if ph is None else f'{ph:.2g}'}: **{v}**")
         # subsets
         L.append(f"\n### Subsets ({cf}; reported, never used for selection)")
         cres["subsets"] = {}
