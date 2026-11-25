@@ -89,7 +89,7 @@ def main():
     ap.add_argument("--md", required=True)
     ap.add_argument("--fig-dir", required=True)
     ap.add_argument("--graphs", default=None, help="default data/processed/run05/graphs_<split>.pt (val: graphs_train_val.pt)")
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="cpu", help="cpu (default): bit-reproducible scores (GPU ASAP scoring is not; audit phase1_1)")
     ap.add_argument("--boot", type=int, default=10000)
     ap.add_argument("--procs", type=int, default=10)
     ap.add_argument("--best-heuristic-val", default="", choices=["", "outside_in", "fewest_contacts"],
@@ -169,7 +169,14 @@ def main():
          f"`{os.path.relpath(a.outdir, ROOT)}/results.json`. Graphs `{os.path.relpath(gpath, ROOT)}` ({len(G)} {a.split} states, "
          f"{results['n_assemblies']} assemblies). Replay of logged pilot_v2 queries (nothing simulated). Trained variants: "
          "per-state cost = mean over their seeds; 'seeds' = mean ± std of the per-seed totals. CIs: bootstrap over assemblies "
-         f"({a.boot} resamples, seed 0).\n"]
+         f"({a.boot} resamples, seed 0; median-ratio CIs {min(a.boot, 2000)} resamples; HL CIs 2,000). Scores computed on {a.device}.\n"]
+    if a.split == "val":
+        L.append("**Selection bias (val).** Val replay cost chose every trained variant's config and checkpoint epoch "
+                 "(PREREG §3), and these tables report the same cost on the same states. The trained models' val numbers, "
+                 "CIs and p-values are therefore optimistically biased relative to the untrained heuristics and are "
+                 "descriptive only. Per-epoch val cost fluctuates by more than most between-variant gaps "
+                 "(`reports/run05/training.md` curves). Unbiased estimates: the test set (Phase 3) and the group CV "
+                 "with inner early stopping (Phase 2).\n")
 
     def per_asm(sub, key):
         by = defaultdict(float)
@@ -205,10 +212,12 @@ def main():
                 q = float(np.mean([r[key + "_q"] for r in sub]))
                 if m in trained:
                     solv = float(np.mean([np.mean(np.array(r[key + "#seeds"]) <= 30.0) for r in sub]))
+                elif m == "random":
+                    solv = None            # the expected cost is not a per-order outcome; not defined for random here
                 else:
                     solv = float(np.mean([r[key] <= 30.0 for r in sub]))
                 e.update({"median_ratio_to_optimal": md, "mean_queries": q, "solved_within_T": solv})
-                line += f" {md[0]:.2f} [{md[1]:.2f}, {md[2]:.2f}] | {q:.2f} | {solv:.3f} |"
+                line += f" {md[0]:.2f} [{md[1]:.2f}, {md[2]:.2f}] | {q:.2f} | {'—' if solv is None else f'{solv:.3f}'} |"
             L.append(line)
             res[m] = e
         return res, by_asm, aids
@@ -259,10 +268,18 @@ def main():
             cb = ph is not None and ph < 0.05 and pr["hl"] < 0
             cres["decision_rule_s7"] = {"best_heuristic": heur, "a_ratio_ci_below_1": ca, "b_holm_wilcoxon_and_hl": cb,
                                         "verdict": "beats" if (ca and cb) else ("cheaper on the typical assembly, not on total time" if cb else "does not beat")}
-            L.append(f"\n**§7 rule ({a.split}, {cf}):** best heuristic on this split = {NAMES[heur]}; GNN-Surv / heuristic = "
-                     f"{pr['ratio']:.3f} [{pr['ratio_ci'][0]:.3f}, {pr['ratio_ci'][1]:.3f}], HL {pr['hl']:+.2f} s, Holm p "
-                     f"{ph if ph is None else f'{ph:.2g}'} → (a) {ca}, (b) {cb}: **{cres['decision_rule_s7']['verdict']}**"
-                     + (" (val: development only; the registered rule applies to test)" if a.split == "val" else ""))
+            registered = a.split == "test" and cf == "main"
+            cres["decision_rule_s7"]["registered_decision"] = registered
+            hl = "best heuristic chosen on val" if a.split == "test" else "best heuristic on this split"
+            if registered:
+                L.append(f"\n**§7 decision rule (REGISTERED: test, main configuration):** {hl} = {NAMES[heur]}; GNN-Surv / heuristic = "
+                         f"{pr['ratio']:.3f} [{pr['ratio_ci'][0]:.3f}, {pr['ratio_ci'][1]:.3f}], HL {pr['hl']:+.2f} s, Holm p "
+                         f"{ph if ph is None else f'{ph:.2g}'} → (a) {ca}, (b) {cb}: **{cres['decision_rule_s7']['verdict']}**")
+            else:
+                L.append(f"\n*§7 conditions, descriptive only ({a.split}, {cf}; the registered rule applies to test, main configuration):* "
+                         f"{hl} = {NAMES[heur]}; GNN-Surv / heuristic = {pr['ratio']:.3f} [{pr['ratio_ci'][0]:.3f}, {pr['ratio_ci'][1]:.3f}], "
+                         f"HL {pr['hl']:+.2f} s, Holm p {ph if ph is None else f'{ph:.2g}'} → (a) {ca}, (b) {cb}"
+                         + ("; on val these are biased toward the trained models (val chose their configs and epochs)" if a.split == "val" else ""))
         # PREREG_addendum §A: §7 on the clean test assemblies (not seen in run 04 T6); heuristic = the one chosen on val
         if a.split == "test" and a.sensitivity and MAIN in S:
             clean = set(json.load(open(a.sensitivity))["clean_test"])
