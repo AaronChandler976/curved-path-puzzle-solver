@@ -31,3 +31,8 @@
    labels are frozen.
    *Also unseeded, decision-free:* `exact_sdf._check_sign` (a sign-agreement diagnostic) and `sdf_train` (learned-SDF
    path, not used by oracle v2).
+4. **Phase 1 preparation overlaps the Phase 0 audit; Phase 1 results don't.** While the Phase 0 auditor runs I compute
+   ASAP's redmax contact graphs (geometry only, all 2,022 v2 assemblies, no labels) and build and test the train/val
+   graphs. No model is trained and no val number is produced before the Phase 0 audit passes. *Why:* the prompt wants the
+   machine kept busy and the order "phase starts after audit" protects results. Nothing here is a result.
+   *Alt:* idle until the audit ends.
