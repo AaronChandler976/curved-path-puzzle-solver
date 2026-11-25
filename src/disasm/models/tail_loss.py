@@ -61,3 +61,36 @@ def tail_term(score: torch.Tensor, succ: torch.Tensor, cost: torch.Tensor, batch
         if succ[m].any():
             vals.append(soft_replay_cost(score[m], succ[m], cost[m], tau) / T)
     return torch.stack(vals).mean() if vals else score.sum() * 0.0
+
+
+def neuralsort_batched(s: torch.Tensor, tau: float) -> torch.Tensor:
+    """s: (B, n) -> (B, n, n); row-wise identical to neuralsort() applied to each s[b] (same formula, batched)."""
+    B, n = s.shape
+    A = (s[:, :, None] - s[:, None, :]).abs()                       # (B, n, n)
+    Bsum = A.sum(2)                                                  # (B, n): A_s 1
+    k = torch.arange(1, n + 1, device=s.device, dtype=s.dtype).reshape(1, n, 1)
+    C = (n + 1 - 2 * k) * s[:, None, :]                              # (B, n, n): row k, column i
+    return torch.softmax((C - Bsum[:, None, :]) / tau, dim=2)
+
+
+def tail_term_grouped(score, succ, cost, batch, T: float, tau: float = 0.1) -> torch.Tensor:
+    """Same value as tail_term (mean over states with >= 1 success of C_soft / T), computed by grouping states of
+    equal size and sorting each group in one batched call (no padding, so every state uses exactly its own n x n
+    NeuralSort matrix). Campaign Phase 1 speed-up; equivalence tested in tests/test_tail_loss.py."""
+    G = int(batch.max()) + 1
+    counts = torch.bincount(batch, minlength=G)
+    has = torch.zeros(G, dtype=torch.bool, device=score.device).index_put_((batch,), succ.bool(), accumulate=True)
+    order = torch.argsort(batch, stable=True)
+    starts = torch.cumsum(counts, 0) - counts
+    vals = []
+    for n in torch.unique(counts).tolist():
+        gs = torch.nonzero((counts == n) & has).flatten()
+        if len(gs) == 0:
+            continue
+        idx = order[(starts[gs][:, None] + torch.arange(n, device=score.device)[None, :])]   # (g, n)
+        s, y, t = score[idx], succ[idx].to(score.dtype), cost[idx].to(score.dtype)
+        P = neuralsort_batched(s, tau)
+        ys, ts = (P @ y[:, :, None]).squeeze(2), (P @ t[:, :, None]).squeeze(2)
+        surv = torch.cumprod(torch.cat([torch.ones_like(ys[:, :1]), 1 - ys[:, :-1]], 1), 1)
+        vals.append((ts * surv).sum(1) / T)
+    return torch.cat(vals).mean() if vals else score.sum() * 0.0

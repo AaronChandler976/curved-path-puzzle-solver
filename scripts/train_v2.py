@@ -124,7 +124,7 @@ def train_one(var, cfg, tr, va, batcher, outdir, dev, log):
         r = json.load(open(res_path))
         log(f"{os.path.basename(outdir)}: exists (best {r['best_val_cost']:.1f}), skipped")
         return r
-    from disasm.models.tail_loss import tail_term
+    from disasm.models.tail_loss import tail_term_grouped as tail_term   # = tail_term, batched by state size
     torch.manual_seed(cfg["seed"]); np.random.seed(cfg["seed"])
     T = tr[0]["T"]
     model = build_model(var, cfg, T).to(dev)
@@ -148,11 +148,11 @@ def train_one(var, cfg, tr, va, batcher, outdir, dev, log):
                 s = torch.log(p.clamp_min(1e-6)) - torch.log(c.clamp_min(1e-3))
                 tt = tail_term(s, b["succ"], b["time_s"], b["batch"], T, tau=cfg["tau"])
                 loss = loss + cfg["lam"] * tt
-                ttl += float(tt) * (len(b["ptr"]) - 1)
+                ttl += float(tt.detach()) * (len(b["ptr"]) - 1)
             opt.zero_grad(); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step()
-            tl += float(loss) * (len(b["ptr"]) - 1); n += len(b["ptr"]) - 1
+            tl += float(loss.detach()) * (len(b["ptr"]) - 1); n += len(b["ptr"]) - 1
         model.eval()
         with torch.no_grad():
             vl, vn = 0.0, 0
