@@ -88,14 +88,20 @@ descriptive, see the selection-bias note above):
 ASAP-retrained's row is in `val_replay.md`.
 
 ## 5. Latency, memory and the planner time it saves (`reports/run05/profile.md`)
-- **Measurement:** forward pass only, median over repeats, 200 val states, run alone (load 0.05 at start).
-- **Feature extraction:** 2.50 ms per state from the cached contact graph.
+- **Run:** `experiments/2026-11-25_run05_profile/`, alone after a 5-minute idle wait; outside load ≤ 0.36 cores
+  throughout. The earlier run `experiments/2026-11-24_run05_profile/` is superseded (it had mislabelled columns).
+- **What is timed:** the forward pass on collated inputs (median), batch 1 and one batch of all 200 sampled val states.
+- **Feature extraction:** 2.41 ms per state (median) from the cached per-assembly contact graph. Not included in any
+  timing: the per-assembly contact graph, PointNet point-cloud sampling, and ASAP's point clouds and redmax graph (all
+  once per assembly).
 - **GNN-Surv:** 32,392 parameters; 0.12 ms per state on 1 CPU thread at batch 1; 0.24 ms on GPU at batch 1;
-  0.0013 ms per state batched on GPU; 11 MB peak GPU memory.
-- **ASAP's model:** 1.7 M parameters; 7.0 ms on 1 CPU thread; 3.8 GB peak GPU memory at batch 256.
-- **Trade-off:** at val replay, GNN-Surv saves 0.44 s of planner time per state against fewest contacts (Tail 0.63,
-  PN 0.59). That is about 170× its own per-state cost (features 2.50 ms + inference 0.12 ms ≈ 2.6 ms on one CPU thread); Tail ≈ 240×, PN ≈ 135× (its PointNet costs 1.9 ms more).
-- **PointNet:** its point-cloud encoder costs 1.9 ms per state on CPU and 904 MB peak GPU memory batched.
+  0.0013 ms per state batched on GPU; 11 MB peak GPU memory batched.
+- **ASAP's model:** 1.7 M parameters; 7.0 ms on 1 CPU thread; 3.8 GB peak GPU memory batched.
+- **PN-GNN-Surv:** its whole forward pass, PointNet encoder included, costs 1.89 ms on 1 CPU thread at batch 1, and
+  904 MB peak GPU memory batched.
+- **Trade-off (val, descriptive):** GNN-Surv saves 0.44 s of planner time per state against fewest contacts (Tail 0.63,
+  PN 0.59). That is about 170× its own per-state cost on one CPU thread (2.41 + 0.12 ≈ 2.5 ms); Tail ≈ 250×, PN ≈ 140×.
+  Even with the val optimism (§3) the ranker's cost is negligible next to the planner time at stake.
 
 ## 6. Deviations and choices (each with its reason)
 - `reports/campaign/DECISIONS.md` #2: Holm family of 11 (9 + 2 intervention pairs), CMG-RRT-only scored states,

@@ -14,6 +14,8 @@ Source: `experiments/2026-11-24_run05_train/<variant>/` (`selection.json`, `grid
 
 Every seed is listed; none is dropped.
 
+**Reading the curves.** Train loss keeps falling while val loss and val replay cost bottom out early and then drift up: the models overfit after roughly 5–15 epochs. Val replay cost also jumps by several hundred seconds from epoch to epoch, because a few states where an unsolved (~30 s) query is tried first dominate the total. The 5-epoch trailing mean and the early best epochs are the registered response to this. Because val cost selected each checkpoint, val numbers for trained models are optimistic (see REPORT.md). The registered minimum of 10 epochs is implemented as 'do not stop before epoch 10'; the best checkpoint may come from an earlier epoch (18 of the 35 final checkpoints do; DECISIONS #9).
+
 
 ### Grid: mlp_bce
 
