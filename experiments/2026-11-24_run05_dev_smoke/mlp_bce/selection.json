@@ -1,0 +1,40 @@
+{
+ "variant": "mlp_bce",
+ "grid_seeds": [
+  0
+ ],
+ "smooth": 1,
+ "min_epochs": 0,
+ "patience": 25,
+ "max_epochs": 3,
+ "grid": [
+  {
+   "hidden": 64,
+   "lr": 0.001,
+   "layers": 2,
+   "lam": null,
+   "mean_val_cost": 1142.0283608436584,
+   "per_seed": [
+    1142.0283608436584
+   ],
+   "best_epoch": [
+    2
+   ]
+  }
+ ],
+ "chosen": {
+  "hidden": 64,
+  "lr": 0.001,
+  "layers": 2,
+  "lam": null
+ },
+ "chosen_mean_val_cost": 1142.0283608436584,
+ "seeds": [
+  {
+   "seed": 100,
+   "best_val_cost": 1406.8561923503876,
+   "best_epoch": 2,
+   "ckpt": "experiments/2026-11-24_run05_dev_smoke/mlp_bce/seed100/best.pt"
+  }
+ ]
+}

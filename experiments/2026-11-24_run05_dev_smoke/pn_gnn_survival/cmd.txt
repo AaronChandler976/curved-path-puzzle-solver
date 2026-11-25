@@ -1,0 +1,1 @@
+scripts/train_v2.py --variant pn_gnn_survival --outdir experiments/2026-11-24_run05_dev_smoke --graphs data/processed/run05/dev_train_only.pt --quick

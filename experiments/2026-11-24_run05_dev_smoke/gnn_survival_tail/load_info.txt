@@ -1,0 +1,20 @@
+=== start ===
+time: 2026-11-24T18:42:54-08:00
+uptime: 18:42:54 up 1 day, 22:31,  1 user,  load average: 2.74, 2.13, 3.92
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 1702 MiB
+power_profile: performance
+git_hash: 1ed24052830521a15c1f759a23ac7e4529a22614
+git_dirty: True
+cmd: scripts/train_v2.py --variant gnn_survival_tail --outdir experiments/2026-11-24_run05_dev_smoke --graphs data/processed/run05/dev_train_only.pt --quick
+pid: 2724590
+=== end ===
+time: 2026-11-24T18:42:58-08:00
+uptime: 18:42:58 up 1 day, 22:31,  1 user,  load average: 2.84, 2.16, 3.92
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+39 %, 2022 MiB
+power_profile: performance
+git_hash: 1ed24052830521a15c1f759a23ac7e4529a22614
+git_dirty: True
+cmd: scripts/train_v2.py --variant gnn_survival_tail --outdir experiments/2026-11-24_run05_dev_smoke --graphs data/processed/run05/dev_train_only.pt --quick
+pid: 2724590

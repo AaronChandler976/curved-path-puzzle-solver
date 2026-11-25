@@ -68,6 +68,11 @@
      as trained. The effect on selection is limited to near-tie flips and is not redone.
    - *Minimum epochs:* PREREG "minimum 10 epochs" is implemented as "never stop before epoch 10". The best (smoothed)
      checkpoint can come from earlier (18 of 35 final checkpoints). This is the reading used for every variant alike.
+     *Alt reading:* "only epochs ≥ 10 may be selected". Not adopted: it would force retraining every variant, and the
+     code (unchanged since run 03 protocol v2) has always used the first reading. It is a reading choice, not something
+     the PREREG wording settles.
+   - *Folder dates:* `experiments/2026-11-25_run05_eval_val_cpu/` and `2026-11-25_run05_profile/` ran on 2026-11-24
+     (local time) after 21:50. Named for the next day by mistake; not renamed, to keep the cited paths stable.
    - *Profile:* honest column labels, median for both batch-1 and batched timing, busy samples during the run,
      a list of what is and isn't timed; re-run alone.
    - *Wording:* §7 verdicts are printed only for test/main; other configs and val are "descriptive". The random

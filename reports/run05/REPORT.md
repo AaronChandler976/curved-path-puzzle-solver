@@ -17,7 +17,7 @@ inferential (Phase 1 audit, MAJOR 1). The test split was never loaded: no
 | ASAP's own redmax contact graphs (geometry only) | 2,022/2,022 assemblies, 0 errors | `experiments/2026-11-24_run05_redmax/` |
 | training, 7 variants | `experiments/2026-11-24_run05_train/<variant>/` (grid runs, `seed100`–`seed104/best.pt`, `selection.json`, `metrics.csv`, `train_log.txt`, `load_info.txt`) | `cmd.txt`, `git_hash.txt` there |
 | val replay (main + CMG-RRT-only), C-index, ECE, **scored on CPU** | `reports/run05/val_replay.md`, `experiments/2026-11-25_run05_eval_val_cpu/a/results.json`, `per_state.jsonl` | `cmd.txt`, `stdout.log` there. A second identical run (`.../b/`) gives bit-identical per-state costs and results. The earlier GPU run `experiments/2026-11-24_run05_eval_val/` is superseded: GPU ASAP scoring was not deterministic (audit MAJOR 2). Only the ASAP rows differ. |
-| latency / memory profile (alone, idle guard 5 min) | `reports/run05/profile.md`, `experiments/2026-11-24_run05_profile/profile.json` | `load_info.txt`, `guard/idle_samples.jsonl` |
+| latency / memory profile (alone, idle guard 5 min; marked confounded by rule, see §5) | `reports/run05/profile.md`, `experiments/2026-11-25_run05_profile/profile.json` | `load_info.txt`, `idle_samples.jsonl`, `guard/` |
 | training curves, grid tables, every seed | `reports/run05/training.md`, `reports/run05/figures/train_curves_*.pdf` | `scripts/run05_training_report.py` |
 
 ## 2. Selected configurations (val; full grids in `training.md`)
@@ -88,8 +88,9 @@ descriptive, see the selection-bias note above):
 ASAP-retrained's row is in `val_replay.md`.
 
 ## 5. Latency, memory and the planner time it saves (`reports/run05/profile.md`)
-- **Run:** `experiments/2026-11-25_run05_profile/`, alone after a 5-minute idle wait; outside load ≤ 0.36 cores
-  throughout. The earlier run `experiments/2026-11-24_run05_profile/` is superseded (it had mislabelled columns).
+- **Run:** `experiments/2026-11-25_run05_profile/`, alone after a 5-minute idle wait. busy_frac 0.435 > 0.05, so the
+  timings are **marked confounded** by the CLAUDE.md rule. Measured outside load was ≤ 0.36 cores throughout, so the
+  flags came from the load-average criterion (inferred: our own 24-thread benchmark). The earlier run `experiments/2026-11-24_run05_profile/` is superseded (it had mislabelled columns).
 - **What is timed:** the forward pass on collated inputs (median), batch 1 and one batch of all 200 sampled val states.
 - **Feature extraction:** 2.41 ms per state (median) from the cached per-assembly contact graph. Not included in any
   timing: the per-assembly contact graph, PointNet point-cloud sampling, and ASAP's point clouds and redmax graph (all
@@ -109,7 +110,10 @@ ASAP-retrained's row is in `val_replay.md`.
 - #6: tail loss computed by an exactly equivalent batched implementation (equivalence test). The first tail launch
   was stopped before finishing a grid run and is kept as `gnn_survival_tail_aborted1/`, not used.
 - #7: `experiments/2026-11-24_run05_eval_val_dev/` is a pipeline check, not cited.
-- Best epochs are early (4–45; the minimum-epoch rule only delays stopping, as registered).
+- Best epochs are early (4–45). PREREG's "minimum 10 epochs" is read as "never stop before epoch 10", so the best
+  checkpoint can be earlier (18 of 35 final checkpoints); the alternative reading is in DECISIONS #9.
+- **Uneven selection pressure on val:** GNN-Surv-Tail chose from 16 configs (its registered λ axis), the other trained
+  variants from 8, ASAP-retrained from 6. Val comparisons therefore favour Tail most (e.g. Tail vs plain survival).
 
 ## 7. Next
 Phase 1 audit. Then Phase 2 (exploration on val; `reports/campaign/PLAN_LOG.md`), which also runs the 5-fold group CV
