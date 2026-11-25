@@ -53,3 +53,7 @@
    5 variants finished at 19:30 (2,000 bootstrap resamples), run to catch bugs before the full evaluation. Phase 1 reports
    the full val evaluation with all 7 variants and 10,000 resamples. This folder is kept (never deleted) and not cited
    for any number.
+8. **§7 best heuristic fixed from val: fewest contacts.** Val replay total, main configuration
+   (`experiments/2026-11-24_run05_eval_val/results.json` → configs.main.best_heuristic): fewest contacts 2,275 s vs
+   outside-in 2,800 s. Phase 3 passes `--best-heuristic-val fewest_contacts`. Chosen on val before any test label was
+   read, as PREREG §7 requires.
