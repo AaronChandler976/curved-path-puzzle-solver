@@ -1,0 +1,8 @@
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/train_v2.py --variant mlp_bce --outdir experiments/2026-11-24_run05_train
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/train_v2.py --variant mlp_survival --outdir experiments/2026-11-24_run05_train
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/train_v2.py --variant gnn_bce --outdir experiments/2026-11-24_run05_train
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/train_v2.py --variant gnn_survival --outdir experiments/2026-11-24_run05_train
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/train_v2.py --variant gnn_survival_tail --outdir experiments/2026-11-24_run05_train
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/train_v2.py --variant pn_gnn_survival --outdir experiments/2026-11-24_run05_train
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/train_v2.py --variant gnn_survival_tail --outdir experiments/2026-11-24_run05_train   # relaunch at 524e7b3 with tail_term_grouped
+env -u PYTHONPATH OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 conda run --no-capture-output -n disasm python scripts/train_asap_v2.py --outdir experiments/2026-11-24_run05_train --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --procs 4

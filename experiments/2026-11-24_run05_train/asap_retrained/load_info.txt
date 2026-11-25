@@ -1,0 +1,20 @@
+=== start ===
+time: 2026-11-24T19:18:31-08:00
+uptime: 19:18:31 up 1 day, 23:06,  1 user,  load average: 3.88, 6.43, 6.74
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+100 %, 6098 MiB
+power_profile: performance
+git_hash: c74672c79b3a09290b9357fd8810e5b3a067e52d
+git_dirty: False
+cmd: scripts/train_asap_v2.py --outdir experiments/2026-11-24_run05_train --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --procs 4
+pid: 2772445
+=== end ===
+time: 2026-11-24T21:17:32-08:00
+uptime: 21:17:32 up 2 days,  1:05,  1 user,  load average: 1.28, 1.32, 1.40
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+69 %, 8762 MiB
+power_profile: performance
+git_hash: 93dca8a82244ab98b2f21984f56eb80527d131f1
+git_dirty: False
+cmd: scripts/train_asap_v2.py --outdir experiments/2026-11-24_run05_train --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --procs 4
+pid: 2772445

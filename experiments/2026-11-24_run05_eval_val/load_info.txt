@@ -1,0 +1,20 @@
+=== start ===
+time: 2026-11-24T21:19:06-08:00
+uptime: 21:19:06 up 2 days,  1:07,  1 user,  load average: 0.36, 1.00, 1.28
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 1618 MiB
+power_profile: performance
+git_hash: 93dca8a82244ab98b2f21984f56eb80527d131f1
+git_dirty: False
+cmd: scripts/eval_v2.py --split val --methods experiments/2026-11-24_run05_eval_val/methods.json --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --outdir experiments/2026-11-24_run05_eval_val --md reports/run05/val_replay.md --fig-dir reports/run05/figures --boot 10000 --procs 8
+pid: 2786151
+=== end ===
+time: 2026-11-24T21:19:30-08:00
+uptime: 21:19:30 up 2 days,  1:07,  1 user,  load average: 1.21, 1.17, 1.33
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 6194 MiB
+power_profile: performance
+git_hash: 93dca8a82244ab98b2f21984f56eb80527d131f1
+git_dirty: False
+cmd: scripts/eval_v2.py --split val --methods experiments/2026-11-24_run05_eval_val/methods.json --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --outdir experiments/2026-11-24_run05_eval_val --md reports/run05/val_replay.md --fig-dir reports/run05/figures --boot 10000 --procs 8
+pid: 2786151

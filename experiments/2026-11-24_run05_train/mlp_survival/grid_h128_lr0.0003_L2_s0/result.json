@@ -1,0 +1,21 @@
+{
+ "wd": 0.0001,
+ "dropout": 0.1,
+ "batch": 32,
+ "max_epochs": 150,
+ "patience": 25,
+ "smooth": 5,
+ "min_epochs": 10,
+ "tau": 0.1,
+ "hidden": 128,
+ "lr": 0.0003,
+ "layers": 2,
+ "lam": null,
+ "seed": 0,
+ "variant": "mlp_survival",
+ "best_val_cost": 1843.8421485900878,
+ "best_epoch": 7,
+ "epochs_run": 33,
+ "train_s": 43.13253617286682,
+ "n_params": 86536
+}
