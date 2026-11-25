@@ -23,3 +23,4 @@
 - 2026-11-25 00:10 live P1 at 251/3,817 runs after 35 min (~7/min → P1 ≈ 9 h, all P ≈ 41 h + re-runs). 23% confounded: outside desktop apps ≈0.55 cores, just over 0.5 (NEEDS_AARON).
 - 2026-11-25 02:11 live P1 919/3,817 (5.1 runs/min; 57 confounded, 0 errors). Projection: P1 ~11:30 today; all P ~Fri 11-27.
 - 2026-11-25 07:47 live P1 DONE (29,331 s wall); P2 started (9,716 runs ≈ 22 h at 7.4/min).
+- 2026-11-25 11:48 live P2 1,098/9,716 (slowed to ~3/min on heavier assemblies; no busy samples). Projection: P2 ends 11-26 noon to 11-27 noon; P3+P4 by ~11-28. Phase 3 limit 11-30 12:00 holds.
