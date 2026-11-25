@@ -94,3 +94,18 @@ def tail_term_grouped(score, succ, cost, batch, T: float, tau: float = 0.1) -> t
         surv = torch.cumprod(torch.cat([torch.ones_like(ys[:, :1]), 1 - ys[:, :-1]], 1), 1)
         vals.append((ts * surv).sum(1) / T)
     return torch.cat(vals).mean() if vals else score.sum() * 0.0
+
+
+def listnet_term(score, succ, cost, batch, eps: float = 0.05) -> torch.Tensor:
+    """Campaign Phase 2 (exploratory) listwise loss. Per state with >= 1 success: target q_i ∝ y_i / (t_i + eps) (cheap
+    successes first), prediction softmax(score) over the state's parts; term = mean over such states of the cross
+    entropy -sum_i q_i log softmax(s)_i (ListNet top-1, Cao et al. 2007)."""
+    from torch_geometric.utils import softmax, scatter
+    G = int(batch.max()) + 1
+    w = succ.to(score.dtype) / (cost.to(score.dtype) + eps)
+    z = scatter(w, batch, dim=0, dim_size=G, reduce="sum")
+    has = z > 0
+    q = w / z[batch].clamp_min(1e-12)
+    logp = torch.log(softmax(score, batch, num_nodes=G).clamp_min(1e-12))
+    ce = -scatter(q * logp, batch, dim=0, dim_size=G, reduce="sum")
+    return ce[has].mean() if has.any() else score.sum() * 0.0

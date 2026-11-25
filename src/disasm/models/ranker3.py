@@ -57,12 +57,36 @@ class GNNEnc(nn.Module):
         return x
 
 
+class AttnEnc(nn.Module):
+    """Campaign Phase 2 (exploratory): GATv2 (Brody et al. 2022) or graph-transformer (TransformerConv) layers with
+    edge features, in the same residual + LayerNorm block structure as GNNEnc (4 heads, concatenated to h)."""
+
+    def __init__(self, kind, d_in, d_edge, h, layers, dropout, heads=4):
+        super().__init__()
+        from torch_geometric.nn import GATv2Conv, TransformerConv
+        self.inp = nn.Linear(d_in, h)
+        mk = (lambda: GATv2Conv(h, h // heads, heads=heads, edge_dim=d_edge, add_self_loops=False)) if kind == "gatv2" else \
+            (lambda: TransformerConv(h, h // heads, heads=heads, edge_dim=d_edge, root_weight=True))
+        self.convs = nn.ModuleList([mk() for _ in range(layers)])
+        self.norms = nn.ModuleList([nn.LayerNorm(h) for _ in range(layers)])
+        self.drop = nn.Dropout(dropout)
+
+    def forward(self, x, edge_index, edge_attr):
+        x = F.relu(self.inp(x))
+        for conv, ln in zip(self.convs, self.norms):
+            x = ln(x + self.drop(F.relu(conv(x, edge_index, edge_attr))))
+        return x
+
+
 class Ranker3(nn.Module):
     def __init__(self, enc: str, d_in: int, d_edge: int, head: str, h: int = 64, layers: int = 2,
                  dropout: float = 0.1, K: int = 8, T: float = 30.0):
         super().__init__()
         self.enc_type, self.head_type, self.K, self.T = enc, head, K, T
-        self.enc = MLPEnc(d_in, h, layers, dropout) if enc == "mlp" else GNNEnc(d_in, d_edge, h, layers, dropout)
+        if enc in ("gatv2", "transformer"):
+            self.enc = AttnEnc(enc, d_in, d_edge, h, layers, dropout)
+        else:
+            self.enc = MLPEnc(d_in, h, layers, dropout) if enc == "mlp" else GNNEnc(d_in, d_edge, h, layers, dropout)
         self.head = nn.Sequential(nn.Linear(h, h), nn.ReLU(), nn.Linear(h, 1 if head == "bce" else K))
         e = bin_edges(T, K)
         self.register_buffer("edges", torch.tensor(e, dtype=torch.float32))

@@ -26,7 +26,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 VARIANTS = {"mlp_bce": ("mlp", "bce", False, False), "mlp_survival": ("mlp", "survival", False, False),
             "gnn_bce": ("gnn", "bce", False, False), "gnn_survival": ("gnn", "survival", False, False),
-            "gnn_survival_tail": ("gnn", "survival", True, False), "pn_gnn_survival": ("gnn", "survival", False, True)}
+            "gnn_survival_tail": ("gnn", "survival", True, False), "pn_gnn_survival": ("gnn", "survival", False, True),
+            # campaign Phase 2, exploratory (post-registration): stronger encoders, same head, grid and budget rule
+            "gatv2_survival": ("gatv2", "survival", False, False), "gt_survival": ("transformer", "survival", False, False),
+            "gnn_survival_listnet": ("gnn", "survival", "listnet", False)}
 
 
 def norm_stats(train):
@@ -125,6 +128,7 @@ def train_one(var, cfg, tr, va, batcher, outdir, dev, log):
         log(f"{os.path.basename(outdir)}: exists (best {r['best_val_cost']:.1f}), skipped")
         return r
     from disasm.models.tail_loss import tail_term_grouped as tail_term   # = tail_term, batched by state size
+    from disasm.models.tail_loss import listnet_term
     torch.manual_seed(cfg["seed"]); np.random.seed(cfg["seed"])
     T = tr[0]["T"]
     model = build_model(var, cfg, T).to(dev)
@@ -143,7 +147,13 @@ def train_one(var, cfg, tr, va, batcher, outdir, dev, log):
             b = batcher([tr[j] for j in perm[i:i + cfg["batch"]]])
             out = forward(model, b)
             loss = core(model).loss(out, b["succ"], b["cens_t"])
-            if tail:
+            if tail == "listnet":
+                p, c = diff_p_c(model, out)
+                s = torch.log(p.clamp_min(1e-6)) - torch.log(c.clamp_min(1e-3))
+                tt = listnet_term(s, b["succ"], b["time_s"], b["batch"])
+                loss = loss + cfg["lam"] * tt
+                ttl += float(tt.detach()) * (len(b["ptr"]) - 1)
+            elif tail:
                 p, c = diff_p_c(model, out)
                 s = torch.log(p.clamp_min(1e-6)) - torch.log(c.clamp_min(1e-3))
                 tt = tail_term(s, b["succ"], b["time_s"], b["batch"], T, tau=cfg["tau"])
