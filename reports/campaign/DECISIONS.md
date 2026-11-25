@@ -15,3 +15,19 @@
    - *Live random seed.* The random shuffle seed is sha1("run05-live-random", assembly, state). Planner seeds follow §6.
    - *ASAP contact graph in val/test.* ASAP's own redmax graph (`scripts/asap_contact_graphs.py`, env asap) for every v2
      assembly. It is computed from geometry only, no labels.
+3. **Contact-graph sampling was unseeded; fixed going forward, existing cache frozen (2026-11-24, Phase 0 T8).**
+   Found because `tests/test_oracle_v2.py` failed 2 of 3 runs. `cmgrrt.contact_graph` called `np.random.seed(0)`, which
+   trimesh 5.2.2 ignores, so contact samples came from fresh entropy. In the synthetic peg test the contact-normal
+   candidate then sometimes fell within 5.7° of +z, and deduplication (dot ≥ 0.995) removed the exact +z axis. The
+   slightly tilted pull is blocked in a 0.002-clearance hole. Effect on the project: none on labels, features or
+   heuristics. Every v2 assembly's contact graph was computed once, cached in `data/processed/contacts_v2/` and reused
+   everywhere (2,022/2,022 present). Their sha256 are frozen in
+   `experiments/2026-11-24_run04_t8_split/contacts_v2_manifest.json`, and evaluation must use the cache. Fix:
+   `default_rng(0)` passed as trimesh's `seed` (cache misses only). Tests: 5/5 repeated passes of test_oracle_v2, full
+   suite 34 passed (`experiments/2026-11-24_run04_pytest_t8/stdout.log`).
+   *Limitation recorded for the paper:* the pre-check tries the mean contact normal first and drops any axis direction
+   within 5.7° of it. In a very tight fit a straight pull along the exact axis can therefore be skipped. CMG-RRT still
+   runs in that case (main config), so such a query is costlier but not lost. The oracle is not changed, because the
+   labels are frozen.
+   *Also unseeded, decision-free:* `exact_sdf._check_sign` (a sign-agreement diagnostic) and `sdf_train` (learned-SDF
+   path, not used by oracle v2).

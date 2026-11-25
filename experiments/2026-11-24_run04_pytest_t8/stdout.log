@@ -1,0 +1,9 @@
+..................................                                       [100%]
+=============================== warnings summary ===============================
+tests/test_tail_loss.py::test_soft_cost_matches_hard_cost_and_has_gradient
+  /home/aaron/SJSU/FALL_2026/CMPE_258/CMPE_258_PROJECT/tests/test_tail_loss.py:28: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+  Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+    assert abs(float(c) - hard_replay_cost(s.detach(), y, t)) < 1e-2
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+34 passed, 1 warning in 51.59s

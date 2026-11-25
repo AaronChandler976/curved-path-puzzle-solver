@@ -90,5 +90,19 @@ below 1.0, **and** (b) the Holm-adjusted Wilcoxon p < 0.05 with an HL difference
 reported as "cheaper on the typical assembly, not on total time". Live results are reported next to replay, and the
 same rule is applied to live separately. The test split is evaluated exactly once.
 
-## 8. Split sizes (filled in at run 04 T8 from `data/splits/v2_split.json`)
-(see the T8 section of reports/run04/REPORT.md)
+## 8. Split sizes (filled in at run 04 T8, 2026-11-24, from `data/splits/v2_split.json`; assembly counts only, no labels)
+Built by `scripts/build_split_v2.py --seed 0` (`experiments/2026-11-24_run04_t8_split/`), 2,022 labelled assemblies in
+1,996 duplicate groups, none excluded.
+
+| split | assemblies | groups | v1 | fresh-9to12 | fresh-allowance |
+|---|---|---|---|---|---|
+| train | 1,425 | 1,406 | 1,129 | 109 | 187 |
+| val | 250 | 247 | 199 | 19 | 32 |
+| **test** | **347** | 343 | 0 | 127 | 220 |
+
+Test by part-count bin: 3–4: 82, 5–6: 52, 7–8: 37, 9–10: 102, 11–12: 74 (all from fresh sources).
+Underpowered (< 30 assemblies), from counts only: no registered test subset by source or bin alone. Source × bin
+cells are not registered subsets (fresh-allowance 11–12 has 19). rot_state is a state-level flag; its assembly count
+is only known once test labels are read, so whether it is underpowered is decided then, by the same < 30 rule.
+States with no main-config success drop out of scoring, so a subset's scored assembly count can be lower than the
+counts above. The < 30 rule is applied to the scored count.

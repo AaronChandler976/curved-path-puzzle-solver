@@ -114,13 +114,14 @@ def contact_graph(asm: Assembly, cache_dir: str = DEFAULT_CACHE) -> dict:
         asm._contacts = json.load(open(path))
         return asm._contacts
     from disasm.oracle.sdf_train import robust_sdf
-    rng_state = np.random.get_state()
-    np.random.seed(0)
+    # Campaign fix (reports/campaign/DECISIONS.md #3): trimesh >= 4 ignores np.random.seed, so the old
+    # np.random.seed(0) left these samples unseeded. Every v2 assembly's contacts were computed once and cached
+    # (sha256 manifest: experiments/2026-11-24_run04_t8_split/contacts_v2_manifest.json); only cache misses use this.
+    rng = np.random.default_rng(0)
     samples = {}
-    for p, m in asm.meshes.items():
-        pts, fi = trimesh.sample.sample_surface(m, CONTACT_SAMPLES)
+    for p, m in sorted(asm.meshes.items()):
+        pts, fi = trimesh.sample.sample_surface(m, CONTACT_SAMPLES, seed=rng)
         samples[p] = (np.asarray(pts), np.asarray(m.face_normals[fi]))
-    np.random.set_state(rng_state)
     pairs, min_d = {}, {}
     for p in asm.part_ids:
         pts, nrm = samples[p]
