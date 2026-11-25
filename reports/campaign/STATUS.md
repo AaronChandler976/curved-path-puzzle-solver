@@ -3,7 +3,7 @@ DEADLINE: 2026-12-13T08:00:00-08:00
 CURRENT PHASE: 0 (finish run 04); STEP: T7 labelling still running (run 04's own job)
 BACKGROUND JOBS:
 - PID 1620794: run 04 T7 label_abd -> data/labels/pilot_v2; log experiments/2026-11-24_run04_label_v2/stdout.log
-  (at 14:05 on 11-24: 904/2022 assemblies done; all 694 fresh done; v1 relabel remains, est. ~3-4 h)
+  (16:13 on 11-24: 1678/2022 done; est. finish ~17:30 + confounded re-runs)
 DONE SO FAR:
 - Session 1 start 2026-11-24 14:05: read CLAUDE.md, PLAN.md, PREREG_run05.md, run04 STATUS/prompt.
 - docs/course/ created from the campaign appendix.
