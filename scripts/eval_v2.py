@@ -94,6 +94,8 @@ def main():
     ap.add_argument("--procs", type=int, default=10)
     ap.add_argument("--best-heuristic-val", default="", choices=["", "outside_in", "fewest_contacts"],
                     help="PREREG §7: the best heuristic chosen on VAL (required with --split test)")
+    ap.add_argument("--budget-policies", default="", help="comma list of first-pass budgets T' (s): exploratory two-pass "
+                    "policy replayed for EVERY ordering (scripts/explore_orderings.py trunc_cost), main configuration")
     ap.add_argument("--sensitivity", default=os.path.join(ROOT, "experiments/2026-11-24_run04_t8_split/t6_test_overlap.json"),
                     help="PREREG_addendum §A: json with 'clean_test'; the §7 rule is also evaluated on those assemblies (test only)")
     a = ap.parse_args()
@@ -317,6 +319,36 @@ def main():
                 L.append(f"\nGNN-Surv / {NAMES[heur]} on {k}: {pr['ratio']:.3f} [{pr['ratio_ci'][0]:.3f}, {pr['ratio_ci'][1]:.3f}], "
                          f"HL {pr['hl']:+.2f} s, W/T/L {pr['wins']}/{pr['ties']}/{pr['losses']}, p {pr['p']:.2g} (uncorrected)")
         results["configs"][cf] = cres
+    # ------------------------------------------------------------------ exploratory budget policies (addendum)
+    if a.budget_policies:
+        from explore_orderings import trunc_cost
+        results["budget_policies"] = {}
+        sc = [(gi, g) for gi, g in enumerate(G) if g["succ"].any()]
+        for tp in [float(x) for x in a.budget_policies.split(",")]:
+            per = defaultdict(lambda: defaultdict(float))
+            for gi, g in sc:
+                t, s_ = g["time_s"].numpy().astype(float), g["succ"].numpy().astype(bool)
+                ho = heuristic_orders(g)
+                for k, o in ho.items():
+                    per[k][g["aid"]] += trunc_cost(o, t, s_, tp)
+                for m in ["asap_zs"] + trained:
+                    per[m][g["aid"]] += float(np.mean([trunc_cost(score_order(S[m][k][gi][0]), t, s_, tp) for k in range(len(S[m]))]))
+            aids = sorted(per["fewest_contacts"])
+            tab = {m: float(sum(per[m].values())) for m in per}
+            L.append(f"\n## Exploratory budget policy T' = {tp:g} s (post-registration; main configuration; every ordering)\n")
+            L.append("Pass 1 queries in the method's order with budget T' (success iff logged cost <= T', cost min(cost, T')); "
+                     "if nothing succeeds, pass 2 queries again at the full budget (cost = logged cost). Replayed from logged costs.\n")
+            L.append("| ordering | total (s) | vs fewest contacts, same policy: ratio [95% CI] | HL (s) | W/T/L | Wilcoxon p |")
+            L.append("|---|---|---|---|---|---|")
+            bp = {"totals": tab, "paired_vs_fewest": {}}
+            for m in [x for x in ["random_na", "outside_in", "fewest_contacts", "asap_zs"] + trained if x in per]:
+                if m == "fewest_contacts":
+                    L.append(f"| {NAMES[m]} | {tab[m]:.0f} | — | | | |"); continue
+                pr = paired([per[m][i] for i in aids], [per["fewest_contacts"][i] for i in aids], a.boot)
+                bp["paired_vs_fewest"][m] = pr
+                L.append(f"| {NAMES[m]} | {tab[m]:.0f} | {pr['ratio']:.3f} [{pr['ratio_ci'][0]:.3f}, {pr['ratio_ci'][1]:.3f}] | "
+                         f"{pr['hl']:+.2f} | {pr['wins']}/{pr['ties']}/{pr['losses']} | {pr['p']:.2g} |")
+            results["budget_policies"][f"{tp:g}"] = bp
     # ------------------------------------------------------------------ calibration / prediction quality (main config)
     L.append("\n## Prediction quality (main configuration, every node of every state with >= 1 success)\n")
     L.append("ECE: 10 equal-width bins of p vs observed success. Within-state C-index (Harrell, censored at min(cost, T)): "
