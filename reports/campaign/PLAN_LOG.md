@@ -15,3 +15,4 @@
   (5) 5-fold group CV over train+val for the final candidates (robustness of the val ranking).
   (6) optional EV-battery CAD case study only if a public model downloads without a login.
 - 2026-11-24 20:04 conda env paper (tectonic 0.17.0, ffmpeg 9.1) ready; paper skeleton compiles.
+- 2026-11-24 21:35 Phase 1 work done (training 18:54–21:17, val eval, profile). Phase 1 audit started.
