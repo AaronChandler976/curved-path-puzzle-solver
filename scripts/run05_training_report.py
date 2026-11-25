@@ -53,13 +53,14 @@ def main():
         grids.append((v, sel))
         # curves of the 5 final seeds
         fig, ax = plt.subplots(1, 2, figsize=(9, 3.2))
-        for s in seeds:
+        cols = ["#4C72B0", "#DD8452", "#55A868", "#C44E52", "#8172B3"]
+        for s, col in zip(seeds, cols):
             m = list(csv.DictReader(open(os.path.join(a.train_dir, v, f"seed{s['seed']}", "metrics.csv"))))
             e = [int(r["epoch"]) for r in m]
-            ax[0].plot(e, [float(r["train_loss"]) for r in m], lw=1, label=f"s{s['seed']} train")
+            ax[0].plot(e, [float(r["train_loss"]) for r in m], lw=1, color=col, label=f"s{s['seed']} train")
             if "val_loss" in m[0]:
-                ax[0].plot(e, [float(r["val_loss"]) for r in m], lw=1, ls="--")
-            ax[1].plot(e, [float(r["val_cost"]) for r in m], lw=1, label=f"seed {s['seed']}")
+                ax[0].plot(e, [float(r["val_loss"]) for r in m], lw=1, ls="--", color=col)
+            ax[1].plot(e, [float(r["val_cost"]) for r in m], lw=1, color=col, label=f"seed {s['seed']}")
             ax[1].axvline(s["best_epoch"], lw=0.6, color="#888888", ls=":")
         ax[0].set_xlabel("epoch"); ax[0].set_ylabel("loss (solid train, dashed val)")
         ax[1].set_xlabel("epoch"); ax[1].set_ylabel("val total replay cost (s)"); ax[1].legend(frameon=False, fontsize=7)
@@ -71,6 +72,13 @@ def main():
             fig.savefig(os.path.join(a.fig_dir, f"train_curves_{v}.{ext}"), dpi=110)
         plt.close(fig)
     L.append("\nEvery seed is listed; none is dropped.\n")
+    L.append("**Reading the curves.** Train loss keeps falling while val loss and val replay cost bottom out early and "
+             "then drift up: the models overfit after roughly 5–15 epochs. Val replay cost also jumps by several hundred "
+             "seconds from epoch to epoch, because a few states where an unsolved (~30 s) query is tried first dominate the "
+             "total. The 5-epoch trailing mean and the early best epochs are the registered response to this. Because val cost "
+             "selected each checkpoint, val numbers for trained models are optimistic (see REPORT.md). The registered minimum "
+             "of 10 epochs is implemented as 'do not stop before epoch 10'; the best checkpoint may come from an earlier epoch "
+             "(18 of the 35 final checkpoints do; DECISIONS #9).\n")
     for v, sel in grids:
         keys = [k for k in sel["grid"][0] if k not in ("mean_val_cost", "per_seed", "best_epoch")]
         L.append(f"\n### Grid: {v}\n")

@@ -5,11 +5,11 @@ ranking. It does not change the registered selection (docs/PREREG_run05.md §3).
 Folds: the duplicate groups of data/splits/v2_split.json restricted to train+val assemblies, stratified by
 (source, part-count bin) of the group's largest member, dealt round-robin after a seeded shuffle (seed 0).
 For each fold k and each variant (its val-chosen config from <train-dir>/<variant>/selection.json) and each seed:
-train on the other 4 folds, early-stop on fold k with the registered rule (5-epoch trailing mean of the fold's replay
-cost, min 10, patience 25, <= 150 epochs; the same for every variant), and replay fold k. Heuristics are replayed on
-each fold too. Per-fold totals and the per-fold ratio to fewest contacts are reported (mean ± std over folds and seeds).
-Note: the stopping epoch is chosen on the held-out fold, for every variant alike, so absolute fold costs are slightly
-optimistic. The comparison between variants is what this check is for.
+train on 3 folds, early-stop on the INNER fold (k + 1) mod 5 with the registered rule (5-epoch trailing mean of replay
+cost, min 10, patience 25, <= 150 epochs; the same for every variant), and replay the held-out fold k, which selected
+nothing. So fold-k costs are unbiased for the trained models as well as the heuristics (Phase 1 audit, MAJOR 1). The
+configs are the val-chosen ones; val assemblies sit in the folds, so config choice still saw some held-out data
+(reported). Per-fold totals and the ratio to fewest contacts are reported (mean ± std over folds and seeds).
 Resumable (train_v2.train_one skips finished runs).
 """
 import argparse
@@ -81,7 +81,9 @@ def main():
 
     res = []
     for k in [int(x) for x in a.folds.split(",")]:
-        tr = [g for g in G if fold_of[g["aid"]] != k]
+        kin = (k + 1) % 5
+        tr = [g for g in G if fold_of[g["aid"]] not in (k, kin)]
+        inner = [g for g in G if fold_of[g["aid"]] == kin]
         va = [g for g in G if fold_of[g["aid"]] == k]
         st = norm_stats(tr)
         heur = defaultdict(float)
@@ -97,7 +99,7 @@ def main():
                 heur[name] += c
         heur["optimal"] = sum(float(g["time_s"][g["succ"]].min()) for g in va)
         res.append({"fold": k, "n_states": len(va), "n_assemblies": len({g["aid"] for g in va}), "variant": "heuristics", **heur})
-        log(f"fold {k}: {len(tr)} train / {len(va)} held-out states; heuristics {dict((x, round(v)) for x, v in heur.items())}")
+        log(f"fold {k}: {len(tr)} train / {len(inner)} inner (fold {kin}) / {len(va)} held-out states; heuristics {dict((x, round(v)) for x, v in heur.items())}")
         for var in a.variants.split(","):
             sel = json.load(open(os.path.join(a.train_dir, var, "selection.json")))
             base = {"wd": 1e-4, "dropout": 0.1, "batch": 32, "max_epochs": 150, "patience": 25, "smooth": 5, "min_epochs": 10,
@@ -105,7 +107,7 @@ def main():
             b = Batcher(st, a.device, clouds if VARIANTS[var][3] else None)
             rule = "p" if VARIANTS[var][1] == "bce" else "p_over_c"
             for sd in [int(x) for x in a.seeds.split(",")]:
-                r = train_one(var, {**base, "seed": sd}, tr, va, b, os.path.join(a.outdir, var, f"fold{k}_s{sd}"), a.device, log)
+                r = train_one(var, {**base, "seed": sd}, tr, inner, b, os.path.join(a.outdir, var, f"fold{k}_s{sd}"), a.device, log)
                 d = torch.load(os.path.join(a.outdir, var, f"fold{k}_s{sd}", "best.pt"), weights_only=False)
                 from train_v2 import build_model
                 m = build_model(var, d["cfg"], va[0]["T"]); m.load_state_dict(d["state_dict"]); m.to(a.device)

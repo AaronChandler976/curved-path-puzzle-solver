@@ -57,3 +57,18 @@
    (`experiments/2026-11-24_run05_eval_val/results.json` → configs.main.best_heuristic): fewest contacts 2,275 s vs
    outside-in 2,800 s. Phase 3 passes `--best-heuristic-val fewest_contacts`. Chosen on val before any test label was
    read, as PREREG §7 requires.
+9. **Phase 1 audit fixes (phase1_1: 2 MAJOR, 9 MINOR).**
+   - *MAJOR 1, val selection bias:* every val table and the REPORT now say that trained models' val numbers are
+     optimistic, because val chose their configs and epochs. The CV (Phase 2) early-stops on an inner fold and replays a
+     held-out fold that selects nothing.
+   - *MAJOR 2, GPU nondeterminism:* `eval_v2.py` scores on CPU by default. Two identical CPU runs gave bit-identical
+     per-state costs and results (`experiments/2026-11-25_run05_eval_val_cpu/{a,b}`). The test evaluation will run on
+     CPU. Only ASAP rows changed versus the GPU run. *Residual:* ASAP-retrained's training-time selection (val cost per
+     epoch) was scored on GPU, where near-ties can flip (max score difference 6e-8). The chosen config/epochs are kept
+     as trained. The effect on selection is limited to near-tie flips and is not redone.
+   - *Minimum epochs:* PREREG "minimum 10 epochs" is implemented as "never stop before epoch 10". The best (smoothed)
+     checkpoint can come from earlier (18 of 35 final checkpoints). This is the reading used for every variant alike.
+   - *Profile:* honest column labels, median for both batch-1 and batched timing, busy samples during the run,
+     a list of what is and isn't timed; re-run alone.
+   - *Wording:* §7 verdicts are printed only for test/main; other configs and val are "descriptive". The random
+     ordering's "solved within T" is shown as "—". Resample counts are stated in the md header.
