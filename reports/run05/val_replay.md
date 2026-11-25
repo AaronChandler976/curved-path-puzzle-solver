@@ -1,6 +1,8 @@
 # Run 05 replay on v2 **val** (2026-11-24)
 
-Script `scripts/eval_v2.py`; raw per-state costs `experiments/2026-11-24_run05_eval_val/per_state.jsonl`, all numbers `experiments/2026-11-24_run05_eval_val/results.json`. Graphs `data/processed/run05/graphs_train_val.pt` (1030 val states, 250 assemblies). Replay of logged pilot_v2 queries (nothing simulated). Trained variants: per-state cost = mean over their seeds; 'seeds' = mean ± std of the per-seed totals. CIs: bootstrap over assemblies (10000 resamples, seed 0).
+Script `scripts/eval_v2.py`; raw per-state costs `experiments/2026-11-25_run05_eval_val_cpu/a/per_state.jsonl`, all numbers `experiments/2026-11-25_run05_eval_val_cpu/a/results.json`. Graphs `data/processed/run05/graphs_train_val.pt` (1030 val states, 250 assemblies). Replay of logged pilot_v2 queries (nothing simulated). Trained variants: per-state cost = mean over their seeds; 'seeds' = mean ± std of the per-seed totals. CIs: bootstrap over assemblies (10000 resamples, seed 0; median-ratio CIs 2000 resamples; HL CIs 2,000). Scores computed on cpu.
+
+**Selection bias (val).** Val replay cost chose every trained variant's config and checkpoint epoch (PREREG §3), and these tables report the same cost on the same states. The trained models' val numbers, CIs and p-values are therefore optimistically biased relative to the untrained heuristics and are descriptive only. Per-epoch val cost fluctuates by more than most between-variant gaps (`reports/run05/training.md` curves). Unbiased estimates: the test set (Phase 3) and the group CV with inner early stopping (Phase 2).
 
 
 ## Configuration: MAIN (pre-check → CMG-RRT)
@@ -11,17 +13,17 @@ Scored states: 1010; states with no success under this configuration: 20 (every 
 
 | ordering | total planner time (s) [95% CI] | seeds (mean ± std) | median per-state ratio to optimal [95% CI] | mean queries to 1st success | states solved within T |
 |---|---|---|---|---|---|
-| random (expectation) | 6059 [4679, 7619] |  | 12.69 [8.81, 18.20] | 1.17 | 0.934 |
+| random (expectation) | 6059 [4679, 7619] |  | 12.69 [8.81, 18.20] | 1.17 | — |
 | outside-in | 2800 [1829, 3909] |  | 1.89 [1.55, 2.32] | 1.08 | 0.948 |
 | fewest contacts | 2275 [1556, 3078] |  | 1.39 [1.20, 1.70] | 1.06 | 0.955 |
-| ASAP zero-shot | 3549 [2417, 4909] |  | 2.20 [1.78, 2.64] | 1.10 | 0.924 |
+| ASAP zero-shot | 3549 [2417, 4909] |  | 2.21 [1.79, 2.66] | 1.10 | 0.924 |
 | MLP-BCE (p) | 2205 [1564, 2925] | 2205 ± 125 (n=5) | 1.74 [1.53, 1.99] | 1.06 | 0.956 |
 | MLP-Surv (p/c) | 2026 [1444, 2703] | 2026 ± 170 (n=5) | 1.86 [1.65, 2.17] | 1.05 | 0.957 |
 | GNN-BCE (p) | 1903 [1323, 2567] | 1903 ± 136 (n=5) | 2.14 [1.89, 2.55] | 1.05 | 0.964 |
 | GNN-Surv (p/c) | 1835 [1228, 2526] | 1835 ± 129 (n=5) | 1.51 [1.37, 1.72] | 1.05 | 0.969 |
 | GNN-Surv-Tail (p/c) | 1637 [1115, 2228] | 1637 ± 106 (n=5) | 1.55 [1.42, 1.75] | 1.04 | 0.969 |
 | PN-GNN-Surv (p/c) | 1684 [1167, 2267] | 1684 ± 88 (n=5) | 1.55 [1.37, 1.74] | 1.04 | 0.968 |
-| ASAP-retrained | 3180 [2224, 4396] | 3180 ± 243 (n=5) | 2.29 [1.91, 3.09] | 1.08 | 0.936 |
+| ASAP-retrained | 3145 [2182, 4374] | 3145 ± 197 (n=5) | 2.26 [1.88, 2.96] | 1.08 | 0.937 |
 | hindsight-optimal (lower bound) | 115 [65, 180] |  | 1.00 [1.00, 1.00] | 1.00 | 1.000 |
 
 Paired per assembly (all scored states; Holm family of 11; ratio = A/B of totals; HL = Hodges–Lehmann median difference A − B per assembly, negative = A cheaper; W/T/L for A, tie |d| ≤ 0.01 s):
@@ -31,8 +33,8 @@ Paired per assembly (all scored states; Holm family of 11; ratio = A/B of totals
 | GNN-Surv (p/c) vs random (expectation) | 0.303 [0.219, 0.399] | -7.37 [-11.20, -4.99] | 192 / 25 / 28 | 2.1e-27 | 2.3e-26 |
 | GNN-Surv (p/c) vs outside-in | 0.656 [0.461, 0.928] | -0.02 [-0.07, -0.00] | 98 / 87 / 60 | 0.0018 | 0.011 |
 | GNN-Surv (p/c) vs fewest contacts | 0.807 [0.632, 1.016] | -0.02 [-0.06, -0.00] | 99 / 89 / 57 | 0.00042 | 0.0034 |
-| GNN-Surv (p/c) vs ASAP zero-shot | 0.517 [0.353, 0.733] | -0.09 [-0.31, -0.03] | 126 / 64 / 55 | 2.1e-07 | 2.1e-06 |
-| GNN-Surv (p/c) vs ASAP-retrained | 0.577 [0.444, 0.744] | -0.09 [-0.28, -0.03] | 119 / 67 / 59 | 7.5e-06 | 6.7e-05 |
+| GNN-Surv (p/c) vs ASAP zero-shot | 0.517 [0.353, 0.733] | -0.09 [-0.31, -0.03] | 126 / 64 / 55 | 2e-07 | 2e-06 |
+| GNN-Surv (p/c) vs ASAP-retrained | 0.583 [0.448, 0.758] | -0.09 [-0.27, -0.03] | 120 / 66 / 59 | 5e-06 | 4.5e-05 |
 | GNN-Surv (p/c) vs MLP-Surv (p/c) | 0.906 [0.712, 1.126] | -0.01 [-0.03, -0.00] | 90 / 91 / 64 | 0.02 | 0.099 |
 | GNN-Surv (p/c) vs GNN-BCE (p) | 0.964 [0.774, 1.184] | -0.01 [-0.04, -0.00] | 102 / 88 / 55 | 0.00047 | 0.0034 |
 | GNN-Surv (p/c) vs GNN-Surv-Tail (p/c) | 1.121 [0.989, 1.258] | +0.00 [+0.00, +0.01] | 53 / 117 / 75 | 0.062 | 0.25 |
@@ -40,7 +42,7 @@ Paired per assembly (all scored states; Holm family of 11; ratio = A/B of totals
 | GNN-BCE (p) vs MLP-BCE (p) | 0.863 [0.710, 1.035] | -0.00 [-0.01, +0.00] | 75 / 96 / 74 | 0.65 | 1 |
 | MLP-Surv (p/c) vs MLP-BCE (p) | 0.919 [0.796, 1.061] | -0.00 [-0.01, +0.00] | 78 / 100 / 67 | 0.23 | 0.69 |
 
-**§7 rule (val, main):** best heuristic on this split = fewest contacts; GNN-Surv / heuristic = 0.807 [0.632, 1.016], HL -0.02 s, Holm p 0.0034 → (a) False, (b) True: **cheaper on the typical assembly, not on total time** (val: development only; the registered rule applies to test)
+*§7 conditions, descriptive only (val, main; the registered rule applies to test, main configuration):* best heuristic on this split = fewest contacts; GNN-Surv / heuristic = 0.807 [0.632, 1.016], HL -0.02 s, Holm p 0.0034 → (a) False, (b) True; on val these are biased toward the trained models (val chose their configs and epochs)
 
 ### Subsets (main; reported, never used for selection)
 
@@ -58,7 +60,7 @@ Paired per assembly (all scored states; Holm family of 11; ratio = A/B of totals
 | GNN-Surv (p/c) | 566 [301, 929] | 566 ± 77 (n=5) |
 | GNN-Surv-Tail (p/c) | 503 [267, 801] | 503 ± 93 (n=5) |
 | PN-GNN-Surv (p/c) | 529 [290, 829] | 529 ± 91 (n=5) |
-| ASAP-retrained | 920 [527, 1391] | 920 ± 169 (n=5) |
+| ASAP-retrained | 913 [518, 1384] | 913 ± 153 (n=5) |
 | hindsight-optimal (lower bound) | 73 [25, 134] |  |
 
 GNN-Surv / fewest contacts on rot_state: 0.891 [0.599, 1.418], HL -0.01 s, W/T/L 19/10/15, p 0.73 (uncorrected)
@@ -77,7 +79,7 @@ GNN-Surv / fewest contacts on rot_state: 0.891 [0.599, 1.418], HL -0.01 s, W/T/L
 | GNN-Surv (p/c) | 1269 [796, 1814] | 1269 ± 136 (n=5) |
 | GNN-Surv-Tail (p/c) | 1134 [746, 1575] | 1134 ± 172 (n=5) |
 | PN-GNN-Surv (p/c) | 1155 [751, 1617] | 1155 ± 34 (n=5) |
-| ASAP-retrained | 2261 [1538, 3133] | 2261 ± 224 (n=5) |
+| ASAP-retrained | 2232 [1513, 3114] | 2232 ± 170 (n=5) |
 | hindsight-optimal (lower bound) | 42 [31, 56] |  |
 
 GNN-Surv / fewest contacts on non_rot_state: 0.774 [0.571, 1.042], HL -0.01 s, W/T/L 93/95/52, p 0.00021 (uncorrected)
@@ -96,7 +98,7 @@ GNN-Surv / fewest contacts on non_rot_state: 0.774 [0.571, 1.042], HL -0.01 s, W
 | GNN-Surv (p/c) | 1082 [639, 1612] | 1082 ± 96 (n=5) |
 | GNN-Surv-Tail (p/c) | 1019 [627, 1488] | 1019 ± 87 (n=5) |
 | PN-GNN-Surv (p/c) | 1011 [608, 1492] | 1011 ± 122 (n=5) |
-| ASAP-retrained | 1991 [1330, 2754] | 1991 ± 181 (n=5) |
+| ASAP-retrained | 1959 [1303, 2712] | 1959 ± 150 (n=5) |
 | hindsight-optimal (lower bound) | 82 [34, 146] |  |
 
 GNN-Surv / fewest contacts on source=v1: 0.735 [0.529, 1.011], HL -0.02 s, W/T/L 78/79/37, p 1.9e-05 (uncorrected)
@@ -115,7 +117,7 @@ GNN-Surv / fewest contacts on source=v1: 0.735 [0.529, 1.011], HL -0.02 s, W/T/L
 | GNN-Surv (p/c) | 424 [115, 841] | 424 ± 150 (n=5) |
 | GNN-Surv-Tail (p/c) | 323 [83, 683] | 323 ± 100 (n=5) |
 | PN-GNN-Surv (p/c) | 284 [89, 529] | 284 ± 80 (n=5) |
-| ASAP-retrained | 682 [141, 1572] | 682 ± 161 (n=5) |
+| ASAP-retrained | 678 [130, 1582] | 678 ± 152 (n=5) |
 | hindsight-optimal (lower bound) | 6 [4, 9] |  |
 
 GNN-Surv / fewest contacts on source=fresh-9to12: 1.340 [0.795, 3.226], HL +0.80 s, W/T/L 5/2/12, p 0.14 (uncorrected)
@@ -134,7 +136,7 @@ GNN-Surv / fewest contacts on source=fresh-9to12: 1.340 [0.795, 3.226], HL +0.80
 | GNN-Surv (p/c) | 329 [153, 535] | 329 ± 111 (n=5) |
 | GNN-Surv-Tail (p/c) | 296 [137, 485] | 296 ± 120 (n=5) |
 | PN-GNN-Surv (p/c) | 389 [184, 638] | 389 ± 99 (n=5) |
-| ASAP-retrained | 508 [287, 765] | 508 ± 60 (n=5) |
+| ASAP-retrained | 508 [286, 769] | 508 ± 60 (n=5) |
 | hindsight-optimal (lower bound) | 27 [12, 48] |  |
 
 GNN-Surv / fewest contacts on source=fresh-allowance: 0.675 [0.473, 1.007], HL -0.28 s, W/T/L 16/8/8, p 0.11 (uncorrected)
@@ -153,7 +155,7 @@ GNN-Surv / fewest contacts on source=fresh-allowance: 0.675 [0.473, 1.007], HL -
 | GNN-Surv (p/c) | 343 [184, 537] | 343 ± 134 (n=5) |
 | GNN-Surv-Tail (p/c) | 373 [204, 570] | 373 ± 53 (n=5) |
 | PN-GNN-Surv (p/c) | 340 [197, 507] | 340 ± 60 (n=5) |
-| ASAP-retrained | 656 [403, 942] | 656 ± 54 (n=5) |
+| ASAP-retrained | 637 [394, 918] | 637 ± 60 (n=5) |
 | hindsight-optimal (lower bound) | 39 [14, 74] |  |
 
 GNN-Surv / fewest contacts on parts=3-4: 0.657 [0.428, 1.007], HL -0.01 s, W/T/L 42/61/15, p 0.00026 (uncorrected)
@@ -172,7 +174,7 @@ GNN-Surv / fewest contacts on parts=3-4: 0.657 [0.428, 1.007], HL -0.01 s, W/T/L
 | GNN-Surv (p/c) | 598 [290, 973] | 598 ± 110 (n=5) |
 | GNN-Surv-Tail (p/c) | 498 [228, 827] | 498 ± 106 (n=5) |
 | PN-GNN-Surv (p/c) | 554 [252, 926] | 554 ± 99 (n=5) |
-| ASAP-retrained | 911 [511, 1389] | 911 ± 86 (n=5) |
+| ASAP-retrained | 892 [499, 1369] | 892 ± 97 (n=5) |
 | hindsight-optimal (lower bound) | 26 [10, 50] |  |
 
 GNN-Surv / fewest contacts on parts=5-6: 0.780 [0.494, 1.307], HL -0.02 s, W/T/L 26/21/20, p 0.15 (uncorrected)
@@ -191,7 +193,7 @@ GNN-Surv / fewest contacts on parts=5-6: 0.780 [0.494, 1.307], HL -0.02 s, W/T/L
 | GNN-Surv (p/c) | 341 [84, 719] | 341 ± 41 (n=5) |
 | GNN-Surv-Tail (p/c) | 297 [80, 580] | 297 ± 58 (n=5) |
 | PN-GNN-Surv (p/c) | 289 [79, 577] | 289 ± 91 (n=5) |
-| ASAP-retrained | 727 [294, 1249] | 727 ± 51 (n=5) |
+| ASAP-retrained | 727 [294, 1249] | 727 ± 48 (n=5) |
 | hindsight-optimal (lower bound) | 39 [6, 93] |  |
 
 GNN-Surv / fewest contacts on parts=7-8: 0.769 [0.330, 1.281], HL -0.14 s, W/T/L 21/4/9, p 0.064 (uncorrected)
@@ -229,7 +231,7 @@ GNN-Surv / fewest contacts on parts=9-10: 0.864 [0.419, 2.338], HL +0.01 s, W/T/
 | GNN-Surv (p/c) | 402 [110, 784] | 402 ± 128 (n=5) |
 | GNN-Surv-Tail (p/c) | 336 [81, 680] | 336 ± 50 (n=5) |
 | PN-GNN-Surv (p/c) | 316 [95, 570] | 316 ± 74 (n=5) |
-| ASAP-retrained | 688 [152, 1509] | 688 ± 173 (n=5) |
+| ASAP-retrained | 690 [144, 1527] | 690 ± 171 (n=5) |
 | hindsight-optimal (lower bound) | 5 [3, 8] |  |
 
 GNN-Surv / fewest contacts on parts=11-12: 1.093 [0.617, 2.374], HL +0.13 s, W/T/L 4/2/5, p 0.83 (uncorrected)
@@ -242,17 +244,17 @@ Scored states: 1010; states with no success under this configuration: 20 (every 
 
 | ordering | total planner time (s) [95% CI] | seeds (mean ± std) | median per-state ratio to optimal [95% CI] | mean queries to 1st success | states solved within T |
 |---|---|---|---|---|---|
-| random (expectation) | 9347 [7474, 11396] |  | 4.50 [3.74, 5.41] | 1.20 | 0.895 |
+| random (expectation) | 9347 [7474, 11396] |  | 4.50 [3.74, 5.41] | 1.20 | — |
 | outside-in | 5937 [4600, 7452] |  | 2.02 [1.66, 2.35] | 1.09 | 0.932 |
 | fewest contacts | 4736 [3763, 5797] |  | 1.46 [1.28, 1.68] | 1.07 | 0.950 |
-| ASAP zero-shot | 6664 [5262, 8298] |  | 2.49 [2.12, 2.96] | 1.11 | 0.909 |
+| ASAP zero-shot | 6660 [5256, 8298] |  | 2.49 [2.13, 2.95] | 1.11 | 0.909 |
 | MLP-BCE (p) | 4460 [3578, 5467] | 4460 ± 175 (n=5) | 1.61 [1.47, 1.81] | 1.07 | 0.948 |
 | MLP-Surv (p/c) | 4401 [3515, 5434] | 4401 ± 180 (n=5) | 1.80 [1.63, 2.06] | 1.06 | 0.950 |
 | GNN-BCE (p) | 4381 [3518, 5366] | 4381 ± 138 (n=5) | 2.06 [1.87, 2.39] | 1.06 | 0.952 |
 | GNN-Surv (p/c) | 4016 [3173, 4969] | 4016 ± 195 (n=5) | 1.66 [1.51, 1.93] | 1.05 | 0.961 |
 | GNN-Surv-Tail (p/c) | 3839 [3058, 4739] | 3839 ± 191 (n=5) | 1.74 [1.58, 1.94] | 1.05 | 0.960 |
 | PN-GNN-Surv (p/c) | 4070 [3253, 4986] | 4070 ± 110 (n=5) | 1.71 [1.57, 1.97] | 1.05 | 0.960 |
-| ASAP-retrained | 5632 [4390, 7150] | 5632 ± 298 (n=5) | 1.84 [1.66, 2.13] | 1.10 | 0.928 |
+| ASAP-retrained | 5614 [4369, 7148] | 5614 ± 244 (n=5) | 1.84 [1.66, 2.12] | 1.10 | 0.929 |
 | hindsight-optimal (lower bound) | 1063 [842, 1346] |  | 1.00 [1.00, 1.00] | 1.00 | 1.000 |
 
 Paired per assembly (all scored states; Holm family of 11; ratio = A/B of totals; HL = Hodges–Lehmann median difference A − B per assembly, negative = A cheaper; W/T/L for A, tie |d| ≤ 0.01 s):
@@ -262,8 +264,8 @@ Paired per assembly (all scored states; Holm family of 11; ratio = A/B of totals
 | GNN-Surv (p/c) vs random (expectation) | 0.430 [0.356, 0.510] | -9.78 [-15.25, -6.27] | 191 / 2 / 52 | 2e-22 | 2.2e-21 |
 | GNN-Surv (p/c) vs outside-in | 0.676 [0.569, 0.806] | -1.14 [-2.17, -0.39] | 156 / 17 / 72 | 9.5e-08 | 8.5e-07 |
 | GNN-Surv (p/c) vs fewest contacts | 0.848 [0.745, 0.962] | -0.42 [-1.09, -0.16] | 147 / 15 / 83 | 0.00029 | 0.0021 |
-| GNN-Surv (p/c) vs ASAP zero-shot | 0.603 [0.493, 0.725] | -2.46 [-5.17, -1.20] | 184 / 9 / 52 | 8.6e-15 | 8.6e-14 |
-| GNN-Surv (p/c) vs ASAP-retrained | 0.713 [0.612, 0.832] | -0.72 [-2.19, -0.24] | 137 / 10 / 98 | 0.00073 | 0.0044 |
+| GNN-Surv (p/c) vs ASAP zero-shot | 0.603 [0.493, 0.725] | -2.46 [-5.17, -1.19] | 183 / 9 / 53 | 2.1e-14 | 2.1e-13 |
+| GNN-Surv (p/c) vs ASAP-retrained | 0.715 [0.612, 0.837] | -0.79 [-2.38, -0.25] | 137 / 10 / 98 | 0.0006 | 0.0036 |
 | GNN-Surv (p/c) vs MLP-Surv (p/c) | 0.912 [0.821, 1.014] | -0.12 [-0.35, +0.00] | 125 / 20 / 100 | 0.069 | 0.34 |
 | GNN-Surv (p/c) vs GNN-BCE (p) | 0.917 [0.822, 1.013] | -0.28 [-0.54, -0.12] | 139 / 24 / 82 | 0.00024 | 0.0019 |
 | GNN-Surv (p/c) vs GNN-Surv-Tail (p/c) | 1.046 [0.978, 1.114] | +0.05 [-0.01, +0.13] | 92 / 39 / 114 | 0.14 | 0.42 |
@@ -271,7 +273,7 @@ Paired per assembly (all scored states; Holm family of 11; ratio = A/B of totals
 | GNN-BCE (p) vs MLP-BCE (p) | 0.982 [0.880, 1.093] | +0.09 [-0.04, +0.31] | 109 / 22 / 114 | 0.22 | 0.44 |
 | MLP-Surv (p/c) vs MLP-BCE (p) | 0.987 [0.912, 1.066] | -0.01 [-0.12, +0.09] | 113 / 28 / 104 | 0.82 | 0.82 |
 
-**§7 rule (val, cmgrrt_only):** best heuristic on this split = fewest contacts; GNN-Surv / heuristic = 0.848 [0.745, 0.962], HL -0.42 s, Holm p 0.0021 → (a) True, (b) True: **beats** (val: development only; the registered rule applies to test)
+*§7 conditions, descriptive only (val, cmgrrt_only; the registered rule applies to test, main configuration):* best heuristic on this split = fewest contacts; GNN-Surv / heuristic = 0.848 [0.745, 0.962], HL -0.42 s, Holm p 0.0021 → (a) True, (b) True; on val these are biased toward the trained models (val chose their configs and epochs)
 
 ### Subsets (cmgrrt_only; reported, never used for selection)
 
@@ -289,7 +291,7 @@ Paired per assembly (all scored states; Holm family of 11; ratio = A/B of totals
 | GNN-Surv (p/c) | 712 [434, 1079] | 712 ± 86 (n=5) |
 | GNN-Surv-Tail (p/c) | 668 [407, 993] | 668 ± 77 (n=5) |
 | PN-GNN-Surv (p/c) | 754 [461, 1103] | 754 ± 88 (n=5) |
-| ASAP-retrained | 1124 [719, 1617] | 1124 ± 174 (n=5) |
+| ASAP-retrained | 1112 [702, 1605] | 1112 ± 152 (n=5) |
 | hindsight-optimal (lower bound) | 185 [123, 258] |  |
 
 GNN-Surv / fewest contacts on rot_state: 0.833 [0.614, 1.112], HL -0.23 s, W/T/L 20/6/18, p 0.6 (uncorrected)
@@ -301,14 +303,14 @@ GNN-Surv / fewest contacts on rot_state: 0.833 [0.614, 1.112], HL -0.23 s, W/T/L
 | random (expectation) | 7679 [6216, 9357] |  |
 | outside-in | 4808 [3676, 6124] |  |
 | fewest contacts | 3881 [3028, 4795] |  |
-| ASAP zero-shot | 5445 [4268, 6820] |  |
+| ASAP zero-shot | 5441 [4262, 6815] |  |
 | MLP-BCE (p) | 3717 [2947, 4561] | 3717 ± 189 (n=5) |
 | MLP-Surv (p/c) | 3710 [2920, 4585] | 3710 ± 126 (n=5) |
 | GNN-BCE (p) | 3593 [2853, 4440] | 3593 ± 146 (n=5) |
 | GNN-Surv (p/c) | 3304 [2561, 4140] | 3304 ± 187 (n=5) |
 | GNN-Surv-Tail (p/c) | 3171 [2485, 3946] | 3171 ± 248 (n=5) |
 | PN-GNN-Surv (p/c) | 3317 [2619, 4088] | 3317 ± 79 (n=5) |
-| ASAP-retrained | 4508 [3489, 5670] | 4508 ± 251 (n=5) |
+| ASAP-retrained | 4503 [3483, 5678] | 4503 ± 213 (n=5) |
 | hindsight-optimal (lower bound) | 878 [688, 1144] |  |
 
 GNN-Surv / fewest contacts on non_rot_state: 0.851 [0.737, 0.979], HL -0.33 s, W/T/L 142/17/81, p 0.00044 (uncorrected)
@@ -320,14 +322,14 @@ GNN-Surv / fewest contacts on non_rot_state: 0.851 [0.737, 0.979], HL -0.33 s, W
 | random (expectation) | 4758 [3845, 5764] |  |
 | outside-in | 3277 [2479, 4197] |  |
 | fewest contacts | 2888 [2214, 3663] |  |
-| ASAP zero-shot | 3694 [2879, 4555] |  |
+| ASAP zero-shot | 3690 [2878, 4549] |  |
 | MLP-BCE (p) | 2674 [2063, 3352] | 2674 ± 116 (n=5) |
 | MLP-Surv (p/c) | 2492 [1920, 3127] | 2492 ± 200 (n=5) |
 | GNN-BCE (p) | 2587 [1983, 3270] | 2587 ± 193 (n=5) |
 | GNN-Surv (p/c) | 2309 [1763, 2949] | 2309 ± 134 (n=5) |
 | GNN-Surv-Tail (p/c) | 2238 [1705, 2849] | 2238 ± 113 (n=5) |
 | PN-GNN-Surv (p/c) | 2419 [1840, 3088] | 2419 ± 137 (n=5) |
-| ASAP-retrained | 3359 [2560, 4263] | 3359 ± 232 (n=5) |
+| ASAP-retrained | 3331 [2537, 4224] | 3331 ± 214 (n=5) |
 | hindsight-optimal (lower bound) | 601 [487, 733] |  |
 
 GNN-Surv / fewest contacts on source=v1: 0.800 [0.667, 0.965], HL -0.44 s, W/T/L 121/13/60, p 3.4e-05 (uncorrected)
@@ -346,7 +348,7 @@ GNN-Surv / fewest contacts on source=v1: 0.800 [0.667, 0.965], HL -0.44 s, W/T/L
 | GNN-Surv (p/c) | 1005 [511, 1598] | 1005 ± 214 (n=5) |
 | GNN-Surv-Tail (p/c) | 881 [448, 1426] | 881 ± 135 (n=5) |
 | PN-GNN-Surv (p/c) | 836 [466, 1257] | 836 ± 73 (n=5) |
-| ASAP-retrained | 1264 [560, 2322] | 1264 ± 132 (n=5) |
+| ASAP-retrained | 1269 [560, 2337] | 1269 ± 118 (n=5) |
 | hindsight-optimal (lower bound) | 212 [95, 419] |  |
 
 GNN-Surv / fewest contacts on source=fresh-9to12: 0.969 [0.794, 1.154], HL -0.53 s, W/T/L 9/0/10, p 0.89 (uncorrected)
@@ -365,7 +367,7 @@ GNN-Surv / fewest contacts on source=fresh-9to12: 0.969 [0.794, 1.154], HL -0.53
 | GNN-Surv (p/c) | 701 [452, 979] | 701 ± 105 (n=5) |
 | GNN-Surv-Tail (p/c) | 720 [458, 1023] | 720 ± 139 (n=5) |
 | PN-GNN-Surv (p/c) | 815 [481, 1217] | 815 ± 47 (n=5) |
-| ASAP-retrained | 1008 [622, 1516] | 1008 ± 71 (n=5) |
+| ASAP-retrained | 1014 [621, 1527] | 1014 ± 76 (n=5) |
 | hindsight-optimal (lower bound) | 250 [164, 348] |  |
 
 GNN-Surv / fewest contacts on source=fresh-allowance: 0.865 [0.678, 1.157], HL -0.33 s, W/T/L 17/2/13, p 0.57 (uncorrected)
@@ -384,7 +386,7 @@ GNN-Surv / fewest contacts on source=fresh-allowance: 0.865 [0.678, 1.157], HL -
 | GNN-Surv (p/c) | 764 [546, 1019] | 764 ± 150 (n=5) |
 | GNN-Surv-Tail (p/c) | 797 [571, 1061] | 797 ± 56 (n=5) |
 | PN-GNN-Surv (p/c) | 775 [573, 998] | 775 ± 71 (n=5) |
-| ASAP-retrained | 1147 [839, 1496] | 1147 ± 62 (n=5) |
+| ASAP-retrained | 1124 [827, 1467] | 1124 ± 69 (n=5) |
 | hindsight-optimal (lower bound) | 257 [196, 327] |  |
 
 GNN-Surv / fewest contacts on parts=3-4: 0.718 [0.586, 0.870], HL -0.32 s, W/T/L 74/14/30, p 2.8e-05 (uncorrected)
@@ -396,14 +398,14 @@ GNN-Surv / fewest contacts on parts=3-4: 0.718 [0.586, 0.870], HL -0.32 s, W/T/L
 | random (expectation) | 2242 [1666, 2839] |  |
 | outside-in | 1790 [1149, 2512] |  |
 | fewest contacts | 1299 [865, 1798] |  |
-| ASAP zero-shot | 1690 [1167, 2260] |  |
+| ASAP zero-shot | 1685 [1161, 2256] |  |
 | MLP-BCE (p) | 1135 [758, 1566] | 1135 ± 66 (n=5) |
 | MLP-Surv (p/c) | 1118 [743, 1571] | 1118 ± 69 (n=5) |
 | GNN-BCE (p) | 1250 [838, 1714] | 1250 ± 75 (n=5) |
 | GNN-Surv (p/c) | 1202 [807, 1656] | 1202 ± 133 (n=5) |
 | GNN-Surv-Tail (p/c) | 1109 [737, 1533] | 1109 ± 166 (n=5) |
 | PN-GNN-Surv (p/c) | 1229 [809, 1718] | 1229 ± 104 (n=5) |
-| ASAP-retrained | 1589 [1090, 2164] | 1589 ± 131 (n=5) |
+| ASAP-retrained | 1574 [1080, 2141] | 1574 ± 115 (n=5) |
 | hindsight-optimal (lower bound) | 265 [200, 338] |  |
 
 GNN-Surv / fewest contacts on parts=5-6: 0.926 [0.688, 1.274], HL -0.25 s, W/T/L 38/1/28, p 0.33 (uncorrected)
@@ -415,14 +417,14 @@ GNN-Surv / fewest contacts on parts=5-6: 0.926 [0.688, 1.274], HL -0.25 s, W/T/L
 | random (expectation) | 2019 [1382, 2686] |  |
 | outside-in | 986 [576, 1471] |  |
 | fewest contacts | 961 [572, 1437] |  |
-| ASAP zero-shot | 1552 [1047, 2098] |  |
+| ASAP zero-shot | 1553 [1049, 2099] |  |
 | MLP-BCE (p) | 868 [547, 1232] | 868 ± 88 (n=5) |
 | MLP-Surv (p/c) | 755 [488, 1070] | 755 ± 97 (n=5) |
 | GNN-BCE (p) | 909 [560, 1315] | 909 ± 101 (n=5) |
 | GNN-Surv (p/c) | 739 [433, 1126] | 739 ± 63 (n=5) |
 | GNN-Surv-Tail (p/c) | 678 [391, 1026] | 678 ± 83 (n=5) |
 | PN-GNN-Surv (p/c) | 779 [467, 1155] | 779 ± 82 (n=5) |
-| ASAP-retrained | 1158 [669, 1729] | 1158 ± 69 (n=5) |
+| ASAP-retrained | 1168 [680, 1740] | 1168 ± 61 (n=5) |
 | hindsight-optimal (lower bound) | 209 [133, 302] |  |
 
 GNN-Surv / fewest contacts on parts=7-8: 0.769 [0.556, 1.006], HL -1.60 s, W/T/L 23/0/11, p 0.024 (uncorrected)
@@ -441,7 +443,7 @@ GNN-Surv / fewest contacts on parts=7-8: 0.769 [0.556, 1.006], HL -1.60 s, W/T/L
 | GNN-Surv (p/c) | 552 [301, 838] | 552 ± 52 (n=5) |
 | GNN-Surv-Tail (p/c) | 510 [313, 729] | 510 ± 111 (n=5) |
 | PN-GNN-Surv (p/c) | 546 [287, 838] | 546 ± 79 (n=5) |
-| ASAP-retrained | 607 [294, 1047] | 607 ± 51 (n=5) |
+| ASAP-retrained | 608 [295, 1048] | 608 ± 52 (n=5) |
 | hindsight-optimal (lower bound) | 110 [62, 179] |  |
 
 GNN-Surv / fewest contacts on parts=9-10: 0.971 [0.721, 1.310], HL +2.75 s, W/T/L 5/0/10, p 0.36 (uncorrected)
@@ -460,7 +462,7 @@ GNN-Surv / fewest contacts on parts=9-10: 0.971 [0.721, 1.310], HL +2.75 s, W/T/
 | GNN-Surv (p/c) | 759 [340, 1295] | 759 ± 162 (n=5) |
 | GNN-Surv-Tail (p/c) | 745 [337, 1243] | 745 ± 67 (n=5) |
 | PN-GNN-Surv (p/c) | 742 [389, 1135] | 742 ± 38 (n=5) |
-| ASAP-retrained | 1130 [472, 2076] | 1130 ± 147 (n=5) |
+| ASAP-retrained | 1139 [476, 2093] | 1139 ± 133 (n=5) |
 | hindsight-optimal (lower bound) | 222 [94, 418] |  |
 
 GNN-Surv / fewest contacts on parts=11-12: 0.898 [0.677, 1.124], HL -10.18 s, W/T/L 7/0/4, p 0.37 (uncorrected)
@@ -471,7 +473,7 @@ ECE: 10 equal-width bins of p vs observed success. Within-state C-index (Harrell
 
 | model | ECE of p | C-index within state | C-index pooled |
 |---|---|---|---|
-| ASAP zero-shot | 0.581 | 0.563 | 0.606 |
+| ASAP zero-shot | 0.581 | 0.562 | 0.606 |
 | MLP-BCE (p) | 0.021 ± 0.007 | 0.624 ± 0.003 | 0.729 ± 0.005 |
 | MLP-Surv (p/c) | 0.028 ± 0.014 | 0.635 ± 0.009 | 0.735 ± 0.016 |
 | GNN-BCE (p) | 0.076 ± 0.021 | 0.623 ± 0.011 | 0.701 ± 0.023 |

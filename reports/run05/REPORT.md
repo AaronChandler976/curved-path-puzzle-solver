@@ -4,7 +4,10 @@
 (`docs/PREREG_run05.md` §1–§3; 5 final seeds each, none dropped), on train/val only. On val, GNN-Surv is cheaper than
 the best heuristic (fewest contacts) on the typical assembly. On total planner time it is not, in the main
 configuration (ratio CI crosses 1); in the CMG-RRT-only configuration it is. These are **development (val) numbers**;
-the registered result is the single test evaluation in Phase 3. The test split was never loaded: no
+the registered result is the single test evaluation in Phase 3. **Val numbers for trained models are
+optimistically biased:** val replay cost chose each variant's config and checkpoint epoch, and the same cost is
+reported here. The heuristics had no such selection. The CIs and p-values below are therefore descriptive, not
+inferential (Phase 1 audit, MAJOR 1). The test split was never loaded: no
 `data/splits/.v2_test_evaluated` marker, and the graphs file holds train and val only.
 
 ## 1. What ran (evidence)
@@ -13,7 +16,7 @@ the registered result is the single test evaluation in Phase 3. The test split w
 | train/val graphs + point clouds | `data/processed/run05/graphs_train_val.pt`, `clouds_train_val.pt` (5,867 train / 1,030 val states; 5,762 / 1,010 with ≥ 1 success) | `experiments/2026-11-24_run05_dataset/` |
 | ASAP's own redmax contact graphs (geometry only) | 2,022/2,022 assemblies, 0 errors | `experiments/2026-11-24_run05_redmax/` |
 | training, 7 variants | `experiments/2026-11-24_run05_train/<variant>/` (grid runs, `seed100`–`seed104/best.pt`, `selection.json`, `metrics.csv`, `train_log.txt`, `load_info.txt`) | `cmd.txt`, `git_hash.txt` there |
-| val replay (main + CMG-RRT-only), C-index, ECE | `reports/run05/val_replay.md`, `experiments/2026-11-24_run05_eval_val/results.json`, `per_state.jsonl` | `cmd.txt`, `stdout.log` there |
+| val replay (main + CMG-RRT-only), C-index, ECE, **scored on CPU** | `reports/run05/val_replay.md`, `experiments/2026-11-25_run05_eval_val_cpu/a/results.json`, `per_state.jsonl` | `cmd.txt`, `stdout.log` there. A second identical run (`.../b/`) gives bit-identical per-state costs and results. The earlier GPU run `experiments/2026-11-24_run05_eval_val/` is superseded: GPU ASAP scoring was not deterministic (audit MAJOR 2). Only the ASAP rows differ. |
 | latency / memory profile (alone, idle guard 5 min) | `reports/run05/profile.md`, `experiments/2026-11-24_run05_profile/profile.json` | `load_info.txt`, `guard/idle_samples.jsonl` |
 | training curves, grid tables, every seed | `reports/run05/training.md`, `reports/run05/figures/train_curves_*.pdf` | `scripts/run05_training_report.py` |
 
@@ -32,7 +35,8 @@ the registered result is the single test evaluation in Phase 3. The test split w
 below re-evaluate each saved checkpoint once.
 
 ## 3. Val replay, main configuration (pre-check → CMG-RRT), 1,010 scored states, 245 assemblies
-From `reports/run05/val_replay.md` (bootstrap over assemblies, 10,000 resamples; trained variants = seed-mean):
+From `reports/run05/val_replay.md` (bootstrap over assemblies, 10,000 resamples; trained variants = seed-mean;
+descriptive, see the selection-bias note above):
 
 | ordering | total planner time (s) [95% CI] | seeds mean ± std |
 |---|---|---|
@@ -40,7 +44,7 @@ From `reports/run05/val_replay.md` (bootstrap over assemblies, 10,000 resamples;
 | outside-in | 2800 [1829, 3909] | |
 | fewest contacts | 2275 [1556, 3078] | |
 | ASAP zero-shot | 3549 [2417, 4909] | |
-| ASAP-retrained | 3180 [2224, 4396] | 3180 ± 243 |
+| ASAP-retrained | 3145 [2182, 4374] | 3145 ± 197 |
 | MLP-BCE | 2205 [1564, 2925] | 2205 ± 125 |
 | MLP-Surv | 2026 [1444, 2703] | 2026 ± 170 |
 | GNN-BCE | 1903 [1323, 2567] | 1903 ± 136 |
@@ -50,9 +54,11 @@ From `reports/run05/val_replay.md` (bootstrap over assemblies, 10,000 resamples;
 | hindsight-optimal | 115 [65, 180] | |
 
 - **GNN-Surv vs fewest contacts** (the best heuristic on val; this fixes the §7 heuristic for test, DECISIONS #8):
-  ratio of totals 0.807 [0.632, 1.016], HL −0.02 s, W/T/L 99/89/57, Holm p 0.0034. That is "cheaper on the typical
-  assembly, not on total time" under the §7 wording, on val.
-- **CMG-RRT-only configuration:** ratio 0.848 [0.745, 0.962], HL −0.42 s, Holm p 0.0021. Both §7 conditions hold on val.
+  ratio of totals 0.807 [0.632, 1.016], HL −0.02 s, W/T/L 99/89/57, Holm p 0.0034. Only the §7 typical-assembly
+  condition (b) is met here, on val, descriptively; the registered rule is applied only to test in the main
+  configuration.
+- **CMG-RRT-only configuration:** ratio 0.848 [0.745, 0.962], HL −0.42 s, Holm p 0.0021. Descriptively both
+  conditions are met on val, but the registered rule doesn't cover this configuration (it is a robustness table).
 - **Interventions on val** (Holm family of 11):
   - GNN vs MLP (survival): 0.906 [0.712, 1.126], Holm p 0.099.
   - Survival p/c vs BCE p (GNN): 0.964 [0.774, 1.184], Holm p 0.0034.
@@ -71,7 +77,7 @@ From `reports/run05/val_replay.md` (bootstrap over assemblies, 10,000 resamples;
 ## 4. Prediction quality (val, main configuration)
 | model | ECE of p | within-state C-index | pooled C-index |
 |---|---|---|---|
-| ASAP zero-shot (score is P(next removed), not P(success)) | 0.581 | 0.563 | 0.606 |
+| ASAP zero-shot (score is P(next removed), not P(success)) | 0.581 | 0.562 | 0.606 |
 | MLP-BCE | 0.021 ± 0.007 | 0.624 ± 0.003 | 0.729 ± 0.005 |
 | MLP-Surv | 0.028 ± 0.014 | 0.635 ± 0.009 | 0.735 ± 0.016 |
 | GNN-BCE | 0.076 ± 0.021 | 0.623 ± 0.011 | 0.701 ± 0.023 |
