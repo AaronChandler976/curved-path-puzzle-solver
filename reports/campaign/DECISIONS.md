@@ -41,3 +41,11 @@
    clean test assemblies pre-registered** in `docs/PREREG_addendum.md` §A (committed before any v2 training).
    *Alt:* re-split (a data-dependent change after a committed split) or drop the 41 (shrinks test, changes strata).
    The overlap informed only oracle settings shared by every method.
+6. **Tail-aware loss: batched by state size, identical math; the variant was restarted.** The registered `tail_term`
+   loops over states in Python, so one grid run was taking > 5 min with 6 jobs sharing the GPU (53 runs ≈ 1 day).
+   `tail_term_grouped` (src/disasm/models/tail_loss.py) groups states of equal size and runs the same NeuralSort on
+   each group's own n × n matrices, with no padding. Test: value equal to 1e-6, gradient equal to 1e-5 (float32)
+   (`tests/test_tail_loss.py::test_grouped_tail_term_equals_loop`). The first tail launch was stopped before finishing
+   its first grid run; its folder is kept as `experiments/2026-11-24_run05_train/gnn_survival_tail_aborted1/`, not used.
+   The other variants are unaffected: train_v2.py's only other change is `.detach()` in logging (they loaded the
+   script at launch).
