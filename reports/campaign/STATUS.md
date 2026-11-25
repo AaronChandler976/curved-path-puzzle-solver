@@ -1,6 +1,6 @@
 STATE: RUNNING
 DEADLINE: 2026-12-13T08:00:00-08:00
-CURRENT PHASE: 1 (run 05). STEP: Phase 1 work done; Phase 1 audit running -> reports/campaign/AUDITS/phase1_1.md
+CURRENT PHASE: 1. Audit phase1_1 FAIL (2 MAJOR: val selection bias, GPU nondeterminism) -> fixed; re-audit phase1_2 running.
 BACKGROUND JOBS:
 - Phase 1 auditor (subagent)
 DONE SO FAR:
