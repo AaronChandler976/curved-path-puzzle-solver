@@ -1,15 +1,15 @@
 STATE: RUNNING
 DEADLINE: 2026-12-13T08:00:00-08:00
-CURRENT PHASE: 2 (exploration on val). Phase 1 DONE (audits phase1_1 FAIL→fixed, phase1_2 PASS).
-BACKGROUND JOBS:
-- Phase 1 auditor (subagent)
+CURRENT PHASE: 2 -> 3. Freeze committed (a4eff4a + audit fixes a13b397). Audit phase2_1 FAIL (1 MAJOR wording) -> fixed;
+  re-audit phase2_2 running.
+BACKGROUND JOBS: Phase 2 re-auditor (subagent)
 DONE SO FAR:
-- Phase 0 DONE (audits phase0_1 FAIL→fixed, phase0_2 PASS). Run 04 DONE (T9 elk deferred to Phase 5).
-- Phase 1: 7 variants x 5 seeds trained (experiments/2026-11-24_run05_train/), val replay
-  (reports/run05/val_replay.md), profile (reports/run05/profile.md), REPORT (reports/run05/REPORT.md).
-  §7 best heuristic from val = fewest contacts (DECISIONS #8).
-- Phase 2 code ready (not run): GATv2/GT encoders, ListNet variant, scripts/explore_orderings.py.
-- Paper: skeleton compiles (tectonic, env paper); method, related work, data drafted; refs verified (paper/refs_check.md).
-NEXT ACTION: fix audit findings; then Phase 2: explore_orderings.py on val; train gatv2_survival, gt_survival,
-  gnn_survival_listnet (same grid, 5 seeds); 5-fold group CV over train+val for candidates; write
-  docs/PREREG_addendum.md part B + configs/final_frozen.yaml; freeze audit.
+- Phase 0 DONE, Phase 1 DONE (reports/run05/REPORT.md; audits phase1_1 FAIL→fixed, phase1_2 PASS).
+- Phase 2: reports/explore/REPORT.md (orderings, budget policy, GATv2/GT/ListNet, 5-fold group CV);
+  docs/PREREG_addendum.md (A, B), configs/final_frozen.yaml (50 checkpoint sha256), configs/final_methods.json.
+- Phase 3 prep: eval_v2.py (test marker, CPU, sensitivity, budget policy), scripts/run_final_live.sh (P1..P4),
+  live_abd.py @b policy (dev smoke experiments/2026-11-24_run06_dev_live/, train assemblies, not reported).
+NEXT ACTION: when phase2_2 PASSES: Phase 3 = (1) replay on test ONCE:
+  eval_v2.py --split test (command in configs/final_frozen.yaml) -> reports/final_eval/replay.md;
+  (2) scripts/run_final_live.sh experiments/<date>_final_eval_live (P1..P4, ~30-57 h);
+  (3) live report + failure analysis; audit.
