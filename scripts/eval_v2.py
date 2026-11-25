@@ -34,7 +34,10 @@ NAMES = {"random": "random (expectation)", "outside_in": "outside-in", "fewest_c
          "asap_zs": "ASAP zero-shot", "asap_retrained": "ASAP-retrained", "mlp_bce": "MLP-BCE (p)",
          "mlp_survival": "MLP-Surv (p/c)", "gnn_bce": "GNN-BCE (p)", "gnn_survival": "GNN-Surv (p/c)",
          "gnn_survival_tail": "GNN-Surv-Tail (p/c)", "pn_gnn_survival": "PN-GNN-Surv (p/c)",
-         "optimal": "hindsight-optimal (lower bound)"}
+         "optimal": "hindsight-optimal (lower bound)",
+         # exploratory (post-registration, campaign Phase 2)
+         "gatv2_survival": "GATv2-Surv (p/c) [expl.]", "gt_survival": "GT-Surv (p/c) [expl.]",
+         "gnn_survival_listnet": "GNN-Surv-ListNet (p/c) [expl.]"}
 MAIN = "gnn_survival"
 COMPARISONS = [(MAIN, b) for b in ("random", "outside_in", "fewest_contacts", "asap_zs", "asap_retrained", "mlp_survival",
                                    "gnn_bce", "gnn_survival_tail", "pn_gnn_survival")] + \

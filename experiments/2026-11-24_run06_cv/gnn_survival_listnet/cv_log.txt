@@ -1,0 +1,5 @@
+fold 0: 4071 train / 1347 inner (fold 1) / 1354 held-out states; heuristics {'random': 9012, 'outside_in': 6402, 'fewest_contacts': 4098, 'optimal': 230}
+fold0_s100: best smoothed val cost 2500.8 s at epoch 17 (43 epochs, 32 s)
+fold 0 gnn_survival_listnet s100: total 3484 (fewest 4098, ratio 0.850)
+fold0_s101: best smoothed val cost 2275.4 s at epoch 5 (31 epochs, 24 s)
+fold 0 gnn_survival_listnet s101: total 2657 (fewest 4098, ratio 0.648)

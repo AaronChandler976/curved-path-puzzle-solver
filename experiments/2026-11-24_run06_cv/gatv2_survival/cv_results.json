@@ -1,0 +1,28 @@
+[
+ {
+  "fold": 0,
+  "n_states": 1354,
+  "n_assemblies": 330,
+  "variant": "heuristics",
+  "random": 9011.888967536255,
+  "outside_in": 6402.393229722977,
+  "fewest_contacts": 4098.4452250003815,
+  "optimal": 229.83761477470398
+ },
+ {
+  "fold": 0,
+  "variant": "gatv2_survival",
+  "seed": 100,
+  "total": 3264.51434135437,
+  "ratio_vs_fewest": 0.7965250630753681,
+  "best_epoch": 8
+ },
+ {
+  "fold": 0,
+  "variant": "gatv2_survival",
+  "seed": 101,
+  "total": 3764.7477326393127,
+  "ratio_vs_fewest": 0.918579491967948,
+  "best_epoch": 20
+ }
+]

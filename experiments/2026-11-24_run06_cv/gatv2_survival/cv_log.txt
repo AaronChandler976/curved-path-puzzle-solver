@@ -1,0 +1,5 @@
+fold 0: 4071 train / 1347 inner (fold 1) / 1354 held-out states; heuristics {'random': 9012, 'outside_in': 6402, 'fewest_contacts': 4098, 'optimal': 230}
+fold0_s100: best smoothed val cost 2952.6 s at epoch 8 (34 epochs, 20 s)
+fold 0 gatv2_survival s100: total 3265 (fewest 4098, ratio 0.797)
+fold0_s101: best smoothed val cost 2884.6 s at epoch 20 (46 epochs, 33 s)
+fold 0 gatv2_survival s101: total 3765 (fewest 4098, ratio 0.919)
