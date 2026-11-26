@@ -1,0 +1,9 @@
+0d2ac32bcc89f4d35340452f42890509abe785c8
+?? experiments/2026-11-24_audit_phase1_1_repro/
+?? experiments/2026-11-24_audit_phase1_2_repro/
+?? experiments/2026-11-24_audit_phase2_1_repro/
+?? experiments/2026-11-24_audit_phase2_2_repro/
+?? experiments/2026-11-24_run06_dev_live/
+?? experiments/2026-11-26_audit_phase3_1_repro/
+?? experiments/2026-11-26_audit_phase3_2_repro/
+?? paper/main.pdf

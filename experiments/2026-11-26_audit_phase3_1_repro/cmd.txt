@@ -1,0 +1,11 @@
+# Auditor phase3_1 reproduction commands (no planner jobs; test evaluation not re-run)
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/live_report_v2.py --dir experiments/2026-11-24_final_eval_live --md experiments/2026-11-26_audit_phase3_1_repro/live.md
+env -u PYTHONPATH OMP_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/failure_analysis.py --replay-dir experiments/2026-11-25_final_eval_replay --outdir experiments/2026-11-26_audit_phase3_1_repro/failure --md experiments/2026-11-26_audit_phase3_1_repro/failure_analysis.md
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/final_figures.py --out experiments/2026-11-26_audit_phase3_1_repro/figures
+# snapshots: results.jsonl filtered to methods_P1 / methods_P1+P2 -> snap_P1/, snap_P12/, then live_report_v2.py on each
+env -u PYTHONPATH conda run --no-capture-output -n disasm python experiments/2026-11-26_audit_phase3_1_repro/indep_live.py
+env -u PYTHONPATH conda run --no-capture-output -n disasm python experiments/2026-11-26_audit_phase3_1_repro/indep_replay.py
+env -u PYTHONPATH conda run --no-capture-output -n disasm python experiments/2026-11-26_audit_phase3_1_repro/check_ckpts.py
+env -u PYTHONPATH conda run --no-capture-output -n disasm python experiments/2026-11-26_audit_phase3_1_repro/budget_overshoot.py
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/eval_v2.py --split test ... --outdir experiments/2026-11-26_audit_phase3_1_repro/refuse_check   # refusal check only (marker present)
+env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 conda run -n disasm python -m pytest -q

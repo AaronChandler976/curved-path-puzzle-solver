@@ -1,0 +1,5 @@
+env -u PYTHONPATH /home/aaron/miniforge3/envs/disasm/bin/python scripts/cv_report.py --cv-dir experiments/2026-11-24_run06_cv --md experiments/2026-11-24_audit_phase2_2_repro/cv.md
+env -u PYTHONPATH /home/aaron/miniforge3/envs/disasm/bin/python experiments/2026-11-24_audit_phase2_2_repro/chk_frozen.py   # sha256 of every path in configs/final_frozen.yaml
+env -u PYTHONPATH /home/aaron/miniforge3/envs/disasm/bin/python experiments/2026-11-24_audit_phase2_2_repro/chk_seed.py     # val_best_seed = argmin best_val_cost
+env -u PYTHONPATH /home/aaron/miniforge3/envs/disasm/bin/python experiments/2026-11-24_audit_phase2_2_repro/chk_listnet.py  # listnet_term vs hand computation
+env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 /home/aaron/miniforge3/envs/disasm/bin/python -m pytest -q

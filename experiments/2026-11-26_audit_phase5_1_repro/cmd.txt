@@ -1,0 +1,9 @@
+# Auditor phase5_1 commands (no planner jobs; test evaluation not re-run; marker untouched)
+cd experiments/2026-11-26_audit_phase5_1_repro/paper && conda run -n paper tectonic -X compile main.tex   # copy of paper/ -> tectonic.log
+env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 conda run -n disasm python -m pytest -q   # -> pytest.log
+conda run -n disasm python experiments/2026-11-26_audit_phase5_1_repro/recompute_replay.py experiments/2026-11-25_final_eval_replay/per_state.jsonl  # -> recompute_replay.log
+conda run -n disasm python experiments/2026-11-26_audit_phase5_1_repro/recompute_live.py experiments/2026-11-24_final_eval_live/results.jsonl     # -> recompute_live.log
+env -u PYTHONPATH conda run -n disasm python scripts/demo_figure.py --out experiments/2026-11-26_audit_phase5_1_repro/demo_01310.pdf
+for s in label_abd build_split_v2 build_dataset_v2 train_v2 train_asap_v2 eval_v2 live_abd render_demo; do python scripts/$s.py --help; done  # help_*.log
+gh release download v1.0-final (release/), sha256sum -c SHA256SUMS, per-checkpoint sha256 vs configs/final_frozen.yaml
+conda run -n paper ffprobe video/demo.mp4 ; ffmpeg frame grabs vframe_*.png ; pdftoppm paper pages page-*.png ; pdfimages -list

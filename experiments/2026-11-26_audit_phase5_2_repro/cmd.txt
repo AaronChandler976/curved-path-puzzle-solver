@@ -1,0 +1,8 @@
+auditor phase5_2 scratch; commands logged below
+env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 conda run -n disasm python -m pytest > pytest.log
+cp -r paper paper/ copy; conda run -n paper tectonic -X compile main.tex > tectonic.log; pdftotext diff vs paper/main.pdf
+pdfimages -list paper/main.pdf paper/figures/*.pdf
+for s in README scripts: conda run -n disasm python $s --help > help_<s>.log
+conda run -n paper ffprobe / ffmpeg frame grabs (vframe_2/40/100.png); pdftoppm -r 80 paper/main.pdf page
+curl download.pytorch.org/whl/cu128/{torch,torchvision}/ ; curl pypi.org/pypi/<pkg>/<ver>/json for pip_pins.txt
+inline python: budget_policies.3 savings, 01310 state 5-7 times, elk our_cores median, live asap_pairs source

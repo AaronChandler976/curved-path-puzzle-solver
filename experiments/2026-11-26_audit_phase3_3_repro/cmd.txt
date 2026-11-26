@@ -1,0 +1,7 @@
+# Auditor phase3_3 reproduction commands (no planner jobs; test evaluation not re-run)
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/budget_overrun.py --out experiments/2026-11-26_audit_phase3_3_repro/budget_overrun
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/live_report_v2.py --dir experiments/2026-11-24_final_eval_live --md experiments/2026-11-26_audit_phase3_3_repro/live.md
+env -u PYTHONPATH OMP_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/failure_analysis.py --replay-dir experiments/2026-11-25_final_eval_replay --outdir experiments/2026-11-26_audit_phase3_3_repro/failure --md experiments/2026-11-26_audit_phase3_3_repro/failure_analysis.md
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/final_figures.py --out experiments/2026-11-26_audit_phase3_3_repro/figures
+env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 conda run -n disasm python -m pytest -q
+env -u PYTHONPATH conda run --no-capture-output -n disasm python experiments/2026-11-26_audit_phase3_3_repro/indep_calls.py
