@@ -115,7 +115,7 @@ def main():
     ax.plot([0.01, mx], [0.01, mx], color=INK2, lw=0.6, ls=(0, (2, 2)))
     ax.set_xscale("symlog", linthresh=0.1); ax.set_yscale("symlog", linthresh=0.1)
     ax.set_xlabel("fewest contacts: cost of the state (s)"); ax.set_ylabel("GNN-Surv: cost of the state (s)")
-    ax.set_title("States where GNN-Surv (seed 101) paid more (test, replay)", fontsize=8)
+    ax.set_title("GNN-Surv (seed 101) paid more\n(test states, replay)", fontsize=8)
     ax.legend(frameon=False, fontsize=7, loc="lower right")
     ax.spines[["top", "right"]].set_visible(False)
     fig.tight_layout()
