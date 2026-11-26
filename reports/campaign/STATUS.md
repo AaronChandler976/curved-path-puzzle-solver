@@ -1,6 +1,6 @@
 STATE: RUNNING
 DEADLINE: 2026-12-13T08:00:00-08:00
-CURRENT PHASE: 3 (final test). STEP: replay DONE once (marker 2026-11-24 23:08:45); live running.
+CURRENT PHASE: 3. Replay + live DONE; Phase 3 audit running (AUDITS/phase3_1.md).
 BACKGROUND JOBS:
 - live: scripts/run_final_live.sh -> experiments/2026-11-24_final_eval_live/ (stdout_P1..P4.log; launcher log
   /tmp/dbg_t8/live_launcher.log). Started 23:10 11-24. P1 3,817 runs (~9 h), then P2 (9,716), P3 (3,470), P4 (694).
