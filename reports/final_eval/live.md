@@ -1,6 +1,6 @@
 # Final live evaluation on the v2 test set (PREREG §6; evaluated once)
 
-Source `experiments/2026-11-24_final_eval_live/results.jsonl` (every attempt), summarised by `scripts/live_report_v2.py`. Fresh queries with oracle v2 (pre-check → CMG-RRT only when the pull fails), T = 30 s, planner seed per query = sha1("run05-live", assembly, state, part), idle guard on, confounded runs re-run up to 2× (first clean attempt reported). Per-assembly cost = total planner time of the disassembly. CIs: bootstrap over assemblies (10000).
+Source `experiments/2026-11-24_final_eval_live/results.jsonl` (every attempt), summarised by `scripts/live_report_v2.py`. Fresh queries with oracle v2 (pre-check → CMG-RRT only when the pull fails), T = 30 s, planner seed per query = sha1("run05-live", assembly, state, part), idle guard on, confounded runs re-run up to 2× (first clean attempt reported). Per-assembly cost = total planner time of the disassembly. Ratio/total CIs: bootstrap over assemblies (10000); HL CIs: 2,000 resamples. `gnn_survival@b3` is the val-best seed (101) only.
 
 - (assembly, method) runs: 17697; re-run at least once: 77; still confounded or errored after re-runs (reported, flagged): 0.
 

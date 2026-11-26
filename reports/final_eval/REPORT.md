@@ -7,6 +7,11 @@ heuristic was chosen on val: fewest contacts. Ratio of total planner time GNN-Su
 [0.829, 1.226], Holm p 0.81, does not beat. **Live, applied separately, gives the same verdict:** 0.915 [0.819, 1.015],
 Holm p 0.13 (§4).
 
+Resampling note: ratio and total CIs use 10,000 bootstrap resamples (registered). HL CIs use 2,000 and median-ratio
+CIs 2,000 (DECISIONS #2), and the live tables now say so. C-index and ECE values have no CIs; they are descriptive.
+Not reported for live: planner calls per method and a live rot_state subset (no per-state rotation flag is logged live);
+both are omissions against PREREG §4/§5.
+
 ## 1. Discipline (evidence)
 - **Marker:** `data/splits/.v2_test_evaluated` was written at 2026-11-24 23:08:45 (git b5d851a) by `scripts/eval_v2.py`, before
   it read any test label.
@@ -53,19 +58,28 @@ Holm p 0.13 (§4).
 | MLP-Surv vs MLP-BCE | 1.041 [0.952, 1.136] | 0.29 |
 
 How to read this (claims limited to what the rule and numbers support):
-- **Against the two open-source GNN baselines**, both conditions hold: ASAP zero-shot (0.613) and ASAP retrained on our
-  data with its own objective (0.660). Ratio CI below 1, Holm p < 0.05, HL < 0 (−0.39 s and −0.63 s).
-- **Survival p/c vs BCE p (GNN):** 0.887 [0.785, 0.999], Holm p 6.2e-7, HL −0.21 s. Cost-aware ordering is cheaper
-  than removability-only ordering with the same encoder, on total time and per assembly. This is the project's
-  novelty claim, and the test supports it for the GNN.
+- **Against the two open-source GNN baselines**, GNN-Surv satisfies both of the §7 criteria (ratio CI below 1, Holm
+  p < 0.05, HL < 0). The registered "beats" verdict is defined only for the best heuristic, so these are described by
+  those criteria, not by the label. ASAP zero-shot: 0.613, HL −0.39 s. ASAP retrained on our data with its own
+  objective: 0.660, HL −0.63 s.
+- **Survival p/c vs BCE p (GNN): mixed evidence** (corrected after audit phase3_1).
+  - *Registered replay, all assemblies:* 0.887 [0.785, 0.999], Holm p 6.2e-7, HL −0.21 s. The cost-aware order is
+    cheaper on total time and per assembly. The CI upper bound is 0.999.
+  - *Clean-test check:* 0.877 [0.767, 1.001], so the total-time condition misses there. The per-assembly difference is
+    still significant (Holm p 2.9e-5, HL −0.18 s).
+  - *Live:* GNN-Surv is costlier in total (1.045 [0.955, 1.150]) and cheaper only on the typical assembly (HL −0.06 s,
+    Holm p 0.035).
+  - *MLP pair:* the effect goes the other way (MLP-Surv / MLP-BCE 1.041 replay, 0.985 live, both n.s.).
+  - So the project's novelty claim, that modelling cost helps, is supported **per assembly with the GNN** and **on total
+    time only in the main replay analysis**. It is not robust across evaluations or encoders.
 - **Not supported on test:** GNN vs MLP (survival head: 0.951, p 0.55). With the BCE head the GNN is costlier per
   assembly than the MLP (HL +0.10 s, Holm p 0.0027; ratio CI includes 1). PointNet features and the tail-aware objective
   made no detectable difference (CIs include 1, Holm p = 1).
 - **CMG-RRT-only configuration (robustness, descriptive):** GNN-Surv / fewest contacts 0.986 [0.882, 1.100], Holm p 0.88.
 - **Subsets (none used for a claim):**
   - Every subset has ≥ 30 scored assemblies (rot_state 105; parts 7–8 has 37).
-  - The ratio vs fewest contacts ranges from 0.927 (5–6 parts) to 1.241 (9–10 parts). None is significant after
-    correction; 9–10 parts has uncorrected p 0.022.
+  - The ratio vs fewest contacts ranges from 0.927 (5–6 parts) to 1.241 (9–10 parts). No correction is applied to
+    subsets, and no subset is used for a claim; 9–10 parts has uncorrected p 0.022.
 
 ## 3. Exploratory (post-registration; addendum B; uncorrected)
 - **Exploratory variants (replay):** GNN-Surv-ListNet 7,226 s, GATv2-Surv 7,773 s, GT-Surv 8,411 s, against 7,202 s
@@ -110,15 +124,16 @@ How to read this (claims limited to what the rule and numbers support):
   p 0.22.
   - Disclosed: the interim P1 table (val-best seed only, `live_P1.md`) had Holm p 0.0018 for the typical-assembly
     condition. With the registered 5-seed mean it is not significant.
-- **Both ASAP baselines are beaten live**, both conditions met:
+- **Both ASAP baselines live:** GNN-Surv satisfies both §7 criteria against each (descriptive; the "beats" label is
+  registered only for the best heuristic):
   - ASAP zero-shot: 0.789 [0.699, 0.880], Holm p 2.8e-7.
   - ASAP-retrained: 0.906 [0.827, 0.994], Holm p 0.04, HL −0.15 s.
   - Random: 0.795 [0.674, 0.932], Holm p 3.6e-8.
 - **Interventions live:**
   - Survival vs BCE (GNN): 1.045 [0.955, 1.150] on totals, but HL −0.06 s with Holm p 0.035. GNN-Surv is cheaper on the
     typical assembly, not on total time, the opposite of replay, where it was cheaper on both.
-  - GNN vs MLP (survival 1.010; BCE 0.952), PointNet (1.011) and Tail (1.058 [1.003, 1.110], Holm p 0.18): no
-    difference that survives Holm.
+  - GNN vs MLP (survival 1.010; BCE 0.952), PointNet (1.011): no difference that survives Holm. Tail: GNN-Surv / Tail
+    = 1.058 [1.003, 1.110]; the ratio CI lies entirely above 1 (Tail cheaper in total), but Holm p 0.18 and HL +0.02 s.
 - **Subsets** (GNN-Surv vs fewest contacts, uncorrected): ratios 0.85–0.99 in every source and size bin; none has a CI
   entirely below 1.
 - **Exploratory live rows** (post-registration, uncorrected p; `reports/final_eval/live.md`). P3 and P4 finished at
@@ -127,12 +142,28 @@ How to read this (claims limited to what the rule and numbers support):
     GNN-Surv 0.872 [0.806, 0.942]. In replay ListNet was no cheaper than fewest contacts (7,226 vs 7,202 s), so replay
     and live disagree for this variant. It is a hypothesis for future work, not a finding.
   - *GT-Surv:* 21,735 s; vs fewest contacts 0.945 [0.844, 1.055].
-  - *Budget policy T' = 3 s:* fewest contacts 23,002 → 11,273 s (ratio 0.490 [0.424, 0.557]); GNN-Surv (val-best
-    seed) 10,810 s (vs its 5-seed full-budget mean: 0.514). Under the same policy GNN-Surv / fewest contacts = 0.959
-    [0.896, 1.023]. The live saving (about 50%) is smaller than the replay saving (72%) because a stuck live
-    disassembly pays the second pass in full.
+  - *Budget policy T' = 3 s:* fewest contacts 23,002 → 11,273 s (ratio 0.490 [0.424, 0.557]). GNN-Surv at its
+    **val-best seed only** (seed 101) reaches 10,810 s; its comparison is against its 5-seed full-budget mean (0.514), so
+    seed variation is mixed in. Under the same policy GNN-Surv / fewest contacts = 0.959 [0.896, 1.023].
+  - The live saving (about 50%) is smaller than the replay saving (72%) for two reasons. A stuck live disassembly pays the
+    second pass in full. And the live 3 s budget is soft: the planner checks its time limit only between RRT
+    iterations. Pass-1 CMG-RRT queries that failed ran a median 4.24 s (max 72.6 s), which is 4,738 s of overrun beyond
+    3 s out of 22,083 s spent by the two policy rows. Addendum B.2 named only the pre-check as a replay/live difference;
+    that was incomplete (DECISIONS #13).
 - Figures: `reports/final_eval/figures/totals_replay_live.pdf`, `budget_policy.pdf`, `failure_scatter.pdf`
   (`scripts/final_figures.py`; dashed line = fewest contacts).
+
+## 4b. Deviation: the planner budget T = 30 s is soft (found by audit phase3_1)
+- **Cause:** CMG-RRT (our adapter, `src/disasm/oracle/cmgrrt.py`) checks its time limit once per RRT iteration, and one
+  iteration can take seconds in large assemblies.
+- **Size in the test labels (main configuration):**
+  - Unsolved queries ran a median 31.19 s (max 73.2 s), and query time beyond 30 s totals 8,163 s.
+  - 24 main-config successes and 158 CMG-RRT-only successes took longer than 30 s (max 89.1 s and 127.7 s) and still
+    count as successes "within T".
+- **Effect:** the same labels serve every ordering in replay, and the same planner serves every method live, so the
+  comparisons are like for like. Absolute costs include this overrun, and "P(success within T)" really means "within
+  the iteration in which T was passed". The PREREG fixed T = 30 s, so this is reported as a deviation (DECISIONS #13).
+  It is not corrected after the test.
 
 ## 5. Failure analysis (`reports/final_eval/failure_analysis.md`)
 - **Tail concentration:** the costliest 5% of states hold 89% of fewest contacts' total and 77% of GNN-Surv's.
@@ -140,10 +171,11 @@ How to read this (claims limited to what the rule and numbers support):
   costlier on 368 (+3,404 s).
   - *Timeout first:* 85 states, **+3,153 s**. It queried a part that ran to the full budget before the first success.
   - *Slower first success:* 283 states, +251 s.
-- **The failure mode:** in each of its 10 costliest states, the part GNN-Surv queried first had predicted p 0.90–1.00
+- **The failure mode:** these are the 10 states that cost GNN-Surv the most, not its 10 largest losses: in 7 of them
+  fewest contacts paid about the same or more. In each of them, the part GNN-Surv queried first had predicted p 0.90–1.00
   and c 0.1–3.7 s, and then ran unsolved for > 30 s. So did the next two parts in most of these states. These are
   confident wrong predictions.
 - **Where it happens:** the 20 largest losses are all on assemblies with 4–12 parts (15 of 20 with 9–12 parts) from the
   fresh sources.
-- **Likely cause:** distribution shift. Test is 51% 9–12-part and 63% allowance-recovered assemblies, train is 79% 3–8-part
+- **Plausible cause (not tested):** distribution shift. Test is 51% 9–12-part and 63% allowance-recovered assemblies, train is 79% 3–8-part
   v1. Val (80% v1) and the train+val CV could not show this, because 9–12-part assemblies were underpowered there.

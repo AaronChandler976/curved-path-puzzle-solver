@@ -23,3 +23,4 @@ __pycache__/
 !data/splits/
 !data/splits/*.json
 build/
+talk/demo.gif

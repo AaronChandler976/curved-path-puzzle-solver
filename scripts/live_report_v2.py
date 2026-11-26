@@ -82,7 +82,8 @@ def main():
          f"Source `{os.path.relpath(a.dir, ROOT)}/results.jsonl` (every attempt), summarised by `scripts/live_report_v2.py`. "
          "Fresh queries with oracle v2 (pre-check → CMG-RRT only when the pull fails), T = 30 s, planner seed per query = "
          "sha1(\"run05-live\", assembly, state, part), idle guard on, confounded runs re-run up to 2× (first clean attempt "
-         f"reported). Per-assembly cost = total planner time of the disassembly. CIs: bootstrap over assemblies ({a.boot}).\n",
+         f"reported). Per-assembly cost = total planner time of the disassembly. Ratio/total CIs: bootstrap over assemblies "
+         f"({a.boot}); HL CIs: 2,000 resamples. `gnn_survival@b3` is the val-best seed (101) only.\n",
          f"- (assembly, method) runs: {len(rep)}; re-run at least once: {flags['re-run']}; still confounded or errored after "
          f"re-runs (reported, flagged): {flags['still_confounded_or_error']}.\n",
          "| ordering | assemblies | seeds per assembly | complete / stuck / error | total planner time (s) [95% CI over assemblies] |",

@@ -93,7 +93,8 @@ def main():
             ax.barh(j * 2.6, r[i_full] / 1000, height=0.9, color=r[5], alpha=0.45, edgecolor="white")
             ax.barh(j * 2.6 + 1, r[i_b3] / 1000, height=0.9, color=r[5], edgecolor="white")
             ax.text(r[i_full] / 1000, j * 2.6, f" {r[i_full]:,.0f} s (T = 30 s)", va="center", fontsize=7, color=INK2)
-            ax.text(r[i_b3] / 1000, j * 2.6 + 1, f" {r[i_b3]:,.0f} s (3 s first)", va="center", fontsize=7, color=INK)
+            lab = " (3 s first; live: seed 101)" if (r[0] == "GNN-Surv" and title == "Live") else " (3 s first)"
+            ax.text(r[i_b3] / 1000, j * 2.6 + 1, f" {r[i_b3]:,.0f} s{lab}", va="center", fontsize=7, color=INK)
         ax.set_yticks([0.5, 3.1]); ax.set_yticklabels([r[0] for r in rows]); ax.invert_yaxis()
         ax.set_title(title, fontsize=8.5); ax.set_xlabel("total planner time (1000 s)")
         ax.spines[["top", "right"]].set_visible(False)

@@ -109,3 +109,23 @@
     `configs/final_methods.json` before the test marker). The first freeze commit was a4eff4a; a13b397 only changed
     wording and provenance (audit phase2_2). Phase 2 audit phase2_2: PASS. MINOR fixes: ASAP CV time estimate corrected
     (about 2 h, not 4 h); exploratory live seeds now run val-best seed first (`scripts/run_final_live.sh`).
+13. **Phase 3 (final test) decisions and deviations, after audit phase3_1 (3 MAJOR, 12 MINOR).**
+    - *Test evaluated once:* the marker was written 2026-11-24 23:08:45 and replay ran once. Live (P1–P4) ran
+      2026-11-24 23:10 → 2026-11-26 09:29: 17,697 runs, 77 re-run, 0 left confounded or errored.
+    - *MAJOR 1, novelty wording:* the survival-vs-BCE result is reported as mixed. It holds per assembly with the GNN
+      and on total time only in the main replay; the clean-test check, live totals and the MLP pair do not confirm
+      the total-time part (REPORT §2).
+    - *MAJOR 2, live budget policy:* the live 3 s budget is soft. CMG-RRT checks the time limit per RRT iteration, so
+      failed pass-1 queries ran a median 4.24 s, with 4,738 s of overrun. Addendum B.2 named only the pre-check, which
+      was incomplete. The REPORT now gives the overrun.
+    - *MAJOR 3, soft T = 30 s:* in the test labels unsolved queries ran a median 31.19 s (max 73.2 s), with 8,163 s
+      past 30 s. 24 main-config and 158 CMG-RRT-only successes took > 30 s. This is reported as a deviation from the
+      PREREG's T and is not corrected after the test. It affects every ordering alike (same labels; same planner live).
+    - *Code identity:* P3/P4 started with `git_dirty: True` from uncommitted report/talk edits. The live code
+      (`scripts/live_abd.py`, `scripts/run_final_live.sh`, `scripts/train_v2.py`, `src/`) is identical from the
+      launch commit 1905865 to HEAD (`git diff --stat` empty).
+    - *MINORs fixed:* the §5 costliest-states wording, "plausible cause (not tested)", the "beats" label kept only
+      for the registered rule, the Tail CI noted, HL resample counts stated in `live.md`, the one-seed budget row
+      labelled (table and figure), the subset-correction wording fixed, and C-index described as having no CIs.
+      Live planner calls and live rot_state are disclosed as not reported. The 3.6 MB demo GIF was removed from git
+      (the mp4 stays).
