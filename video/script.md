@@ -10,7 +10,7 @@ beyond replaying logged planner paths.
 | 0:05–0:15 | the same assembly, parts highlighted one by one; a timer runs to 30 s on a stuck part | "Each question is a CMG-RRT query. A timeout proves nothing, and it is expensive." |
 | 0:15–0:30 | pipeline animation: CAD → contact graph → GNN → p and c per part → query order → planner | "We predict success probability AND expected cost, timeouts included, and query in p/c order." |
 | 0:30–0:55 | a real live disassembly from `experiments/2026-11-24_final_eval_live/` (GNN-Surv order shown as numbered labels; each removal replayed from its saved path) | "A real disassembly with the learned query order (fresh planner queries)." |
-| 0:55–1:15 | the test-set bar chart (`reports/final_eval/figures/replay_test_totals.pdf`) | "Fresh test set, 347 assemblies, pre-registered: cost-aware ordering beats ASAP and removability-only ordering… but ties a simple contact heuristic." |
+| 0:55–1:15 | the test-set bar chart (`reports/final_eval/figures/replay_test_totals.pdf`) | "Fresh test set, 347 assemblies, pre-registered: cheaper than ASAP and random… but no better than a simple contact heuristic." |
 | 1:15–1:30 | failure example: the model's confident first pick times out (p ≈ 1.0, 30 s) | "Why: confident timeouts on large, unseen assemblies." |
 | 1:30–1:45 | budget-policy bars: 7,202 s → 2,008 s | "The biggest win wasn't learned: try every part for 3 s first. −72% planner time." |
 | 1:45–1:55 | repo URL and title card | "Code, data and paper: github.com/AaronChandler976/curved-path-puzzle-solver" |

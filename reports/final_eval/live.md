@@ -4,7 +4,7 @@ Source `experiments/2026-11-24_final_eval_live/results.jsonl` (every attempt), s
 
 - (assembly, method) runs: 17697; re-run at least once: 77; still confounded or errored after re-runs (reported, flagged): 0.
 
-| ordering | assemblies | seeds per assembly | complete / stuck / error | total planner time (s) [95% CI over assemblies] | planner calls per assembly (mean) |
+| ordering | assemblies | seeds per assembly | complete / stuck / error | total planner time (s) [95% CI over assemblies] | planner calls per assembly (mean; descriptive, no CI) |
 |---|---|---|---|---|---|
 | random | 347 | [1] | 316 / 31 / 0 | 26464 [21786, 31202] | 8.5 |
 | outside_in | 347 | [1] | 313 / 34 / 0 | 23239 [18426, 28310] | 8.2 |

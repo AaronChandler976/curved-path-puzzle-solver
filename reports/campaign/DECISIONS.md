@@ -113,8 +113,8 @@
     - *Test evaluated once:* the marker was written 2026-11-24 23:08:45 and replay ran once. Live (P1–P4) ran
       2026-11-24 23:10 → 2026-11-26 09:29: 17,697 runs, 77 re-run, 0 left confounded or errored.
     - *MAJOR 1, novelty wording:* the survival-vs-BCE result is reported as mixed. It holds per assembly with the GNN
-      and on total time only in the main replay; the clean-test check, live totals and the MLP pair do not confirm
-      the total-time part (REPORT §2).
+      and on total time only in the main replay. The clean-test check, live totals and the MLP pair do not confirm the
+      total-time part, and the live clean subset doesn't confirm the per-assembly part either (Holm p 0.083; REPORT §2).
     - *MAJOR 2, live budget policy:* the live 3 s budget is soft. CMG-RRT checks the time limit per RRT iteration, so
       failed pass-1 queries ran a median 4.24 s, with 4,738 s of CMG-RRT overrun beyond 3 s. Log:
       `experiments/2026-11-26_budget_overrun/` (`scripts/budget_overrun.py`, definitions stated there). Addendum B.2 named only the pre-check, which
@@ -128,7 +128,7 @@
     - *MINORs fixed:* the §5 costliest-states wording, "plausible cause (not tested)", the "beats" label kept only
       for the registered rule, the Tail CI noted, HL resample counts stated in `live.md`, the one-seed budget row
       labelled (table and figure), the subset-correction wording fixed, and C-index described as having no CIs.
-      Live planner calls and live rot_state are disclosed as not reported. The 3.6 MB demo GIF was removed from git
+      Live rot_state is disclosed as not reported (live planner calls were added later, see below). The 3.6 MB demo GIF was removed from git
       (the mp4 stays).
     - *Audit phase3_2 fixes:* the overrun numbers now come from a logged script (above). The phase3_1 auditor's 8,083 s
       / 154 / 5,627 s differ only by definition (attempt 0 only; whole query). Other fixes: median-ratio CIs use 2,000

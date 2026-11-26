@@ -88,7 +88,7 @@ def main():
          f"({a.boot}); HL CIs: 2,000 resamples. `gnn_survival@b3` is the val-best seed (101) only.\n",
          f"- (assembly, method) runs: {len(rep)}; re-run at least once: {flags['re-run']}; still confounded or errored after "
          f"re-runs (reported, flagged): {flags['still_confounded_or_error']}.\n",
-         "| ordering | assemblies | seeds per assembly | complete / stuck / error | total planner time (s) [95% CI over assemblies] | planner calls per assembly (mean) |",
+         "| ordering | assemblies | seeds per assembly | complete / stuck / error | total planner time (s) [95% CI over assemblies] | planner calls per assembly (mean; descriptive, no CI) |",
          "|---|---|---|---|---|---|"]
     res = {"n_runs": len(rep), "flags": dict(flags), "methods": {}}
     for m in [x for x in REG + EXPL if x in per]:
