@@ -72,7 +72,8 @@ pip install -e .            # this package (src/disasm)
 # LaTeX and video tools: conda create -n paper -c conda-forge tectonic ffmpeg
 ```
 `environment-disasm.yml` lists the exact package versions used (`conda env create -f environment-disasm.yml`, then the
-three local CMG-RRT packages and `pip install -e .` as above). On machines where ROS sets `PYTHONPATH`, prefix
+three local CMG-RRT packages and `pip install -e .` as above; `quicksdf` is a C++ extension built with CMake, see
+`external/cmg-rrt/src/quicksdf/README.md`). On machines where ROS sets `PYTHONPATH`, prefix
 commands with `env -u PYTHONPATH`. Tests: `env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest`.
 
 ## Data
