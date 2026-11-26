@@ -1,5 +1,34 @@
 # AI Novelty & Feasibility Audit
 
+## Final status (updated 2026-11-26, end of the project)
+The proposal below was written for interlocking puzzles. After the course feedback the project moved to real
+mechanical CAD (Fusion 360 assemblies) and to a sharper claim. How the original risks played out:
+
+- **Novelty, as finally claimed:** a GNN with a censoring-aware survival head predicts each planner query's success
+  probability and expected (censored) cost, and parts are queried in p/c order with a tight-clearance SE(3) planner
+  (CMG-RRT) as the oracle. Prior learned assembly-by-disassembly guidance (Cebulla et al., ICRA 2023; ASAP, ICRA 2024)
+  predicts removability only. "A GNN predicts the next removable part" is not claimed. The closest related idea we
+  found later orders collision checks by expected time cost at the narrow-phase level (Jiang et al., arXiv 2609.30599,
+  2026), one level below our queries.
+- **Outcome on the pre-registered test (347 fresh assemblies, evaluated once):**
+  - The cost-aware ranker is cheaper than ASAP (zero-shot and retrained), and cheaper than removability-only ordering
+    with the same GNN in the main replay analysis, though not robustly.
+  - It does **not** beat a fewest-contacts heuristic (`reports/final_eval/REPORT.md`).
+  - The largest saving came from an untrained two-pass planner-budget policy.
+- **Feasibility risks that did materialise:**
+  - The CMG-RRT adapter had a start-pose bug and coarse goal checks (fixed in run 04).
+  - The learned SDF accepted penetrating paths (the exact SDF was adopted).
+  - Validation optimism did not survive cross-validation and test.
+  - The planner's time budget is soft (checked per iteration).
+  - The test set's larger, interpenetrating assemblies exposed a distribution shift. All of this is reported in the
+    paper's failure analysis.
+- **Scale:** 2,022 assemblies, 41,913 labelled queries, 17,697 live test disassemblies. That is larger than the
+  proposal planned, and possible because 95–98% of successes turned out to be cheap straight pulls.
+
+---
+
+## Original audit (proposal stage, kept for the record)
+
 *Produced by Claude during topic scouting and project development for this proposal.
 Reproduced here as the required AI critique summary.*
 
