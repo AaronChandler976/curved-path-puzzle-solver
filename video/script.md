@@ -1,5 +1,9 @@
 # Demo video script (≤ 1:55, 1080p, H.264, burned-in captions, no voice)
 
+**Built:** `video/demo.mp4` (`bash video/build_video.sh`): 112.8 s, 1920×1080, H.264 (veryfast), no audio. Eight cuts, as
+in the table below; the actual captions are in `video/build_video.sh`. The original plan of a stuck-part timer and a
+pipeline animation became a text card and the "What we built" slide.
+
 Every number shown comes from `reports/final_eval/` (test, evaluated once). Shots are rendered from logged runs
 (`scripts/render_demo.py` / `scripts/render_path.py`) or from report figures. Nothing in the video is simulated
 beyond replaying logged planner paths.

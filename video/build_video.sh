@@ -22,7 +22,7 @@ pad="scale=1800:960:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2
 cap() { echo "drawbox=x=0:y=0:w=iw:h=110:color=white@0.92:t=fill,drawtext=expansion=none:fontfile=$FONT:text='$1':fontsize=42:fontcolor=0x0b0b0b:x=(w-text_w)/2:y=34"; }
 
 # 1 (0-6 s) hook: the real CMG-RRT rotation removal (last state of the demo, frames 88..106)
-$FF -framerate 3.2 -start_number 88 -i "$FRAMES/%04d.png" -frames:v 19 \
+$FF -framerate 3.2 -start_number 88 -i "$FRAMES/%04d.png" -t 5.9 \
   -vf "scale=1920:1080,$(cap 'Which part can come out next? Asking the planner costs 0.04 s ... or 30 s.'),format=yuv420p" \
   -r 30 "$W/s1.mp4"
 # 2 (6-16 s) the problem
@@ -32,7 +32,7 @@ $FF -loop 1 -t 14 -i "$W/pipeline-05.png" -vf "$pad,$(cap 'GNN + survival head -
 # 4 (30-55 s) a real disassembly with the learned order (13.4 s of frames, slowed to 25 s)
 $FF -framerate 4.3 -i "$FRAMES/%04d.png" -vf "scale=1920:1080,$(cap 'A real test assembly - the learned query order, fresh CMG-RRT queries.'),format=yuv420p" -r 30 "$W/s4.mp4"
 # 5 (55-75 s) headline result
-$FF -loop 1 -t 20 -i "$W/totals_replay_live.png" -vf "$pad,$(cap '347 fresh assemblies, pre-registered - cheaper than ASAP - but no better than fewest contacts.')" -r 30 "$W/s5.mp4"
+$FF -loop 1 -t 20 -i "$W/totals_replay_live.png" -vf "$pad,$(cap 'Fresh test set - cheaper than ASAP, no better than fewest contacts.')" -r 30 "$W/s5.mp4"
 # 6 (75-90 s) negative result
 $FF -loop 1 -t 15 -i "$W/failure_scatter.png" -vf "$pad,$(cap 'Why - a few confident timeouts on larger, unseen assemblies.')" -r 30 "$W/s6.mp4"
 # 7 (90-105 s) the policy that worked
