@@ -110,12 +110,12 @@ def main():
             for pr, ph in zip(out, holm([q["p"] for q in out])):
                 pr["p_holm"] = float(ph)
         L.append(f"\n### {label}\n")
-        L.append("| A vs B | n | ratio of totals [95% CI] | HL (s) [95% CI] | W / T / L | Wilcoxon p | " + ("Holm p |" if correct else "(uncorrected) |"))
-        L.append("|---|---|---|---|---|---|" + ("---|" if correct else "---|"))
+        L.append("| A vs B | n | ratio of totals [95% CI] | HL (s) [95% CI] | W / T / L | Wilcoxon p" + (" | Holm p |" if correct else " (uncorrected) |"))
+        L.append("|---|---|---|---|---|---|" + ("---|" if correct else ""))
         for pr in out:
             L.append(f"| {pr['a']} vs {pr['b']} | {pr['n']} | {pr['ratio']:.3f} [{pr['ratio_ci'][0]:.3f}, {pr['ratio_ci'][1]:.3f}] | "
                      f"{pr['hl']:+.2f} [{pr['hl_ci'][0]:+.2f}, {pr['hl_ci'][1]:+.2f}] | {pr['wins']} / {pr['ties']} / {pr['losses']} | "
-                     f"{pr['p']:.2g} | {pr.get('p_holm', float('nan')):.2g} |")
+                     f"{pr['p']:.2g} |" + (f" {pr['p_holm']:.2g} |" if correct else ""))
         return out
 
     allids = set(test)
@@ -133,7 +133,7 @@ def main():
     res["exploratory"] = family([("gt_survival", "fewest_contacts"), ("gnn_survival_listnet", "fewest_contacts"),
                                  ("gt_survival", MAIN), ("gnn_survival_listnet", MAIN),
                                  ("fewest_contacts@b3", "fewest_contacts"), ("gnn_survival@b3", "gnn_survival"),
-                                 ("gnn_survival@b3", "fewest_contacts@b3")], allids,
+                                 ("gnn_survival@b3", "fewest_contacts@b3")], allids,   # gnn_survival@b3 = val-best seed only (addendum B.2)
                                 "Exploratory (post-registration; uncorrected p)", correct=False)
     # subsets: GNN-Surv vs fewest contacts
     L.append("\n### Subsets (GNN-Surv vs fewest contacts; reported, never used for selection; < 30 assemblies = underpowered)\n")
