@@ -67,27 +67,27 @@ C(\pi;S)=\sum_{k} t_{\pi_k}\prod_{j<k}(1-y_{\pi_j})
 
 % 3 ------------------------------------------------------------------ landscape
 \begin{frame}{Existing approaches learn \emph{whether} a part comes out, not \emph{what it costs}}
-\begin{center}\small
+\begin{center}\footnotesize
 \begin{tabular}{lll}
 \toprule
 & predicts & tester \\
 \midrule
 Cebulla et al.\ (ICRA 2023) & removability & discrete / simulated \\
 ASAP (ICRA 2024), open source & next removable part (GNN) & physics simulator \\
-CMG-RRT (WAFR 2026), open source & --- (planner) & continuous SE(3), tight clearance \\
+CMG-RRT (WAFR 2026), open source & --- (planner) & SE(3), tight clearance \\
 \textbf{This project} & \textbf{P(success) and censored cost} & \textbf{CMG-RRT} \\
 \bottomrule
 \end{tabular}
 \end{center}
 \begin{itemize}
-\item Gap: no model of query \textbf{cost} or of \textbf{timeouts as censored data} for a curved/rotational planner.
+\item Gap: no model of query \textbf{cost}, or of \textbf{timeouts as censored data}, for a rotational planner.
 \end{itemize}
 \end{frame}
 
 % 4 ------------------------------------------------------------------ pipeline
 \begin{frame}{What we built}
 \centering
-\begin{tikzpicture}[node distance=0.55cm and 0.45cm, box/.style={draw,rounded corners,align=center,font=\small,minimum height=1.0cm,fill=white}]
+\begin{tikzpicture}[node distance=0.55cm and 0.32cm, box/.style={draw,rounded corners,align=center,font=\footnotesize,minimum height=1.0cm,fill=white}]
 \node[box] (cad) {Fusion 360\\CAD assembly};
 \node[box,right=of cad] (g) {contact graph\\18 node / 5 edge feat.};
 \node[box,right=of g,fill=blu!15] (gnn) {GINE GNN\\+ survival head};
@@ -100,7 +100,7 @@ CMG-RRT (WAFR 2026), open source & --- (planner) & continuous SE(3), tight clear
 \begin{itemize}\small
 \item Survival head: hazard in 8 log-spaced bins up to $T=30$\,s, censoring-aware likelihood $\Rightarrow$ both $p$ and $c$.
 \item Ablations: MLP (no message passing), BCE head ($p$ only), PointNet features, tail-aware loss.
-\item Baselines: random, outside-in, fewest contacts, ASAP zero-shot, ASAP retrained on our data.
+\item Baselines: random, outside-in, fewest contacts, ASAP zero-shot, ASAP retrained.
 \end{itemize}
 \end{frame}
 
@@ -117,28 +117,18 @@ and 18.5\% of its successes went through parts at fine resolution.
 \end{frame}
 
 % 6 ------------------------------------------------------------------ main result
-\begin{frame}{Test result (replay): beats ASAP and random, ties the contact heuristic}
-\begin{columns}
-\column{0.58\textwidth}
-\includegraphics[width=\linewidth]{figures/replay_test_totals.pdf}
-\column{0.42\textwidth}\small
-Total planner time, 341 test assemblies:\\[2pt]
-\begin{tabular}{lr}
-random & 22,186\,s\\
-ASAP zero-shot & 12,387\,s\\
-ASAP retrained & 11,500\,s\\
-\textbf{fewest contacts} & \textbf{7,202\,s}\\
-\textbf{GNN-Surv} & \textbf{7,595\,s}\\
-\end{tabular}\\[4pt]
-GNN-Surv / fewest contacts $=1.055$ [0.887, 1.257], Holm $p=0.43$:
-\textcolor{acc}{\textbf{does not beat}} (pre-registered rule).
-\end{columns}
-\src{\texttt{reports/final\_eval/replay.md}; bootstrap over assemblies, 10,000 resamples; 5 seeds per model.}
+\begin{frame}{Test result: beats ASAP and random, ties the contact heuristic}
+\centering
+\includegraphics[width=0.94\linewidth]{figures/totals_replay_live.pdf}\\[-1pt]
+{\scriptsize\color{gr} blue: ours \quad orange: ASAP \quad gray: untrained; dashed: fewest contacts}\\[3pt]
+\small GNN-Surv / fewest contacts: replay $1.055$ [0.887, 1.257], live $0.915$ [0.819, 1.015] $\Rightarrow$
+\textcolor{acc}{\textbf{does not beat}} (pre-registered rule, both).
+\src{\texttt{reports/final\_eval/replay.md}, \texttt{live.md}; bootstrap over 341/347 assemblies; 5 seeds per model.}
 \end{frame}
 
 % 7 ------------------------------------------------------------------ ablations
 \begin{frame}{Ablations on test: the cost-aware head is what helps}
-\begin{center}\small
+\begin{center}\footnotesize
 \begin{tabular}{lcc}
 \toprule
 contrast (ratio of total time, A/B) & ratio [95\% CI] & Holm $p$\\
@@ -158,9 +148,14 @@ plain vs tail-aware loss (GNN-Surv vs GNN-Surv-Tail) & 1.024 [0.934, 1.112] & 1\
 \end{frame}
 
 % 8 ------------------------------------------------------------------ live (placeholder)
-\begin{frame}{Live: fresh CMG-RRT queries, full disassemblies}
-LIVE-PENDING
-\src{\texttt{reports/final\_eval/live.md}.}
+\begin{frame}{Live: fresh CMG-RRT queries, 347 full disassemblies per method}
+\begin{itemize}
+\item 17,697 disassembly runs, idle-guarded; every confounded run re-run, none left confounded.
+\item GNN-Surv / fewest contacts $=\mathbf{0.915}$ [0.819, 1.015], Holm $p=0.13$: \textcolor{acc}{\textbf{does not beat}} (same verdict as replay).
+\item Beats ASAP zero-shot (0.789) and ASAP retrained (0.906 [0.827, 0.994]) live, too.
+\item Exploratory: GNN-Surv + ListNet loss 0.797 vs fewest contacts live --- but not in replay, so: a lead, not a result.
+\end{itemize}
+\src{\texttt{reports/final\_eval/live.md}; seed-mean of 5 seeds per trained model (pre-registered).}
 \end{frame}
 
 % 9 ------------------------------------------------------------------ budget policy
@@ -169,7 +164,9 @@ LIVE-PENDING
 \item Two-pass policy: every part gets 3\,s; only if none comes out, retry at 30\,s.
 \item Fewest contacts: 7,202\,s $\rightarrow$ \textbf{2,008\,s} ($-72\%$) on test; GNN-Surv 7,595\,s $\rightarrow$ 1,904\,s.
 \item Under the same policy, learned vs heuristic: 0.948 [0.820, 1.095] --- no detectable difference.
+\item Live (stuck runs pay the retry): about $-50\%$ for both.
 \end{itemize}
+\centering\includegraphics[width=0.78\linewidth]{figures/budget_policy.pdf}
 \src{Exploratory (post-registration, chosen on validation): \texttt{reports/final\_eval/replay.md}.}
 \end{frame}
 
@@ -185,12 +182,17 @@ LIVE-PENDING
 
 % 11 ----------------------------------------------------------------- failure analysis
 \begin{frame}{Why it fails on test: confident timeouts on big assemblies}
-\begin{itemize}
+\begin{columns}
+\column{0.58\textwidth}
+\begin{itemize}\small
 \item 89\% of fewest contacts' total is in its costliest 5\% of states (77\% for GNN-Surv).
 \item GNN-Surv's loss vs fewest contacts: \textbf{85 states where it queried a timeout first} (+3,153\,s).
 \item In its costliest states it predicted $p\approx0.9$--$1.0$, $c\le3.7$\,s for parts that then ran 30\,s.
 \item Shift: training is 79\% 3--8-part assemblies; test is 51\% 9--12-part and 63\% interpenetrating CAD.
 \end{itemize}
+\column{0.42\textwidth}
+\includegraphics[width=\linewidth]{figures/failure_scatter.pdf}
+\end{columns}
 \src{\texttt{reports/final\_eval/failure\_analysis.md}.}
 \end{frame}
 
@@ -217,7 +219,9 @@ LIVE-PENDING
 \end{frame}
 
 \appendix
-\begin{frame}{Backup: demo animation}
-DEMO-PENDING (see \texttt{talk/demo.mp4})
+\begin{frame}{Backup: a real disassembly with the learned order}
+\centering
+\includegraphics[width=0.72\linewidth]{figures/demo_frame.png}\\
+{\small Test assembly 01310, GNN-Surv order; part 7 leaves with a 102° CMG-RRT rotation. Animation: \texttt{talk/demo.mp4}.}
 \end{frame}
 \end{document}
