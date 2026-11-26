@@ -23,7 +23,19 @@ Code: \href{\repourl}{\texttt{\repourl}} \quad Video: \href{\videourl}{\texttt{\
 
 \begin{abstract}
 % 150--250 words, with the key test numbers from reports/final_eval/ (filled in Phase 5).
-ABSTRACT-PENDING-FINAL-EVAL
+Robotic disassembly for recycling and repair needs removal sequences for real products, and assembly-by-disassembly
+finds them by asking a motion planner, part by part, whether a part can be removed. With a tight-clearance SE(3)
+planner such as CMG-RRT these queries range from hundredths of a second to a 30\,s timeout, so the query order sets
+the planning cost. Prior learned guidance predicts only removability. We instead predict each query's success
+probability and censored cost with a graph neural network and a discrete-time survival head, and query parts in
+order of probability over cost. We built 41{,}913 planner-labelled queries on 2{,}022 Fusion~360 assemblies
+reached by verified disassemblies, pre-registered the evaluation, and tested once on 347 fresh assemblies, in replay
+and live (17{,}697 full disassemblies). The cost-aware ranker is 34--39\% cheaper than the open-source ASAP model in
+replay and 9--21\% cheaper live. It is cheaper than removability-only ordering with the same encoder in the main
+replay analysis (ratio 0.887, Holm $p<10^{-6}$), but not robustly across evaluations. It does not beat a
+fewest-contacts heuristic (replay 1.055 [0.887, 1.257], live 0.915 [0.819, 1.015]). The loss comes from a few
+confident timeouts on larger, unseen assemblies. An untrained two-pass budget policy cuts planner time by 72\% in
+replay and about 50\% live for every ordering. The ranker itself costs 2.5\,ms per state.
 \end{abstract}
 
 \section{Introduction}
@@ -172,7 +184,34 @@ rule was fixed in advance: GNN-Surv beats the best heuristic (chosen on validati
 CI lies below 1 \emph{and} the Holm-adjusted test is significant with a negative HL difference.
 
 \subsection{Main result (test, replay)}
-TABLE-MAIN-PENDING
+\begin{table}[t]
+\centering
+\caption{Total planner time (s) on the 347-assembly test set, evaluated once. Replay re-uses logged query costs over
+2{,}195 states with a success; live runs fresh queries over full disassemblies. Trained models are 5-seed means. Ratio
+is vs fewest contacts with a bootstrap 95\% CI over assemblies.}
+\label{tab:main}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrr}
+\toprule
+ordering & replay & ratio & live & ratio \\
+\midrule
+random & 22{,}186 & 3.08 & 26{,}464 & 1.15\\
+ASAP zero-shot~\cite{tian2024asap} & 12{,}387 & 1.72 & 26{,}667 & 1.16\\
+ASAP retrained & 11{,}500 & 1.60 & 23{,}212 & 1.01\\
+outside-in & 9{,}130 & 1.27 & 23{,}239 & 1.01\\
+fewest contacts & 7{,}202 & 1 & 23{,}002 & 1\\
+MLP-BCE & 7{,}672 & 1.07 & 21{,}139 & 0.92\\
+MLP-Surv & 7{,}983 & 1.11 & 20{,}827 & 0.91\\
+GNN-BCE & 8{,}563 & 1.19 & 20{,}131 & 0.88\\
+\textbf{GNN-Surv} & \textbf{7{,}595} & \textbf{1.05} & \textbf{21{,}038} & \textbf{0.91}\\
+GNN-Surv-Tail & 7{,}415 & 1.03 & 19{,}885 & 0.86\\
+PN-GNN-Surv & 7{,}771 & 1.08 & 20{,}805 & 0.90\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+GNN-Surv vs fewest contacts: replay 1.055 [0.887, 1.257], Holm $p=0.43$; live 0.915 [0.819, 1.015], Holm $p=0.13$.
 
 GNN-Surv takes 7{,}595\,s against 22{,}186\,s for random, 12{,}387\,s for ASAP zero-shot and 11{,}500\,s for ASAP
 retrained on our labels with its own objective (ratios 0.342, 0.613 and 0.660; all Holm $p<10^{-5}$, HL $<0$). Against
