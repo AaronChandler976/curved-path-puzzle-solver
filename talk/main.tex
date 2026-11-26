@@ -50,7 +50,7 @@ motivation; we evaluate on general mechanical CAD, no battery models).
 \draw[-{Stealth},thick,acc] (3.9,1.9) to[bend left] (4.7,2.6) node[above]{\small timeout: 30 s};
 \end{tikzpicture}
 \end{columns}
-\src{Oracle v2 query costs: run 04 T4 (\texttt{reports/run04/oracle\_v2.md}): median 0.037\,s over its 624-query oracle-validation set, all outcomes.}
+\src{Oracle v2 query costs: run 04 T4 (\texttt{reports/run04/oracle\_v2.md}): median 0.037\,s over its 500 random oracle-validation queries, all outcomes.}
 \end{frame}
 
 % 2 ------------------------------------------------------------------ problem
@@ -109,7 +109,7 @@ CMG-RRT (WAFR 2026), open source & --- (planner) & SE(3), tight clearance \\
 \begin{frame}{A real disassembly with the learned query order (test assembly)}
 \centering
 \includegraphics[width=0.66\linewidth,trim=0 60 0 0,clip]{figures/demo_frame.png}\\
-{\small Test assembly 01310, GNN-Surv order with predicted $p$ and $c$; part 7 needs a 102° rotation found by CMG-RRT.
+{\small Test assembly 01310, GNN-Surv order with predicted $p$ and $c$; for part 7 the straight pull fails and CMG-RRT finds a path with a 102° rotation.
 \textbf{Play \texttt{talk/demo.mp4} (13 s).}}
 \src{Re-run of the live test disassembly with saved paths: \texttt{experiments/2026-11-26\_demo\_01310/} (same seeds; 19.3\,s planner time vs 20.5\,s in the live run).}
 \end{frame}
@@ -122,7 +122,7 @@ CMG-RRT (WAFR 2026), open source & --- (planner) & SE(3), tight clearance \\
 63\% of test assemblies have small CAD interpenetrations that we tolerate per pair (valid only up to that allowance).
 \item 2,022 assemblies, 3--12 parts, \textbf{41,913 labelled queries}, 12.6\,h on 10 cores, idle-guarded timing.
 \item Oracle fixed first: the original adapter never tried the straight pull from the start pose (123/124 misses),
-and 18.5\% of its successes went through parts at fine resolution.
+and 18.5\% of its successes dipped below the contact tolerance at fine resolution.
 \item Pre-registered protocol; \textbf{fresh test set} of 347 assemblies (51\% with 9--12 parts), evaluated once.
 \end{itemize}
 \src{\texttt{reports/run04/REPORT.md}, \texttt{docs/PREREG\_run05.md}, \texttt{data/splits/v2\_split.json}.}
@@ -175,7 +175,7 @@ plain vs tail-aware loss (GNN-Surv vs GNN-Surv-Tail) & 1.024 [0.934, 1.112] & 1\
 \begin{frame}{The biggest win was not learned: try 3 s first}
 \begin{itemize}\small
 \item Two-pass policy: every part gets 3\,s; only if none comes out, retry at 30\,s.
-\item Replay on test: $-72\%$ to $-79\%$ for every ordering; fewest contacts 7,202\,s $\rightarrow$ \textbf{2,008\,s}, GNN-Surv 7,595\,s $\rightarrow$ 1,904\,s.
+\item Replay on test: $-72\%$ to $-79\%$ for every ordering we replayed (all but random); fewest contacts 7,202\,s $\rightarrow$ \textbf{2,008\,s}, GNN-Surv 7,595\,s $\rightarrow$ 1,904\,s.
 \item Under the same policy, learned vs heuristic: 0.948 [0.820, 1.095] --- no detectable difference.
 \item Live (fewest contacts; GNN-Surv at one seed, 101): about $-50\%$. Stuck runs pay the retry, and budgets are soft (the planner checks time per iteration: timeouts ran a median 31\,s).
 \end{itemize}
@@ -220,7 +220,7 @@ one CMG-RRT timeout & \multicolumn{3}{r}{30\,s = about 12,000 GNN-Surv calls}\\
 % 12 ----------------------------------------------------------------- negative results / insights
 \begin{frame}{Negative results and what we learned}
 \begin{itemize}
-\item The planner adapter was the first bug: start pose never tested, coarse goal check (18.5\% invalid paths).
+\item The planner adapter was the first bug: start pose never tested, coarse goal check (18.5\% of successes dipped marginally below tolerance).
 \item A learned SDF ``solved'' a bundled tight assembly 3/3 --- every path went through the part (exact check: 0/3).
 \item 95--98\% of successes are straight pulls; CMG-RRT decides the rest, and the timeouts dominate cost.
 \item Validation optimism is real: pick on val, confirm out of sample, pre-register the test.
@@ -231,8 +231,8 @@ one CMG-RRT timeout & \multicolumn{3}{r}{30\,s = about 12,000 GNN-Surv calls}\\
 \begin{frame}{Summary}
 \begin{itemize}
 \item Cost-aware ordering is cheaper than both ASAP baselines on a fresh test set; its edge over removability-only ordering holds in replay but not robustly.
-\item It does not beat a simple contact heuristic on larger, unseen assemblies --- confident timeouts are the reason.
-\item A 3\,s first-pass budget cuts planner time by 72--79\% in replay (about 50\% live) for every ordering tested.
+\item It does not beat a simple contact heuristic on larger, unseen assemblies; in replay (seed 101) a few confident timeouts account for most of the loss.
+\item A 3\,s first-pass budget cuts planner time by 72--79\% in replay (about 50\% live) for every ordering replayed.
 \item Next: calibrate for shift (train on 9--12-part assemblies), learn per-part budgets from the survival curve.
 \end{itemize}
 \vfill

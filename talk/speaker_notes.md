@@ -1,4 +1,4 @@
-# Speaker notes (10 minutes, about 45 s per slide; 13 slides + backup)
+# Speaker notes (10 minutes, times per item below are targets; together they come to about 10 min; 15 slides)
 
 Every number on the slides comes from `reports/final_eval/` (test, evaluated once) or an earlier logged run, which
 the slide footers name. Speak to the picture, not the bullets.
@@ -61,8 +61,8 @@ the slide footers name. Speak to the picture, not the bullets.
     a contact heuristic on bigger, unseen products. A 3-second first pass saves 72–79% in replay (about half live). Next steps:
     train on large assemblies and learn per-part budgets from the survival curve.
 
-Timing check (measured on this file): the spoken text of items 1–14 is about 860 words. At 130 words per minute that
-is about 6.6 min; at 150 wpm, about 5.8 min. That leaves about 3 min for pauses, pointing at figures and the slide
+Timing check (measured on this file after the phase 4 fixes): the spoken text is about 950 words. At 130 words per minute
+that is about 7.3 min; at 150 wpm, about 6.4 min, plus 13 s of video. That leaves about 3 min for pauses, pointing at figures and the slide
 changes within the 10-minute slot. Rehearse once with a timer. If it runs long, cut item 4 (landscape) to one sentence.
 
 ## Likely questions
