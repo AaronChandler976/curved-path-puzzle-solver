@@ -1,0 +1,1 @@
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/repro_cmgrrt.py --example puzzle/elk --seed 0 --cap-min 240 --iterations 10000000 --detector learned --run-dir experiments/2026-11-26_phase5_elk --idle-wait 300

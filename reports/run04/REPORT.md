@@ -1,4 +1,4 @@
-# Run 04 report: oracle v2, data v2, frozen fresh test set (DONE; T9 deferred)
+# Run 04 report: oracle v2, data v2, frozen fresh test set (DONE; T9 run in campaign Phase 5)
 
 **Ready for run 05?** Yes. Oracle v2 is validated, `pilot_v2` is labelled (2,022 assemblies, 0 confounded after
 re-runs), the v2 split is frozen (test = 347 fresh assemblies) and `docs/PREREG_run05.md` was committed
@@ -88,8 +88,15 @@ because both tables draw from one bootstrap random generator. They are the same 
   because every assembly's cached contact graph is used. The cache is frozen by a sha256 manifest and the sampling is
   now seeded (`reports/campaign/DECISIONS.md` #3).
 
-## 6. T9: elk
-Not run. Deferred to campaign Phase 5 (timed, alone, through the idle guard), reported in the paper.
+## 6. T9: elk (run in campaign Phase 5, 2026-11-26)
+`experiments/2026-11-26_phase5_elk/` (`cmd.txt`, `results.jsonl`, `stdout.log`, `guard_puzzle_elk_s0/`):
+`scripts/repro_cmgrrt.py --example puzzle/elk --seed 0 --cap-min 240 --detector learned` (the authors' settings: eta
+0.002, threshold −0.005, 50 steps, 10,000 samples; the bundled learned SDF; GPU), run alone after a 5-min idle wait.
+- **Result: not solved within the 240-min cap.** 76,901 iterations, 3.42 M tree nodes, 14,400 s of planner time.
+- **Timing hygiene:** busy_frac 0.0069 over 2,881 samples (< 0.05, not confounded).
+- **Comparison with the paper:** it reports a 156-min mean on 16 cores, with a parallel exploration that the public code
+  does not include. One single-process run with one seed is not enough to compare success rates. We report that the
+  public, single-process code did not solve elk in 4 h here.
 
 ## 7. Needs Aaron
 1. 18.5% of v1 successes are invalid at fine resolution (marginal dips below −ε). v1 labels and run 03 results are
