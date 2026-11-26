@@ -4,7 +4,8 @@
 heuristic was chosen on val: fewest contacts. Ratio of total planner time GNN-Surv / fewest contacts = **1.055
 [0.887, 1.257]**, HL +0.02 s per assembly, W/T/L 132/61/148, Holm-adjusted Wilcoxon p = 0.43. Neither condition (a) nor
 (b) holds. The pre-registered sensitivity check on the 300 scored clean test assemblies (addendum A) agrees: 0.999
-[0.829, 1.226], Holm p 0.81, does not beat. The live result is in §4.
+[0.829, 1.226], Holm p 0.81, does not beat. **Live, applied separately, gives the same verdict:** 0.915 [0.819, 1.015],
+Holm p 0.13 (§4).
 
 ## 1. Discipline (evidence)
 - **Marker:** `data/splits/.v2_test_evaluated` was written at 2026-11-24 23:08:45 (git b5d851a) by `scripts/eval_v2.py`, before
@@ -79,9 +80,49 @@ How to read this (claims limited to what the rule and numbers support):
     within-state C-index 0.674 vs ASAP zero-shot 0.593 and ASAP-retrained 0.626. ListNet is the highest at 0.689.
   - The C-index is only modestly above 0.5, and the failures (§5) are confident mistakes.
 
-## 4. Live full disassembly (PREREG §6)
-PENDING. `experiments/2026-11-24_final_eval_live/` (idle-guarded, priority P1–P4; `scripts/run_final_live.sh`).
-Report: `reports/final_eval/live.md` (`scripts/live_report_v2.py`).
+## 4. Live full disassembly (PREREG §6) — registered methods complete
+- **Run:** `experiments/2026-11-24_final_eval_live/` (`scripts/run_final_live.sh`), tables in
+  `reports/final_eval/live_registered.md`.
+  - Every method ran on all 347 test assemblies, with fresh queries (oracle v2: CMG-RRT only when the pull fails).
+  - Planner seed per query = sha1("run05-live", …). The idle guard was on.
+  - 13,533 (assembly, method) runs. 77 were confounded and re-run, and **0 remain confounded or errored**.
+- **Seeds:** P1 ran each trained variant at its val-best seed, and P2 added the remaining 4 seeds. Trained variants enter
+  as the seed-mean over 5 seeds per assembly (PREREG §5).
+- **Cost:** per-assembly cost = total planner time of the whole disassembly, including stuck runs. That is why live
+  totals are about 3× the replay totals, which leave out states with no success.
+
+| ordering | complete / stuck runs | total planner time (s) [95% CI] |
+|---|---|---|
+| random | 316 / 31 | 26,464 [21,786, 31,202] |
+| outside-in | 313 / 34 | 23,239 [18,426, 28,310] |
+| fewest contacts | 312 / 35 | 23,002 [18,624, 27,561] |
+| ASAP zero-shot | 314 / 33 | 26,667 [21,430, 32,121] |
+| ASAP-retrained (5 seeds) | 1,565 / 170 | 23,212 [18,512, 28,367] |
+| MLP-BCE | 1,563 / 172 | 21,139 [17,005, 25,681] |
+| MLP-Surv | 1,560 / 175 | 20,827 [16,767, 25,237] |
+| GNN-BCE | 1,569 / 166 | 20,131 [16,285, 24,209] |
+| **GNN-Surv** | 1,572 / 163 | **21,038** [16,700, 25,758] |
+| GNN-Surv-Tail | 1,569 / 166 | 19,885 [15,987, 24,045] |
+| PN-GNN-Surv | 1,566 / 169 | 20,805 [16,644, 25,350] |
+
+- **§7 rule applied to live (separately):** GNN-Surv / fewest contacts = **0.915 [0.819, 1.015]**, HL −0.05 s, W/T/L
+  181/45/121, Wilcoxon p 0.019, Holm p 0.13: **does not beat**. On the 306 clean assemblies: 0.907 [0.801, 1.020], Holm
+  p 0.22.
+  - Disclosed: the interim P1 table (val-best seed only, `live_P1.md`) had Holm p 0.0018 for the typical-assembly
+    condition. With the registered 5-seed mean it is not significant.
+- **Both ASAP baselines are beaten live**, both conditions met:
+  - ASAP zero-shot: 0.789 [0.699, 0.880], Holm p 2.8e-7.
+  - ASAP-retrained: 0.906 [0.827, 0.994], Holm p 0.04, HL −0.15 s.
+  - Random: 0.795 [0.674, 0.932], Holm p 3.6e-8.
+- **Interventions live:**
+  - Survival vs BCE (GNN): 1.045 [0.955, 1.150] on totals, but HL −0.06 s with Holm p 0.035. GNN-Surv is cheaper on the
+    typical assembly, not on total time, the opposite of replay, where it was cheaper on both.
+  - GNN vs MLP (survival 1.010; BCE 0.952), PointNet (1.011) and Tail (1.058 [1.003, 1.110], Holm p 0.18): no
+    difference that survives Holm.
+- **Subsets** (GNN-Surv vs fewest contacts, uncorrected): ratios 0.85–0.99 in every source and size bin; none has a CI
+  entirely below 1.
+- **Exploratory live rows** (P3: GT-Surv and ListNet; P4: budget policy) are PENDING and get their own table in
+  `reports/final_eval/live.md`.
 
 ## 5. Failure analysis (`reports/final_eval/failure_analysis.md`)
 - **Tail concentration:** the costliest 5% of states hold 89% of fewest contacts' total and 77% of GNN-Surv's.
