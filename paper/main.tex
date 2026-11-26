@@ -50,9 +50,11 @@ timeouts as censored, giving both $p$ and the expected cost $c$ for the $p/c$ or
 \item An oracle and dataset for the question: an exact-SDF CMG-RRT adapter with a certified straight-pull stage (fixing a
 start-pose bug and 18.5\% path-invalid successes of the original adapter), and 41{,}913 labelled queries on 2{,}022 real
 assemblies whose states come from verified disassemblies.
-\item A pre-registered, single-shot test on 347 fresh assemblies with replay and live evaluation: cost-aware ordering is
-11\% cheaper than removability-only ordering with the same GNN and 34--39\% cheaper than ASAP, but it does not beat a
-fewest-contacts heuristic. A failure analysis traces this to confident timeouts under a size and geometry shift.
+\item A pre-registered, single-shot test on 347 fresh assemblies with replay and live evaluation (17{,}697 live
+disassemblies). Cost-aware ordering is 34--39\% cheaper than ASAP in replay and 9--21\% cheaper live. It is cheaper than
+removability-only ordering with the same GNN in the main replay analysis (11\%), but not robustly across evaluations.
+It does not beat a fewest-contacts heuristic. A failure analysis finds the loss in a few confident timeouts on larger,
+unseen assemblies.
 \item A negative and a practical finding reported as such: validation favoured the most-tuned variants, which the
 out-of-sample checks did not confirm, and an untrained two-pass budget policy cuts planner time by 72\% for every ordering.
 \end{itemize}
@@ -179,19 +181,27 @@ fewest contacts (7{,}202\,s) the ratio is 1.055 [0.887, 1.257] with Holm $p=0.43
 [0.829, 1.226]).
 
 \subsection{Ablations}
-With the same GNN, survival $p/c$ ordering costs 0.887 [0.785, 0.999] of BCE $p$ ordering (Holm $p=6\cdot10^{-7}$, HL
-$-0.21$\,s): modelling cost and censoring is what helps, which is the contribution we set out to test. GNN vs MLP
+With the same GNN, survival $p/c$ ordering costs 0.887 [0.785, 0.999] of BCE $p$ ordering in the main replay
+analysis (Holm $p=6\cdot10^{-7}$, HL $-0.21$\,s). The evidence for modelling cost is mixed, though. On the 300 clean
+test assemblies the ratio CI reaches 1.001. Live, the survival head is cheaper only on the typical assembly
+(HL $-0.06$\,s, Holm $p=0.035$; total 1.045 [0.955, 1.150]). For the MLP, survival and BCE do not differ. GNN vs MLP
 (survival head: 0.951 [0.831, 1.084]), PointNet features and the tail-aware objective show no detectable difference on
 test. On validation the tail-aware and PointNet variants looked best. A 5-fold group cross-validation over train+val with
 inner early stopping already reduced the tail-aware variant's apparent advantage, and the test removed it.
 
 \subsection{Live evaluation}
-LIVE-PENDING
+Every method also disassembled all 347 test assemblies with fresh planner queries (17{,}697 runs; confounded runs re-run,
+none left confounded). The verdict is the same: GNN-Surv / fewest contacts $=0.915$ [0.819, 1.015], Holm $p=0.13$,
+\textbf{does not beat}. GNN-Surv is cheaper than ASAP zero-shot (0.789 [0.699, 0.880]) and ASAP retrained (0.906 [0.827,
+0.994]), both with Holm $p<0.05$ and negative HL. Live totals are about three times the replay totals because live
+counts every query of every disassembly, including runs that get stuck. An exploratory ListNet-trained variant was the
+cheapest live ordering (0.797 vs fewest contacts) but not in replay, so we treat it as a lead, not a result.
 
 \subsection{Budget policy (exploratory)}
 Querying every part first with a 3\,s budget, and retrying at 30\,s only if none succeeds, reduces the replayed total of
-fewest contacts from 7{,}202\,s to 2{,}008\,s and that of GNN-Surv to 1{,}904\,s. Under the same policy the two do not
-differ detectably (0.948 [0.820, 1.095]). The policy was chosen on validation after registration and is reported as
+fewest contacts from 7{,}202\,s to 2{,}008\,s ($-72\%$) and that of GNN-Surv to 1{,}904\,s. Under the same policy the two do
+not differ detectably (0.948 [0.820, 1.095]). Live the saving is about 50\%: stuck runs pay the retry, and the planner
+overruns short budgets (below). The policy was chosen on validation after registration and is reported as
 exploratory.
 
 \subsection{Latency and memory}
@@ -229,7 +239,9 @@ sample.
 \textbf{Limitations.} The sequences are planner-found, not ground truth, and 156 of 2{,}022 assemblies get stuck
 before full disassembly. 919 interpenetrating assemblies exceed our tolerance caps and are excluded. A query is tested
 against the union of the remaining parts as one static obstacle (no grasping, gravity or fixtures). Results are for one
-planner and one budget ($T=30$\,s).
+planner and one budget ($T=30$\,s). That budget is soft: our adapter checks the time limit once per RRT iteration, so
+unsolved test queries ran a median 31.2\,s (max 73.2\,s), and 24 successes took longer than 30\,s. The same holds for
+the 3\,s first pass live (median 4.2\,s for failed queries). Every ordering faces the same behaviour.
 
 \section{Conclusion and Future Work}
 \label{sec:concl}
