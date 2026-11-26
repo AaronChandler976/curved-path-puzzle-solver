@@ -27,7 +27,7 @@ def color(m):
 
 
 def style(plt):
-    plt.rcParams.update({"font.size": 8, "axes.edgecolor": INK2, "axes.labelcolor": INK, "xtick.color": INK2,
+    plt.rcParams.update({"font.size": 9, "axes.edgecolor": INK2, "axes.labelcolor": INK, "xtick.color": INK2,
                          "ytick.color": INK2, "pdf.fonttype": 42, "font.family": "DejaVu Sans"})
 
 
@@ -64,7 +64,7 @@ def main():
         bs = v[idx].sum(1)
         return v.sum(), np.percentile(bs, 2.5), np.percentile(bs, 97.5)
     L = {m: tot_ci(m) for m in ORDER}
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.0), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(6.2, 3.3), sharey=True)
     for ax, src, title in ((axes[0], {m: tuple(R[m]["total"]) for m in ORDER}, "Replay (logged queries)"),
                            (axes[1], L, "Live (fresh CMG-RRT queries)")):
         y = np.arange(len(ORDER))
@@ -76,7 +76,7 @@ def main():
         ref = src["fewest_contacts"][0] / 1000
         ax.axvline(ref, color=INK2, lw=0.6, ls=(0, (2, 2)))
         ax.set_yticks(y); ax.set_yticklabels([NAMES[m] for m in ORDER])
-        ax.invert_yaxis(); ax.set_xlabel("total planner time on the test set (1000 s)")
+        ax.invert_yaxis(); ax.set_xlabel("total planner time (1000 s)")
         ax.set_title(title, fontsize=8.5, color=INK)
         ax.spines[["top", "right"]].set_visible(False)
         ax.grid(axis="x", color="#e6e5e1", lw=0.5); ax.set_axisbelow(True)

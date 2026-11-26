@@ -44,7 +44,7 @@ Automated disassembly for repair, remanufacturing and recycling (for example, ba
 feasible removal sequence for products described by CAD. Assembly-by-disassembly (AbD)~\cite{tian2022ata} finds one
 by repeatedly asking a motion planner whether a part can be moved out of the remaining assembly. With a planner that
 handles tight clearances and rotations, such as CMG-RRT~\cite{livnat_cmgrrt}, those queries are expensive and very
-uneven: on our data a straight pull is certified in about 0.04\,s, while a query that fails runs to its 30\,s budget,
+uneven: on our data the median query of a random validation sample took 0.04\,s (most are straight pulls), while a query that fails runs to its 30\,s budget,
 and a failure does not prove that the part is stuck. The order in which parts are queried therefore decides most of
 the planning time.
 
@@ -85,7 +85,7 @@ Assemble Them All~\cite{tian2022ata} plans assembly by disassembling real CAD as
 planner and released a large Fusion~360 benchmark, which our data comes from. Cebulla et al.~\cite{cebulla2023} showed
 that a GNN predicting each part's removability can reorder the removal tests of AbD and cut failed attempts. ASAP~\cite{tian2024asap}
 guides a disassembly tree search with a GNN (PointNet~\cite{qi2017pointnet} part features and GATv2~\cite{brody2022gatv2}
-layers) trained on simulator labels, and adds gravitational stability. GRACE~\cite{atad2023} and graph-transformer
+layers) trained on simulator labels, and adds gravitational stability. GRACE~\cite{atad2023} and graph-transformer~\cite{ma2022graphtransformer}
 models predict sequences step by step. These methods learn \emph{whether} a part comes out and count tests. None of
 them models \emph{how long} a test takes or treats a planner timeout as a censored observation, and their testers are
 discretised physics simulators rather than a continuous tight-clearance planner.
@@ -164,11 +164,11 @@ fraction, a 6-bin contact-normal histogram and the number of present parts; edge
 ``away'' direction, contact fraction and contact area. The encoder is a residual GINE network~\cite{hu2020pretrain}
 with LayerNorm. The head predicts, for $K=8$ log-spaced time bins $e_1<\dots<e_K=T$, the discrete hazard
 $h_{ik}=\sigma(z_{ik})$ of part $i$ succeeding in bin $k$~\cite{gensheimer2019}. With $b_i$ the bin of an observed
-success and $c_i$ the censoring time of an unsolved query, the loss is
+success and $\kappa_i$ the censoring time of an unsolved query, the loss is
 \begin{equation}
 \begin{aligned}
 \mathcal{L}_{\text{surv}}=&-\sum_{i:\,y_i=1}\Bigl[\sum_{j<b_i}\log(1-h_{ij})+\log h_{ib_i}\Bigr]\\
-&-\sum_{i:\,y_i=0}\sum_{j:\,e_j\le c_i}\log(1-h_{ij}).
+&-\sum_{i:\,y_i=0}\sum_{j:\,e_j\le \kappa_i}\log(1-h_{ij}).
 \end{aligned}
 \end{equation}
 From the survival curve $S_{ik}=\prod_{j\le k}(1-h_{ij})$ we read $p_i=1-S_{iK}$ (success within $T$) and the expected
@@ -207,15 +207,15 @@ products. The evaluation protocol was pre-registered before any model was traine
 \subsection{Setup}
 Hardware: AMD Ryzen 9 9900X (12 cores), RTX 5070 Ti (16\,GB), 64\,GB RAM. Planner queries run on 10 single-threaded CPU
 workers. An idle guard pauses dispatch while other processes use more than 0.5 cores, and it records how busy the
-machine was during each query; confounded queries are re-run with the same seed. Models are trained with PyTorch and
-PyG on the GPU (AdamW, weight decay $10^{-4}$, dropout 0.1, batch 32 states, $\le150$ epochs). Our variants share one
+machine was during each query; confounded queries are re-run with the same seed. Software: Python 3.11, PyTorch 2.11 (CUDA 12.8), PyG 2.8.1, trimesh 5.2.2, CMG-RRT (public code, unmodified,
+with our collision adapter). Models are trained with PyTorch and PyG on the GPU (AdamW, weight decay $10^{-4}$, dropout 0.1, batch 32 states, $\le150$ epochs). Our variants share one
 grid (hidden $\{64,128\}$ $\times$ lr $\{10^{-3},3\cdot10^{-4}\}$ $\times$ layers $\{2,3\}$; the tail-aware and ListNet
 variants add $\lambda\in\{0.1,1\}$; ASAP retrained uses lr $\{10^{-3},3\cdot10^{-4},10^{-4}\}$ $\times$ batch
 $\{16,32\}$ with its own architecture). Configurations are selected by validation replay cost (5-epoch trailing mean,
 three grid seeds) and retrained with 5 seeds.
 
-\textbf{Baselines and ablations} (all use the same oracle and $T$). \emph{Random}: the exact expectation over uniformly
-random query orders. \emph{Outside-in}: parts whose centroid is farthest from the sub-assembly's bounding-box centre
+\textbf{Baselines and ablations} (all use the same oracle and $T$). \emph{Random}: in replay, the exact expectation over uniformly random query orders; live, one seeded random shuffle
+per state. \emph{Outside-in}: parts whose centroid is farthest from the sub-assembly's bounding-box centre
 first. \emph{Fewest contacts}: parts with the fewest present contact neighbours first (ties: outside-in, then part id).
 \emph{ASAP zero-shot}: the released ASAP GNN (PointNet part features, GATv2 layers) with its own redmax contact graph,
 parts ordered by its score. \emph{ASAP retrained}: the same architecture and objective (one positive per state, the
@@ -338,7 +338,7 @@ ASAP-retrained & 1.70M & 7.07 & 0.72 & 3{,}849\\
 \end{table}
 GNN-Surv has 32{,}392 parameters and takes 0.12\,ms per state on one CPU thread (0.24\,ms on the GPU at batch 1; 11\,MB
 peak GPU memory for a batch of 200 states), plus 2.4\,ms to build the state's features from the cached contact graph. ASAP's model has 1.7\,M parameters and
-takes 7.0\,ms. One avoided timeout (30\,s) equals about 12{,}000 ranker calls. (By the idle guard's rule the profile run counts as
+takes 7.07\,ms. One avoided timeout (30\,s) equals about 12{,}000 ranker calls. (By the idle guard's rule the profile run counts as
 confounded, because its load criterion fired; measured outside load stayed $\le0.36$ cores.)
 
 \section{Failure Analysis, Negative Results and Limitations}
