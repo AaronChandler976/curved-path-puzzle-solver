@@ -19,3 +19,9 @@ experiments/**/*
 *.stl
 __pycache__/
 .pytest_cache/
+
+!data/splits/
+!data/splits/*.json
+build/
+talk/demo.gif
+video/build/

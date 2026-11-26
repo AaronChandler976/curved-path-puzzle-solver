@@ -1,0 +1,2 @@
+PYTHONDONTWRITEBYTECODE=1 env -u PYTHONPATH conda run --no-capture-output -n asap python scripts/asap_contact_graphs.py --ids experiments/2026-11-23_run04_t2_redmax/ids20.json --out experiments/2026-11-23_run04_t2_redmax/asap_graphs.jsonl
+env -u PYTHONPATH conda run -n disasm python scripts/compare_contact_graphs.py --asap experiments/2026-11-23_run04_t2_redmax/asap_graphs.jsonl --out experiments/2026-11-23_run04_t2_redmax/agreement.json

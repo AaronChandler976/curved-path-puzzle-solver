@@ -1,0 +1,1 @@
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/scan_contacts.py --outdir experiments/2026-11-23_run04_contact_scan_9to12 --min-parts 9 --max-parts 12 --workers 10

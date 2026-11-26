@@ -1,0 +1,1 @@
+conda run --no-capture-output -n disasm python scripts/scan_contacts.py --outdir experiments/2026-11-22_contact_scan --min-parts 3 --max-parts 8 --workers 4

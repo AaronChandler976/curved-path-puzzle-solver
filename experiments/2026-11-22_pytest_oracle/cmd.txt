@@ -1,0 +1,1 @@
+conda run --no-capture-output -n disasm env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 BUNDLED_TIMEOUT=600 python -m pytest -v -s tests/test_oracle_multipart.py tests/test_oracle_bundled.py

@@ -1,0 +1,1 @@
+[2026-11-24 18:54:33] gnn_survival_tail: train 5762 states (1404 asm), val 1010 states (245 asm), states with >= 1 success only

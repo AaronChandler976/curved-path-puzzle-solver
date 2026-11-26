@@ -1,0 +1,1 @@
+env -u PYTHONPATH OMP_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/failure_analysis.py --replay-dir experiments/2026-11-25_final_eval_replay --outdir experiments/2026-11-25_final_failure_analysis --md reports/final_eval/failure_analysis.md

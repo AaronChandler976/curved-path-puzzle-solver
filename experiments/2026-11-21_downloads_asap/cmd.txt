@@ -1,0 +1,1 @@
+cd data/raw/asap_zips && wget -c people.csail.mit.edu/yunsheng/ASAP/dataset_2404/{training,test}_assembly.zip

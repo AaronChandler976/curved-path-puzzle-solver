@@ -1,0 +1,2 @@
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/eval_replay_test.py --train-dir experiments/2026-11-23_run03_train_v2 --seeds 100,101,102,103,104 --outdir experiments/2026-11-23_run03_eval_test
+scripts/eval_replay_test.py --train-dir experiments/2026-11-23_run03_train_v2 --seeds 100,101,102,103,104 --outdir experiments/2026-11-23_run03_eval_test

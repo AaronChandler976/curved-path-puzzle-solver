@@ -1,0 +1,1 @@
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/explore_orderings.py --methods experiments/2026-11-24_run05_eval_val/methods.json --outdir experiments/2026-11-24_run06_explore_orderings --md experiments/2026-11-24_run06_explore_orderings/orderings.md --device cpu

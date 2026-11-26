@@ -1,0 +1,4 @@
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/train_ranker.py --enc mlp --head bce --outdir experiments/2026-11-23_run03_train
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/train_ranker.py --enc mlp --head survival --outdir experiments/2026-11-23_run03_train
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/train_ranker.py --enc gnn --head bce --outdir experiments/2026-11-23_run03_train
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/train_ranker.py --enc gnn --head survival --outdir experiments/2026-11-23_run03_train

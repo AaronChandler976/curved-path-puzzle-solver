@@ -1,0 +1,22 @@
+{
+ "labels": {
+  "n_queries": 12444,
+  "n_unsolved": 2663,
+  "unsolved_median_s": 31.191314697265625,
+  "unsolved_max_s": 73.22098541259766,
+  "cost_beyond_30s_all_queries_s": 8162.943170547485,
+  "main_successes_over_30s": 24,
+  "main_success_max_s": 89.11285400390625,
+  "cmgrrt_only_successes_over_30s": 158,
+  "cmgrrt_only_success_max_s": 127.6502456665039
+ },
+ "live_policy": {
+  "n_runs": 694,
+  "n_pass1_failed_cmgrrt_queries": 1439,
+  "cmgrrt_median_s": 4.241139888763428,
+  "cmgrrt_max_s": 72.59147024154663,
+  "cmgrrt_beyond_3s_s": 4737.749506235123,
+  "whole_query_beyond_3s_s": 5627.19423866272,
+  "total_planner_s_policy_rows": 22083.17795228958
+ }
+}

@@ -1,0 +1,189 @@
+{
+ "variant": "gt_survival",
+ "grid_seeds": [
+  0,
+  1,
+  2
+ ],
+ "smooth": 5,
+ "min_epochs": 10,
+ "patience": 25,
+ "max_epochs": 150,
+ "grid": [
+  {
+   "hidden": 64,
+   "lr": 0.001,
+   "layers": 2,
+   "lam": null,
+   "mean_val_cost": 1634.4778971513113,
+   "per_seed": [
+    1636.776029920578,
+    1516.0645397663116,
+    1750.593121767044
+   ],
+   "best_epoch": [
+    4,
+    7,
+    4
+   ]
+  },
+  {
+   "hidden": 64,
+   "lr": 0.001,
+   "layers": 3,
+   "lam": null,
+   "mean_val_cost": 1673.529160785675,
+   "per_seed": [
+    1655.0374382019043,
+    1574.504824590683,
+    1791.045219564438
+   ],
+   "best_epoch": [
+    6,
+    5,
+    4
+   ]
+  },
+  {
+   "hidden": 64,
+   "lr": 0.0003,
+   "layers": 2,
+   "lam": null,
+   "mean_val_cost": 1537.8224196910858,
+   "per_seed": [
+    1621.9316272735596,
+    1383.6394093513488,
+    1607.896222448349
+   ],
+   "best_epoch": [
+    4,
+    17,
+    13
+   ]
+  },
+  {
+   "hidden": 64,
+   "lr": 0.0003,
+   "layers": 3,
+   "lam": null,
+   "mean_val_cost": 1593.7177591323853,
+   "per_seed": [
+    1592.1975897789002,
+    1636.572967195511,
+    1552.3827204227448
+   ],
+   "best_epoch": [
+    9,
+    13,
+    7
+   ]
+  },
+  {
+   "hidden": 128,
+   "lr": 0.001,
+   "layers": 2,
+   "lam": null,
+   "mean_val_cost": 1587.3450678825382,
+   "per_seed": [
+    1541.0643774986268,
+    1568.7699464321136,
+    1652.2008797168733
+   ],
+   "best_epoch": [
+    4,
+    4,
+    5
+   ]
+  },
+  {
+   "hidden": 128,
+   "lr": 0.001,
+   "layers": 3,
+   "lam": null,
+   "mean_val_cost": 1626.4040256341298,
+   "per_seed": [
+    1473.1417044639588,
+    1643.8400857448578,
+    1762.230286693573
+   ],
+   "best_epoch": [
+    4,
+    5,
+    4
+   ]
+  },
+  {
+   "hidden": 128,
+   "lr": 0.0003,
+   "layers": 2,
+   "lam": null,
+   "mean_val_cost": 1451.8200211048127,
+   "per_seed": [
+    1464.0729441165925,
+    1329.3272069931031,
+    1562.0599122047424
+   ],
+   "best_epoch": [
+    4,
+    5,
+    8
+   ]
+  },
+  {
+   "hidden": 128,
+   "lr": 0.0003,
+   "layers": 3,
+   "lam": null,
+   "mean_val_cost": 1477.3772753079732,
+   "per_seed": [
+    1242.7580439567566,
+    1575.9718173980714,
+    1613.401964569092
+   ],
+   "best_epoch": [
+    5,
+    5,
+    4
+   ]
+  }
+ ],
+ "chosen": {
+  "hidden": 128,
+  "lr": 0.0003,
+  "layers": 2,
+  "lam": null
+ },
+ "chosen_mean_val_cost": 1451.8200211048127,
+ "seeds": [
+  {
+   "seed": 100,
+   "best_val_cost": 1664.5883528709412,
+   "best_epoch": 5,
+   "ckpt": "experiments/2026-11-24_run06_explore_train/gt_survival/seed100/best.pt"
+  },
+  {
+   "seed": 101,
+   "best_val_cost": 1702.2766027450562,
+   "best_epoch": 4,
+   "ckpt": "experiments/2026-11-24_run06_explore_train/gt_survival/seed101/best.pt"
+  },
+  {
+   "seed": 102,
+   "best_val_cost": 1499.8384511470795,
+   "best_epoch": 8,
+   "ckpt": "experiments/2026-11-24_run06_explore_train/gt_survival/seed102/best.pt"
+  },
+  {
+   "seed": 103,
+   "best_val_cost": 1598.4580084323884,
+   "best_epoch": 5,
+   "ckpt": "experiments/2026-11-24_run06_explore_train/gt_survival/seed103/best.pt"
+  },
+  {
+   "seed": 104,
+   "best_val_cost": 1628.2221319675446,
+   "best_epoch": 7,
+   "ckpt": "experiments/2026-11-24_run06_explore_train/gt_survival/seed104/best.pt"
+  }
+ ]
+}

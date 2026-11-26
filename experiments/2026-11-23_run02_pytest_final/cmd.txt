@@ -1,0 +1,1 @@
+env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 conda run --no-capture-output -n disasm python -m pytest -q

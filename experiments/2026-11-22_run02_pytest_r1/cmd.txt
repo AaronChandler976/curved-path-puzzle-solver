@@ -1,0 +1,1 @@
+env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 conda run -n disasm python -m pytest tests -x -q

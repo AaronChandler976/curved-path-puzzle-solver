@@ -1,0 +1,1 @@
+conda run --no-capture-output -n disasm env -u PYTHONPATH CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 python scripts/train_pipeline_test.py --labels experiments/2026-11-22_s6_pipeline_test/labels_snapshot.jsonl --outdir experiments/2026-11-22_s6_pipeline_test --seed 0 --overfit-states 20 --overfit-epochs 400 --epochs 100 --val-frac 0.2

@@ -1,0 +1,2 @@
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/measure_penetration.py --ids experiments/2026-11-23_run04_t6_pool/measure_ids.json --outdir experiments/2026-11-23_run04_penetration --workers 10
+scripts/measure_penetration.py --ids experiments/2026-11-23_run04_t6_pool/measure_ids.json --outdir experiments/2026-11-23_run04_penetration --workers 10

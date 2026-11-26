@@ -1,0 +1,2 @@
+scripts/run_r6.sh experiments/2026-11-23_run03_live experiments/2026-11-23_run03_train_v2/gnn_survival/seed101/best.pt
+scripts/live_abd.py --assemblies experiments/2026-11-23_run03_live/assemblies.json --gnn-ckpt experiments/2026-11-23_run03_train_v2/gnn_survival/seed101/best.pt --outdir experiments/2026-11-23_run03_live --workers 10 --T 30 --eps 0.005 --save-paths

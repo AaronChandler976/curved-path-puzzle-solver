@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+"""Render a logged CMG-RRT extraction path for a multi-part assembly as a PNG strip
+(matplotlib 3D, headless). The obstacle parts are grey; the moving part is drawn at evenly spaced
+poses along the path, using the same SE3 -> matrix conversion as CMG-RRT (taucgl_rrt.cspace.SE3).
+
+Usage: render_path.py --assembly-dir DIR --part P --removed 1,2 --path-file F --out PNG
+"""
+import argparse
+import json
+import os
+import sys
+
+import numpy as np
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--assembly-dir", required=True)
+    ap.add_argument("--part", type=int, required=True)
+    ap.add_argument("--removed", default="")
+    ap.add_argument("--path-file", required=True)
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--frames", type=int, default=5)
+    args = ap.parse_args()
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+    from taucgl_rrt.cspace import SE3
+    from disasm.oracle.cmgrrt import load_assembly
+
+    a = load_assembly(args.assembly_dir)
+    removed = {int(x) for x in args.removed.split(",") if x}
+    raw = json.load(open(args.path_file))["path"]
+    # The final tree edge is a straight translation to the far goal (CMG-RRT connects the goal with a
+    # straight is_edge_valid segment). For display, that edge is linearly interpolated so the part can be seen
+    # leaving; interpolated frames are labelled "interp".
+    path, interp = [list(q) for q in raw[:-1]], [False] * (len(raw) - 1)
+    a0, a1 = np.asarray(raw[-2]), np.asarray(raw[-1])
+    for f in np.linspace(0, 1, 40)[1:]:
+        q = a0 + f * (a1 - a0)
+        q[3:] /= np.linalg.norm(q[3:])
+        path.append(q.tolist()); interp.append(True)
+    n_tree = len(raw) - 1
+    idx = list(np.linspace(0, n_tree - 1, max(2, args.frames // 2)).round().astype(int))
+    idx += list(np.linspace(n_tree + 2, len(path) - 1, args.frames - len(idx)).round().astype(int))
+    obst = [p for p in a.part_ids if p not in removed and p != args.part]
+    b = np.array([a.meshes[p].bounds for p in a.part_ids if p not in removed])
+    lo, hi = b[:, 0].min(0), b[:, 1].max(0)
+    span = (hi - lo).max()
+    fig = plt.figure(figsize=(3.2 * args.frames, 3.4))
+    for k, i in enumerate(idx):
+        ax = fig.add_subplot(1, args.frames, k + 1, projection="3d")
+        for p in obst:
+            m = a.meshes[p]
+            ax.add_collection3d(Poly3DCollection(m.vertices[m.faces], facecolor=(0.7, 0.7, 0.7, 0.25),
+                                                 edgecolor=(0.4, 0.4, 0.4, 0.05), linewidths=0.1))
+        m = a.meshes[args.part].copy()
+        m.apply_transform(SE3(*path[i]).to_matrix())
+        ax.add_collection3d(Poly3DCollection(m.vertices[m.faces], facecolor=(0.85, 0.3, 0.2, 0.8),
+                                             edgecolor=(0.5, 0.1, 0.1, 0.2), linewidths=0.1))
+        c = (lo + hi) / 2
+        r = span * 0.75
+        for setlim, j in ((ax.set_xlim, 0), (ax.set_ylim, 1), (ax.set_zlim, 2)):
+            setlim(c[j] - r, c[j] + r)
+        ax.set_axis_off()
+        rot = np.degrees(2 * np.arccos(min(1.0, abs(path[i][3]))))
+        ax.set_title(("interp. final edge" if interp[i] else f"tree node {i}/{n_tree}") + f"\nt=({path[i][0]:+.2f},{path[i][1]:+.2f},{path[i][2]:+.2f}) rot {rot:.0f} deg",
+                     fontsize=7)
+    fig.suptitle(f"assembly {a.id}: part {args.part} leaves (removed {sorted(removed)}); CMG-RRT logged path "
+                 f"{os.path.basename(args.path_file)}", fontsize=8)
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(args.out), exist_ok=True)
+    fig.savefig(args.out, dpi=110)
+    print("wrote", args.out)
+
+
+if __name__ == "__main__":
+    main()

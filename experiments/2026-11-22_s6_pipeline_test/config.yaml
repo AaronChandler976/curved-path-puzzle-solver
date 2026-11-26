@@ -1,0 +1,11 @@
+seed: 0
+overfit_states: 20
+overfit_epochs: 400
+epochs: 100
+val_frac: 0.2
+lr_overfit: 3e-3
+lr_split: 1e-3
+batch_states: 16
+hidden: 64
+survival_bins: 10
+note: PIPELINE TEST, not a result

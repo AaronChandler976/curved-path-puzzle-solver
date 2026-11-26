@@ -1,0 +1,1 @@
+scripts/train_asap_v2.py --outdir experiments/2026-11-24_run05_train --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --procs 4

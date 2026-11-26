@@ -1,0 +1,1 @@
+scripts/t2_dryruns.py --outdir experiments/2026-11-23_run04_t2_dryruns

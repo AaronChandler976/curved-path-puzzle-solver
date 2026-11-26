@@ -1,0 +1,3 @@
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/train_v2.py --variant gatv2_survival --outdir experiments/2026-11-24_run06_explore_train
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/train_v2.py --variant gt_survival --outdir experiments/2026-11-24_run06_explore_train
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/train_v2.py --variant gnn_survival_listnet --outdir experiments/2026-11-24_run06_explore_train

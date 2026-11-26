@@ -1,0 +1,20 @@
+=== start ===
+time: 2026-11-24T21:24:56-08:00
+uptime: 21:24:56 up 2 days,  1:13,  1 user,  load average: 0.05, 0.43, 0.94
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 1627 MiB
+power_profile: performance
+git_hash: d516baa23ed3ced3525ac6843751fda9b9de45bd
+git_dirty: False
+cmd: scripts/profile_rankers.py --methods experiments/2026-11-24_run05_eval_val/methods.json --val-results experiments/2026-11-24_run05_eval_val/results.json --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --outdir experiments/2026-11-24_run05_profile --md reports/run05/profile.md
+pid: 2787060
+=== end ===
+time: 2026-11-24T21:27:02-08:00
+uptime: 21:27:02 up 2 days,  1:15,  1 user,  load average: 6.70, 2.41, 1.58
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 6746 MiB
+power_profile: performance
+git_hash: d516baa23ed3ced3525ac6843751fda9b9de45bd
+git_dirty: False
+cmd: scripts/profile_rankers.py --methods experiments/2026-11-24_run05_eval_val/methods.json --val-results experiments/2026-11-24_run05_eval_val/results.json --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --outdir experiments/2026-11-24_run05_profile --md reports/run05/profile.md
+pid: 2787060

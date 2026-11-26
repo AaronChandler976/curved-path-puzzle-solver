@@ -1,0 +1,80 @@
+=== start start_valid ===
+time: 2026-11-22T23:30:43-08:00
+uptime: 23:30:43 up  3:18,  1 user,  load average: 1.87, 8.25, 9.73
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 1617 MiB
+power_profile: performance
+git_hash: acec32f897e985362392899f93ca089a7839b3b0
+git_dirty: True
+cmd: scripts/exact_sdf_validation.py start_valid --outdir experiments/2026-11-22_exact_sdf_validation --n 50 --eps 0.005
+pid: 441053
+=== end start_valid ===
+time: 2026-11-22T23:30:46-08:00
+uptime: 23:30:46 up  3:18,  1 user,  load average: 1.87, 8.25, 9.73
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 1617 MiB
+power_profile: performance
+git_hash: acec32f897e985362392899f93ca089a7839b3b0
+git_dirty: True
+cmd: scripts/exact_sdf_validation.py start_valid --outdir experiments/2026-11-22_exact_sdf_validation --n 50 --eps 0.005
+pid: 441053
+=== start poses ===
+time: 2026-11-22T23:30:46-08:00
+uptime: 23:30:46 up  3:18,  1 user,  load average: 1.80, 8.13, 9.68
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 1617 MiB
+power_profile: performance
+git_hash: acec32f897e985362392899f93ca089a7839b3b0
+git_dirty: True
+cmd: scripts/exact_sdf_validation.py poses --outdir experiments/2026-11-22_exact_sdf_validation --examples general/11356 puzzle/key_light_1 general/16505
+pid: 441231
+=== end poses ===
+time: 2026-11-22T23:32:10-08:00
+uptime: 23:32:10 up  3:20,  1 user,  load average: 1.59, 6.58, 9.01
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+3 %, 1929 MiB
+power_profile: performance
+git_hash: acec32f897e985362392899f93ca089a7839b3b0
+git_dirty: True
+cmd: scripts/exact_sdf_validation.py poses --outdir experiments/2026-11-22_exact_sdf_validation --examples general/11356 puzzle/key_light_1 general/16505
+pid: 441231
+=== start s3 ===
+time: 2026-11-22T23:32:11-08:00
+uptime: 23:32:11 up  3:20,  1 user,  load average: 1.59, 6.58, 9.01
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+1 %, 1617 MiB
+power_profile: performance
+git_hash: acec32f897e985362392899f93ca089a7839b3b0
+git_dirty: True
+cmd: scripts/exact_sdf_validation.py s3 --outdir experiments/2026-11-22_exact_sdf_validation --workers 5
+pid: 443765
+=== end s3 ===
+time: 2026-11-22T23:40:22-08:00
+uptime: 23:40:22 up  3:28,  1 user,  load average: 3.49, 4.84, 7.22
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 1695 MiB
+power_profile: performance
+git_hash: acec32f897e985362392899f93ca089a7839b3b0
+git_dirty: True
+cmd: scripts/exact_sdf_validation.py s3 --outdir experiments/2026-11-22_exact_sdf_validation --workers 5
+pid: 443765
+=== start eps ===
+time: 2026-11-22T23:40:23-08:00
+uptime: 23:40:23 up  3:28,  1 user,  load average: 3.49, 4.84, 7.22
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+2 %, 1695 MiB
+power_profile: performance
+git_hash: acec32f897e985362392899f93ca089a7839b3b0
+git_dirty: True
+cmd: scripts/exact_sdf_validation.py eps --outdir experiments/2026-11-22_exact_sdf_validation --n 30 --eps 0.0025 0.005 0.01 --T 30
+pid: 454123
+=== end eps ===
+time: 2026-11-22T23:43:43-08:00
+uptime: 23:43:43 up  3:31,  1 user,  load average: 7.89, 6.76, 7.54
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 1618 MiB
+power_profile: performance
+git_hash: acec32f897e985362392899f93ca089a7839b3b0
+git_dirty: True
+cmd: scripts/exact_sdf_validation.py eps --outdir experiments/2026-11-22_exact_sdf_validation --n 30 --eps 0.0025 0.005 0.01 --T 30
+pid: 454123

@@ -1,0 +1,2 @@
+env -u PYTHONPATH OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/cv_v2.py --train-dir experiments/2026-11-24_run05_train --variants gnn_survival,mlp_survival --outdir experiments/2026-11-24_run06_cv/gnn_survival_mlp_survival --seeds 100,101,102,103,104
+scripts/cv_v2.py --train-dir experiments/2026-11-24_run05_train --variants gnn_survival,mlp_survival --outdir experiments/2026-11-24_run06_cv/gnn_survival_mlp_survival --seeds 100,101,102,103,104

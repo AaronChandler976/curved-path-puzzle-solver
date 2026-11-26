@@ -1,0 +1,1 @@
+python scripts/inspect_dataset.py --root data/raw/multi_assembly/multi_assembly --out experiments/2026-11-21_inspect_multi/assemblies.jsonl --summary experiments/2026-11-21_inspect_multi/summary.json --workers 6

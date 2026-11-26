@@ -1,0 +1,21 @@
+{
+ "wd": 0.0001,
+ "dropout": 0.1,
+ "batch": 32,
+ "max_epochs": 150,
+ "patience": 25,
+ "smooth": 5,
+ "min_epochs": 10,
+ "tau": 0.1,
+ "hidden": 64,
+ "lr": 0.001,
+ "layers": 2,
+ "lam": 1.0,
+ "seed": 2,
+ "variant": "gnn_survival_listnet",
+ "best_val_cost": 1675.3837089061738,
+ "best_epoch": 26,
+ "epochs_run": 52,
+ "train_s": 78.11742806434631,
+ "n_params": 23560
+}

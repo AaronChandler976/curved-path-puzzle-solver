@@ -1,0 +1,1 @@
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/build_dataset_v1.py --seed 0 --procs 8

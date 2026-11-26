@@ -1,0 +1,5 @@
+[2026-11-24 18:43:00] pn_gnn_survival: train 1031 states (235 asm), val 234 states (60 asm), states with >= 1 success only
+[2026-11-24 18:43:02] grid_h64_lr0.001_L2_s0: best smoothed val cost 840.0 s at epoch 2 (3 epochs, 1 s)
+[2026-11-24 18:43:02] pn_gnn_survival: chosen {'hidden': 64, 'lr': 0.001, 'layers': 2, 'lam': None} (mean val cost 840.0)
+[2026-11-24 18:43:02] seed100: best smoothed val cost 886.9 s at epoch 0 (3 epochs, 0 s)
+[2026-11-24 18:43:02] pn_gnn_survival: DONE

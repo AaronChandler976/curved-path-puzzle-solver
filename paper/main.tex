@@ -1,0 +1,385 @@
+% CMPE 258 final report. IEEE conference format (IEEEtran), compiled with tectonic (conda env `paper`).
+% Every number in this file must come from a logged run; the source of each table/figure is given in a comment.
+\documentclass[conference]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+
+\newcommand{\videourl}{VIDEO-LINK-PLACEHOLDER} % NEEDS_AARON: replace with the YouTube/Drive link
+\newcommand{\repourl}{https://github.com/AaronChandler976/curved-path-puzzle-solver}
+
+\begin{document}
+\title{Cost-Aware Query Ordering for Assembly-by-Disassembly\\with a Tight-Clearance SE(3) Planner}
+\author{\IEEEauthorblockN{Aaron Chandler}
+\IEEEauthorblockA{CMPE 258 Deep Learning, San Jos\'e State University\\
+{\footnotesize Code: \href{\repourl}{\texttt{\repourl}}}\\ {\footnotesize Video: \href{\videourl}{\texttt{\videourl}}}}}
+\maketitle
+
+\begin{abstract}
+% 150--250 words, with the key test numbers from reports/final_eval/ (filled in Phase 5).
+Robotic disassembly for recycling and repair needs removal sequences for real products, and assembly-by-disassembly
+finds them by asking a motion planner, part by part, whether a part can be removed. With a tight-clearance SE(3)
+planner such as CMG-RRT these queries range from hundredths of a second to a 30\,s timeout, so the query order sets
+the planning cost. Prior learned guidance predicts only removability. We instead predict each query's success
+probability and censored cost with a graph neural network and a discrete-time survival head, and query parts in
+order of probability over cost. We built 41{,}913 planner-labelled queries on 2{,}022 Fusion~360 assemblies
+reached by verified disassemblies, pre-registered the evaluation, and tested once on 347 fresh assemblies, in replay
+and live (17{,}697 full disassemblies). The cost-aware ranker is 34--39\% cheaper than the open-source ASAP model in
+replay and 9--21\% cheaper live. It is cheaper than removability-only ordering with the same encoder in the main
+replay analysis (ratio 0.887, Holm $p<10^{-6}$), but not robustly across evaluations. It does not beat a
+fewest-contacts heuristic (replay 1.055 [0.887, 1.257], live 0.915 [0.819, 1.015]). The loss comes from a few
+confident timeouts on larger, unseen assemblies. An untrained two-pass budget policy cuts planner time by 72\% in
+replay and about 50\% live for every ordering. The ranker itself costs 2.5\,ms per state.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+Automated disassembly for repair, remanufacturing and recycling (for example, battery-module teardown) needs a
+feasible removal sequence for products described by CAD. Assembly-by-disassembly (AbD)~\cite{tian2022ata} finds one
+by repeatedly asking a motion planner whether a part can be moved out of the remaining assembly. With a planner that
+handles tight clearances and rotations, such as CMG-RRT~\cite{livnat_cmgrrt}, those queries are expensive and very
+uneven: on our data a straight pull is certified in about 0.04\,s, while a query that fails runs to its 30\,s budget,
+and a failure does not prove that the part is stuck. The order in which parts are queried therefore decides most of
+the planning time.
+
+Learned AbD guidance so far predicts \emph{removability} and counts tests~\cite{cebulla2023,tian2024asap}. That is the
+right target when tests cost the same. They do not here: the expected time to the first success depends on how
+long each query takes and on how often it times out. We therefore predict, for every remaining part, the full
+distribution of the planner's time to success with a censoring-aware survival head on a graph neural network, and
+query in the order that minimises expected cost. We evaluate it on real CAD assemblies with a pre-registered protocol
+and a fresh test set, against heuristics, an MLP and the open-source ASAP model, all with the same planner.
+
+This version follows the course feedback on our proposal. We moved from puzzles to real mechanical CAD
+(Fusion~360 assemblies), and we take states only from verified disassemblies, not from backward rollouts. We train a
+GNN to rank which part gets the next planner query, and we compare random, geometric/contact heuristics, an MLP and
+the GNN, all with the same planner and budget. Battery modules remain the motivating application; we did not evaluate
+battery CAD.
+
+\noindent\textbf{Contributions.}
+\begin{itemize}
+\item A cost-aware ranker for AbD: a GNN over the contact graph with a discrete-time survival head that treats planner
+timeouts as censored, giving both $p$ and the expected cost $c$ for the $p/c$ order.
+\item An oracle and dataset for the question: an exact-SDF CMG-RRT adapter with a certified straight-pull stage (fixing a
+start-pose bug and 18.5\% path-invalid successes of the original adapter), and 41{,}913 labelled queries on 2{,}022 real
+assemblies whose states come from verified disassemblies.
+\item A pre-registered, single-shot test on 347 fresh assemblies with replay and live evaluation (17{,}697 live
+disassemblies). Cost-aware ordering is 34--39\% cheaper than ASAP in replay and 9--21\% cheaper live. It is cheaper than
+removability-only ordering with the same GNN in the main replay analysis (11\%), but not robustly across evaluations.
+It does not beat a fewest-contacts heuristic. A failure analysis finds the loss in a few confident timeouts on larger,
+unseen assemblies.
+\item A negative and a practical finding reported as such: validation favoured the most-tuned variants, which the
+out-of-sample checks did not confirm, and an untrained two-pass budget policy cuts planner time by 72\% for every ordering.
+\end{itemize}
+
+\section{Related Work}
+\label{sec:related}
+\textbf{Assembly-by-disassembly and learned part ordering.}
+Assemble Them All~\cite{tian2022ata} plans assembly by disassembling real CAD assemblies with a physics-based
+planner and released a large Fusion~360 benchmark, which our data comes from. Cebulla et al.~\cite{cebulla2023} showed
+that a GNN predicting each part's removability can reorder the removal tests of AbD and cut failed attempts. ASAP~\cite{tian2024asap}
+guides a disassembly tree search with a GNN (PointNet~\cite{qi2017pointnet} part features and GATv2~\cite{brody2022gatv2}
+layers) trained on simulator labels, and adds gravitational stability. GRACE~\cite{atad2023} and graph-transformer
+models predict sequences step by step. These methods learn \emph{whether} a part comes out and count tests. None of
+them models \emph{how long} a test takes or treats a planner timeout as a censored observation, and their testers are
+discretised physics simulators rather than a continuous tight-clearance planner.
+
+\textbf{Tight-clearance motion planning.} CMG-RRT~\cite{livnat_cmgrrt} plans the separation of tightly fitting parts by
+following the critical manifold of contact with an SDF-based oracle. It handles motions that need rotation, but a
+query can take from milliseconds to the full budget, which is what makes query ordering matter.
+
+\textbf{Predicting planner cost.} Odense et al.~\cite{odense2022} predict the runtime of sampling-based planners with a
+GNN to pick a planner from a portfolio. Jiang et al.~\cite{jiang2026checkorder} order narrow-phase collision checks by an
+expected-time criterion with learned priors, one level below our queries. We bring cost prediction to the AbD test
+order. Learned survival models~\cite{gensheimer2019} give both quantities that the classical optimal order for
+sequential tests needs~\cite{simon1975}: the success probability and the expected (censored) cost.
+
+\textbf{Learning to rank.} Our tail-aware objective relaxes the order's replay cost with NeuralSort~\cite{grover2019neuralsort};
+a listwise ranking loss~\cite{cao2007listnet} is an exploratory alternative.
+
+\section{Method}
+\label{sec:method}
+\subsection{Problem: assembly-by-disassembly with expensive queries}
+An assembly is a set of rigid parts $\mathcal{P}$ in their assembled poses. A state $S\subseteq\mathcal{P}$ is the set
+of parts still present. At each state, assembly-by-disassembly (AbD)~\cite{tian2022ata} looks for one part $i\in S$
+that the motion planner can move out of the others' way; the part is removed and the search continues on
+$S\setminus\{i\}$, so the reversed sequence is an assembly plan. Each test (a \emph{query}) is expensive: our oracle
+returns \textsc{success} with a collision-free SE(3) path or \textsc{unsolved} when its budget $T$ runs out. Because a
+sampling planner cannot prove that a part is stuck, an unsolved query is a right-censored observation of the time the
+planner would have needed, not an infeasibility label. The cost of a state under a query order $\pi$ is
+\begin{equation}
+C(\pi;S)=\sum_{k=1}^{n} t_{\pi_k}\prod_{j<k}\bigl(1-y_{\pi_j}\bigr),
+\label{eq:cost}
+\end{equation}
+the planner time spent until the first success ($y_i\in\{0,1\}$ success, $t_i$ query time). The ranker's job is to
+choose $\pi$ so that the total over all visited states is small.
+
+\subsection{Oracle: straight-pull pre-check, then CMG-RRT}
+The oracle (``oracle v2'') tests one moving part against the union of the remaining parts as a single static
+obstacle. Collision is decided with an exact per-part signed distance field (mesh distance with a winding-number
+sign); the union's SDF is the minimum of the parts' SDFs, and penetration below a contact tolerance
+$\varepsilon=0.005$ (unit frame) counts as contact. Stage~1 sweeps the part straight along each candidate escape
+direction, certified at a step of at most $\varepsilon/2$. If no straight pull is free, stage~2 runs
+CMG-RRT~\cite{livnat_cmgrrt}, a tight-clearance planner that follows the contact manifold with rotations, unchanged
+except for our collision adapter. Every success is re-validated edge by edge at step $\le\varepsilon/2$. The query
+cost is the planner wall-clock time of both stages; the budget is $T=30$\,s.
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[node distance=0.35cm and 0.55cm, >={Stealth[length=2mm]},
+  box/.style={draw,rounded corners=2pt,align=center,font=\footnotesize,minimum height=0.95cm,inner sep=3pt},
+  ours/.style={box,fill=blue!8}, orc/.style={box,fill=orange!10}]
+\node[box] (cad) {Fusion 360\\assembly, state $S$};
+\node[box,right=of cad] (feat) {contact graph\\18 node / 5 edge\\features};
+\node[ours,right=of feat] (enc) {GINE encoder\\$L$ residual layers\\+ LayerNorm};
+\node[ours,right=of enc] (head) {survival head\\hazards $h_{i1..K}$\\$K=8$ log bins};
+\node[ours,right=of head] (pc) {$p_i=1-S_{iK}$\\$c_i=\mathbb{E}[\min(t_i,T)]$};
+\node[box,right=of pc] (ord) {query order\\$\downarrow p_i/c_i$};
+\node[orc,below=0.9cm of ord] (pre) {straight-pull\\pre-check\\(step $\le\varepsilon/2$)};
+\node[orc,left=1.3cm of pre] (rrt) {CMG-RRT\\exact union SDF\\budget $T$};
+\node[box,left=1.3cm of rrt] (rem) {first success:\\remove part,\\next state};
+\draw[->] (cad) -- (feat); \draw[->] (feat) -- (enc); \draw[->] (enc) -- (head); \draw[->] (head) -- (pc); \draw[->] (pc) -- (ord);
+\draw[->] (ord) -- node[right,font=\scriptsize]{next part} (pre);
+\draw[->] (pre) -- node[above,font=\scriptsize]{blocked} (rrt);
+\draw[->] (rrt) -- node[above,font=\scriptsize]{success} (rem);
+\draw[->] (pre.south) -- ++(0,-0.35) -| node[pos=0.25,below,font=\scriptsize]{free pull} (rem.south);
+\draw[->] (rem.west) -| node[pos=0.75,left,font=\scriptsize]{} (cad.south);
+\node[font=\scriptsize,align=left,anchor=north west] at ([yshift=-0.15cm,xshift=-1.2cm]feat.south west) {training: censoring-aware survival NLL\\on every labelled query};
+\end{tikzpicture}
+\caption{Architecture and pipeline. Blue: learned ranker. Orange: oracle v2 (an unsolved CMG-RRT query is censored at
+$T$, never ``infeasible''). Each state's parts are queried in descending $p/c$ until one comes out.}
+\label{fig:arch}
+\end{figure*}
+
+\subsection{Ranker: GNN with a censoring-aware survival head}
+Each state is a contact graph: nodes are present parts, directed edges join parts in contact. Node features (18) are
+log volume, area, bounding-box extents, position relative to the sub-assembly centre and its norm, contact count and
+fraction, a 6-bin contact-normal histogram and the number of present parts; edge features (5) are the mean
+``away'' direction, contact fraction and contact area. The encoder is a residual GINE network~\cite{hu2020pretrain}
+with LayerNorm. The head predicts, for $K=8$ log-spaced time bins $e_1<\dots<e_K=T$, the discrete hazard
+$h_{ik}=\sigma(z_{ik})$ of part $i$ succeeding in bin $k$~\cite{gensheimer2019}. With $b_i$ the bin of an observed
+success and $c_i$ the censoring time of an unsolved query, the loss is
+\begin{equation}
+\begin{aligned}
+\mathcal{L}_{\text{surv}}=&-\sum_{i:\,y_i=1}\Bigl[\sum_{j<b_i}\log(1-h_{ij})+\log h_{ib_i}\Bigr]\\
+&-\sum_{i:\,y_i=0}\sum_{j:\,e_j\le c_i}\log(1-h_{ij}).
+\end{aligned}
+\end{equation}
+From the survival curve $S_{ik}=\prod_{j\le k}(1-h_{ij})$ we read $p_i=1-S_{iK}$ (success within $T$) and the expected
+query cost $c_i=\mathbb{E}[\min(t_i,T)]=\sum_k w_k (S_{i,k-1}+S_{ik})/2$. Parts are queried in descending $p_i/c_i$,
+which minimises the expected cost of finding the first success among independent tests~\cite{simon1975}.
+
+\subsection{Tail-aware objective}
+Replay totals are dominated by a few states in which unsolved queries are tried before the first success. The
+tail-aware variant adds the replay cost~(\ref{eq:cost}) of the model's own order, made differentiable with the
+NeuralSort relaxation~\cite{grover2019neuralsort}: with scores $s_i=\log p_i-\log c_i$ and the soft permutation
+$\hat P$, $\tilde y=\hat P y$, $\tilde t=\hat P t$ and
+$\mathcal{L}=\mathcal{L}_{\text{surv}}+\lambda\,\overline{\sum_k \tilde t_k\prod_{j<k}(1-\tilde y_j)}/T$
+($\tau=0.1$, $\lambda\in\{0.1,1\}$).
+
+\subsection{Data: states reached by verified disassemblies}
+Following the course feedback, the states are not generated by random backward rollouts. They come from
+\emph{known feasible disassemblies} of real CAD products. We start from the assembled Fusion~360 model (Assemble Them
+All~\cite{tian2022ata}), query \emph{every} present part at each visited state, remove one planner-verified success
+chosen uniformly at random (logged seed), and repeat. Every visited state is therefore reachable by a validated
+removal sequence, and every query in it has a label: its outcome and its cost under both oracle stages, so the
+``pre-check $\rightarrow$ CMG-RRT'' and ``CMG-RRT only'' configurations can both be replayed.
+The label set \texttt{pilot\_v2} has 2{,}022 assemblies with 3--12 parts and 41{,}913 queries ($T=30$\,s, 12.6\,h on 10
+CPU workers). Three sources make it up: 1{,}328 assemblies with 3--8 parts, 255 clean assemblies with 9--12 parts,
+and 439 assemblies whose CAD has small interpenetrations. For those we allow a per-pair penetration up to the
+measured start depth plus $\varepsilon$, under validated caps; 919 assemblies exceed the caps and are excluded.
+A machine-load guard pauses dispatch while the desktop is busy, so query times are clean timing labels. 5.1\% of
+queries overlapped load and were re-run; none remained confounded.
+The split groups near-duplicate assemblies (identical or near-identical part sets) and puts \emph{only fresh
+assemblies} (none labelled in our earlier development rounds) into the test set. 41 of them were used in small pilots
+that set oracle parameters shared by all methods, and we report a pre-registered check without them. The test set has 347 assemblies (51\% with 9--12 parts, 63\% with
+tolerated interpenetration), 250 val and 1{,}425 train. The test set thus measures transfer to larger and harder
+products. The evaluation protocol was pre-registered before any model was trained on these data.
+
+\section{Experiments}
+\label{sec:exp}
+\subsection{Setup}
+Hardware: AMD Ryzen 9 9900X (12 cores), RTX 5070 Ti (16\,GB), 64\,GB RAM. Planner queries run on 10 single-threaded CPU
+workers. An idle guard pauses dispatch while other processes use more than 0.5 cores, and it records how busy the
+machine was during each query; confounded queries are re-run with the same seed. Models are trained with PyTorch and
+PyG on the GPU (AdamW, weight decay $10^{-4}$, dropout 0.1, batch 32 states, $\le150$ epochs). Every variant gets the
+same grid (hidden $\{64,128\}$ $\times$ lr $\{10^{-3},3\cdot10^{-4}\}$ $\times$ layers $\{2,3\}$), selected by
+validation replay cost (5-epoch trailing mean, three grid seeds), and is retrained with 5 seeds.
+
+\textbf{Metrics.} Primary: total planner time to disassemble, summed over the test set, in \emph{replay} (re-using the
+logged cost of every query, so every ordering is scored on the same planner outcomes) and \emph{live} (fresh queries).
+Co-reported: the per-assembly Hodges--Lehmann (HL) median difference with wins/ties/losses. CIs are bootstrapped over
+assemblies; tests are two-sided Wilcoxon signed-rank tests, Holm-corrected over 11 registered comparisons. The decision
+rule was fixed in advance: GNN-Surv beats the best heuristic (chosen on validation: fewest contacts) only if the ratio-of-totals
+CI lies below 1 \emph{and} the Holm-adjusted test is significant with a negative HL difference.
+
+\subsection{Main result (test, replay and live)}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/totals_replay_live.pdf}
+\caption{Total planner time on the test set (bars) with 95\% bootstrap CIs over assemblies. Blue: our trained
+rankers; orange: ASAP; gray: untrained orderings; dashed: fewest contacts.}
+\label{fig:totals}
+\end{figure}
+\begin{table}[t]
+\centering
+\caption{Total planner time (s) on the 347-assembly test set, evaluated once. Replay re-uses logged query costs over
+2{,}195 states with a success; live runs fresh queries over full disassemblies. Trained models are 5-seed means. Ratio
+is vs fewest contacts with a bootstrap 95\% CI over assemblies.}
+\label{tab:main}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrr}
+\toprule
+ordering & replay & ratio & live & ratio \\
+\midrule
+random & 22{,}186 & 3.08 & 26{,}464 & 1.15\\
+ASAP zero-shot~\cite{tian2024asap} & 12{,}387 & 1.72 & 26{,}667 & 1.16\\
+ASAP retrained & 11{,}500 & 1.60 & 23{,}212 & 1.01\\
+outside-in & 9{,}130 & 1.27 & 23{,}239 & 1.01\\
+fewest contacts & 7{,}202 & 1 & 23{,}002 & 1\\
+MLP-BCE & 7{,}672 & 1.07 & 21{,}139 & 0.92\\
+MLP-Surv & 7{,}983 & 1.11 & 20{,}827 & 0.91\\
+GNN-BCE & 8{,}563 & 1.19 & 20{,}131 & 0.88\\
+\textbf{GNN-Surv} & \textbf{7{,}595} & \textbf{1.05} & \textbf{21{,}038} & \textbf{0.91}\\
+GNN-Surv-Tail & 7{,}415 & 1.03 & 19{,}885 & 0.86\\
+PN-GNN-Surv & 7{,}771 & 1.08 & 20{,}805 & 0.90\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+GNN-Surv vs fewest contacts: replay 1.055 [0.887, 1.257], Holm $p=0.43$; live 0.915 [0.819, 1.015], Holm $p=0.13$.
+
+GNN-Surv takes 7{,}595\,s against 22{,}186\,s for random, 12{,}387\,s for ASAP zero-shot and 11{,}500\,s for ASAP
+retrained on our labels with its own objective (ratios 0.342, 0.613 and 0.660; all Holm $p<10^{-5}$, HL $<0$). Against
+fewest contacts (7{,}202\,s) the ratio is 1.055 [0.887, 1.257] with Holm $p=0.43$, so by the registered rule GNN-Surv
+\textbf{does not beat} the heuristic. The same holds on the 300 test assemblies that were never used in any pilot (0.999
+[0.829, 1.226]).
+
+\subsection{Ablations}
+With the same GNN, survival $p/c$ ordering costs 0.887 [0.785, 0.999] of BCE $p$ ordering in the main replay
+analysis (Holm $p=6\cdot10^{-7}$, HL $-0.21$\,s). The evidence for modelling cost is mixed, though. On the 300 clean
+test assemblies the ratio CI reaches 1.001. Live, the survival head is cheaper only on the typical assembly
+(HL $-0.06$\,s, Holm $p=0.035$; total 1.045 [0.955, 1.150]). For the MLP, survival and BCE do not differ. GNN vs MLP
+(survival head: 0.951 [0.831, 1.084]), PointNet features and the tail-aware objective show no detectable difference on
+test. On validation the tail-aware and PointNet variants looked best. A 5-fold group cross-validation over train+val with
+inner early stopping already reduced the tail-aware variant's apparent advantage, and the test removed it.
+
+\subsection{Qualitative example}
+Fig.~\ref{fig:demo} shows the last state of a live test disassembly (assembly 01310, GNN-Surv seed 101). The ranker
+puts part 7 first ($p=0.97$, $c=1.3$\,s). Its straight pull is blocked, and CMG-RRT finds a path that rotates it by up
+to 102$^\circ$ in 18.4\,s, longer than the predicted cost but a success. This removal needs the curved planner.
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/demo_01310.pdf}
+\caption{A curved removal found by CMG-RRT in a test assembly, drawn from the logged path
+(\texttt{experiments/2026-11-26\_demo\_01310}, a re-run of the live disassembly with saved paths and the same seeds).}
+\label{fig:demo}
+\end{figure*}
+
+\subsection{Live evaluation}
+Every method also disassembled all 347 test assemblies with fresh planner queries (17{,}697 runs; confounded runs re-run,
+none left confounded). The verdict is the same: GNN-Surv / fewest contacts $=0.915$ [0.819, 1.015], Holm $p=0.13$,
+\textbf{does not beat}. GNN-Surv is cheaper than ASAP zero-shot (0.789 [0.699, 0.880]) and ASAP retrained (0.906 [0.827,
+0.994]), both with Holm $p<0.05$ and negative HL. Live totals are about three times the replay totals because live
+counts every query of every disassembly, including runs that get stuck. An exploratory ListNet-trained variant was the
+cheapest live ordering (0.797 vs fewest contacts) but not in replay, so we treat it as a lead, not a result.
+
+\subsection{Budget policy (exploratory)}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/budget_policy.pdf}
+\caption{Full budget ($T=30$\,s) vs a 3\,s first pass, replay and live (live GNN-Surv with the policy: seed 101).}
+\label{fig:budget}
+\end{figure}
+Querying every part first with a 3\,s budget, and retrying at 30\,s only if none succeeds, reduces the replayed total of
+fewest contacts from 7{,}202\,s to 2{,}008\,s ($-72\%$) and that of GNN-Surv to 1{,}904\,s. Under the same policy the two do
+not differ detectably (0.948 [0.820, 1.095]). Live the saving is about 50\%: stuck runs pay the retry, and the planner
+overruns short budgets (below). The policy was chosen on validation after registration and is reported as
+exploratory.
+
+\subsection{Latency and memory}
+\begin{table}[t]
+\centering
+\caption{Ranker cost (forward pass on collated inputs, median; 200 validation states). Features: 2.4\,ms per state from
+the cached contact graph. The profile run was flagged by the idle guard's load criterion; outside load was
+$\le0.36$ cores.}
+\label{tab:latency}
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lrrrr}
+\toprule
+model & params & CPU (ms) & GPU (ms) & GPU MB\\
+\midrule
+MLP-Surv & 22.8k & 0.04 & 0.08 & 10\\
+GNN-Surv & 32.4k & 0.12 & 0.24 & 11\\
+PN-GNN-Surv & 61.2k & 1.89 & 0.23 & 904\\
+ASAP-retrained & 1.70M & 7.07 & 0.72 & 3{,}849\\
+\bottomrule
+\end{tabular}
+\end{table}
+GNN-Surv has 32{,}392 parameters and takes 0.12\,ms per state on one CPU thread (0.24\,ms on the GPU at batch 1, 11\,MB
+peak), plus 2.4\,ms to build the state's features from the cached contact graph. ASAP's model has 1.7\,M parameters and
+takes 7.0\,ms. One avoided timeout (30\,s) equals about 12{,}000 ranker calls. (The profile run was flagged by the idle
+guard's load criterion; measured outside load stayed $\le0.36$ cores.)
+
+\section{Failure Analysis, Negative Results and Limitations}
+\label{sec:fail}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/failure_scatter.pdf}
+\caption{Test states (replay) where GNN-Surv (seed 101) paid more than fewest contacts. Blue: it queried a part that
+timed out before the first success.}
+\label{fig:fail}
+\end{figure}
+\textbf{Where the cost goes.} The costliest 5\% of test states hold 89\% of fewest contacts' total and 77\% of
+GNN-Surv's. Against fewest contacts, GNN-Surv is cheaper on 436 states (saving 3{,}240\,s) and costlier on 368 (losing
+3{,}404\,s). Of the loss, 3{,}153\,s comes from 85 states in which it queried a part that ran to the full budget before
+the first success. In each of its ten costliest states, the first part it queried had predicted $p\ge0.90$ and
+$c\le3.7$\,s and then ran unsolved for more than 30\,s. These are confident errors, not ties broken badly.
+
+\textbf{Plausible cause (not tested): shift in size and geometry.} The training set is 89.5\% 3--8-part
+assemblies; the test set is 51\%
+9--12-part and 63\% assemblies whose CAD interpenetrates slightly (tolerated per pair). The 20 largest losses are all
+in the fresh sources, 15 of them with 9--12 parts. Validation (80\% small assemblies) had fewer than 30 large assemblies in
+every size subset, and the cross-validation was only summarised in aggregate, so neither revealed this. Calibration on the test set is still good on average
+(ECE 0.038) and the within-state C-index is 0.674 (ASAP: 0.593), so the failure is in the tail, where it matters.
+
+\textbf{Negative results along the way.}
+(i) The original CMG-RRT adapter never tested the straight pull from the start pose. 123 of 124 linear-free queries it
+missed were solved once that test was added. 18.5\% of its successes penetrated parts at fine resolution, mostly by less
+than 10\% of $\varepsilon$, and the goal edge was checked at a 4$\varepsilon$ step.
+(ii) On a bundled tight assembly (16505) the learned SDF of the original code ``solved'' 3/3 runs, but every path penetrated the
+obstacle by up to 0.149 (against $\varepsilon=0.005$) when checked exactly. The exact detector solved 0/3: neither solved
+it validly.
+(iii) 95--98\% of successes are straight pulls, so CMG-RRT itself decides only a few percent of removals. Its
+timeouts, however, dominate the cost.
+(iv) The authors' hardest bundled puzzle (elk) was not solved by the public, single-process CMG-RRT in one 4\,h run
+with the learned SDF (76{,}901 iterations, idle-guarded). The paper reports a 156-minute mean using 16 cores and a
+parallel exploration that the public code does not include.
+(v) Validation optimism: the variant with the largest grid looked best on validation and was not better out of
+sample.
+
+\textbf{Limitations.} The sequences are planner-found, not ground truth, and 156 of 2{,}022 assemblies get stuck
+before full disassembly. 919 interpenetrating assemblies exceed our tolerance caps and are excluded. A query is tested
+against the union of the remaining parts as one static obstacle (no grasping, gravity or fixtures). Results are for one
+planner and one budget ($T=30$\,s). That budget is soft: our adapter checks the time limit once per RRT iteration, so
+unsolved test queries ran a median 31.2\,s (max 73.2\,s), and 24 successes took longer than 30\,s. The same holds for
+the 3\,s first pass live (median 4.2\,s for failed queries). Every ordering faces the same behaviour.
+
+\section{Conclusion and Future Work}
+\label{sec:concl}
+Modelling what a planner query costs, including the timeouts, makes a learned AbD ranker cheaper than ranking by
+removability and than ASAP's model, on a fresh, pre-registered test set with a tight-clearance SE(3) planner. It did
+not beat a simple contact heuristic on larger, unseen products, because of a few confident timeouts. An untrained
+budget policy saved far more. Next steps are to train and calibrate on large assemblies (or condition on size), and to
+learn per-part budgets from the predicted survival curve instead of a fixed first-pass limit.
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+\end{document}

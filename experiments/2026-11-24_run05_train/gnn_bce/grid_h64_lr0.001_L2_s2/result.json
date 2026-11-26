@@ -1,0 +1,21 @@
+{
+ "wd": 0.0001,
+ "dropout": 0.1,
+ "batch": 32,
+ "max_epochs": 150,
+ "patience": 25,
+ "smooth": 5,
+ "min_epochs": 10,
+ "tau": 0.1,
+ "hidden": 64,
+ "lr": 0.001,
+ "layers": 2,
+ "lam": null,
+ "seed": 2,
+ "variant": "gnn_bce",
+ "best_val_cost": 1883.6259873867034,
+ "best_epoch": 11,
+ "epochs_run": 37,
+ "train_s": 46.99818158149719,
+ "n_params": 23105
+}

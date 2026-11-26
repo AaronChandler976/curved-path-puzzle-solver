@@ -1,0 +1,252 @@
+[
+ {
+  "fold": 0,
+  "n_states": 1354,
+  "n_assemblies": 330,
+  "variant": "heuristics",
+  "random": 9011.888967536255,
+  "outside_in": 6402.393229722977,
+  "fewest_contacts": 4098.4452250003815,
+  "optimal": 229.83761477470398
+ },
+ {
+  "fold": 0,
+  "variant": "gnn_survival_listnet",
+  "seed": 100,
+  "total": 3483.8445744514465,
+  "ratio_vs_fewest": 0.8500405356646245,
+  "best_epoch": 17
+ },
+ {
+  "fold": 0,
+  "variant": "gnn_survival_listnet",
+  "seed": 101,
+  "total": 2656.5799791812897,
+  "ratio_vs_fewest": 0.6481921395401942,
+  "best_epoch": 5
+ },
+ {
+  "fold": 0,
+  "variant": "gnn_survival_listnet",
+  "seed": 102,
+  "total": 2948.3538529872894,
+  "ratio_vs_fewest": 0.7193834957223357,
+  "best_epoch": 5
+ },
+ {
+  "fold": 0,
+  "variant": "gnn_survival_listnet",
+  "seed": 103,
+  "total": 2549.6021552085876,
+  "ratio_vs_fewest": 0.6220900891040578,
+  "best_epoch": 4
+ },
+ {
+  "fold": 0,
+  "variant": "gnn_survival_listnet",
+  "seed": 104,
+  "total": 3134.252919435501,
+  "ratio_vs_fewest": 0.7647419319688991,
+  "best_epoch": 12
+ },
+ {
+  "fold": 1,
+  "n_states": 1347,
+  "n_assemblies": 334,
+  "variant": "heuristics",
+  "random": 7225.564429831597,
+  "outside_in": 4552.399657249451,
+  "fewest_contacts": 3492.410881280899,
+  "optimal": 164.37017488479614
+ },
+ {
+  "fold": 1,
+  "variant": "gnn_survival_listnet",
+  "seed": 100,
+  "total": 2742.360561609268,
+  "ratio_vs_fewest": 0.7852342278247233,
+  "best_epoch": 8
+ },
+ {
+  "fold": 1,
+  "variant": "gnn_survival_listnet",
+  "seed": 101,
+  "total": 2227.925226211548,
+  "ratio_vs_fewest": 0.637933307948697,
+  "best_epoch": 4
+ },
+ {
+  "fold": 1,
+  "variant": "gnn_survival_listnet",
+  "seed": 102,
+  "total": 2650.6188678741455,
+  "ratio_vs_fewest": 0.7589653560184727,
+  "best_epoch": 5
+ },
+ {
+  "fold": 1,
+  "variant": "gnn_survival_listnet",
+  "seed": 103,
+  "total": 2507.873883485794,
+  "ratio_vs_fewest": 0.7180924492383869,
+  "best_epoch": 5
+ },
+ {
+  "fold": 1,
+  "variant": "gnn_survival_listnet",
+  "seed": 104,
+  "total": 2158.938581466675,
+  "ratio_vs_fewest": 0.6181800065503313,
+  "best_epoch": 8
+ },
+ {
+  "fold": 2,
+  "n_states": 1355,
+  "n_assemblies": 329,
+  "variant": "heuristics",
+  "random": 9327.251165198055,
+  "outside_in": 5620.884238243103,
+  "fewest_contacts": 3858.482245206833,
+  "optimal": 264.463383436203
+ },
+ {
+  "fold": 2,
+  "variant": "gnn_survival_listnet",
+  "seed": 100,
+  "total": 3867.4173080921173,
+  "ratio_vs_fewest": 1.0023156936633268,
+  "best_epoch": 13
+ },
+ {
+  "fold": 2,
+  "variant": "gnn_survival_listnet",
+  "seed": 101,
+  "total": 4204.73784828186,
+  "ratio_vs_fewest": 1.0897388094775247,
+  "best_epoch": 30
+ },
+ {
+  "fold": 2,
+  "variant": "gnn_survival_listnet",
+  "seed": 102,
+  "total": 4149.097182750702,
+  "ratio_vs_fewest": 1.0753184591959397,
+  "best_epoch": 36
+ },
+ {
+  "fold": 2,
+  "variant": "gnn_survival_listnet",
+  "seed": 103,
+  "total": 4319.256596326828,
+  "ratio_vs_fewest": 1.1194185490142887,
+  "best_epoch": 18
+ },
+ {
+  "fold": 2,
+  "variant": "gnn_survival_listnet",
+  "seed": 104,
+  "total": 4915.339990377426,
+  "ratio_vs_fewest": 1.2739050429695422,
+  "best_epoch": 74
+ },
+ {
+  "fold": 3,
+  "n_states": 1342,
+  "n_assemblies": 327,
+  "variant": "heuristics",
+  "random": 9587.540714183695,
+  "outside_in": 5021.432595252991,
+  "fewest_contacts": 4611.645397186279,
+  "optimal": 150.0676474571228
+ },
+ {
+  "fold": 3,
+  "variant": "gnn_survival_listnet",
+  "seed": 100,
+  "total": 4337.944122552872,
+  "ratio_vs_fewest": 0.9406499739116104,
+  "best_epoch": 22
+ },
+ {
+  "fold": 3,
+  "variant": "gnn_survival_listnet",
+  "seed": 101,
+  "total": 4227.043857097626,
+  "ratio_vs_fewest": 0.9166021003429032,
+  "best_epoch": 4
+ },
+ {
+  "fold": 3,
+  "variant": "gnn_survival_listnet",
+  "seed": 102,
+  "total": 4465.272513866425,
+  "ratio_vs_fewest": 0.9682601608074286,
+  "best_epoch": 17
+ },
+ {
+  "fold": 3,
+  "variant": "gnn_survival_listnet",
+  "seed": 103,
+  "total": 3370.6093244552612,
+  "ratio_vs_fewest": 0.730890828360694,
+  "best_epoch": 22
+ },
+ {
+  "fold": 3,
+  "variant": "gnn_survival_listnet",
+  "seed": 104,
+  "total": 3749.047836780548,
+  "ratio_vs_fewest": 0.8129523226282682,
+  "best_epoch": 19
+ },
+ {
+  "fold": 4,
+  "n_states": 1374,
+  "n_assemblies": 329,
+  "variant": "heuristics",
+  "random": 7549.677487286056,
+  "outside_in": 5150.534608840942,
+  "fewest_contacts": 4360.446667909622,
+  "optimal": 171.5887212753296
+ },
+ {
+  "fold": 4,
+  "variant": "gnn_survival_listnet",
+  "seed": 100,
+  "total": 3197.0557672977448,
+  "ratio_vs_fewest": 0.7331945579855924,
+  "best_epoch": 6
+ },
+ {
+  "fold": 4,
+  "variant": "gnn_survival_listnet",
+  "seed": 101,
+  "total": 3104.369906425476,
+  "ratio_vs_fewest": 0.7119385106282464,
+  "best_epoch": 8
+ },
+ {
+  "fold": 4,
+  "variant": "gnn_survival_listnet",
+  "seed": 102,
+  "total": 3460.360966205597,
+  "ratio_vs_fewest": 0.7935794724131962,
+  "best_epoch": 4
+ },
+ {
+  "fold": 4,
+  "variant": "gnn_survival_listnet",
+  "seed": 103,
+  "total": 3303.020823955536,
+  "ratio_vs_fewest": 0.7574959804608707,
+  "best_epoch": 6
+ },
+ {
+  "fold": 4,
+  "variant": "gnn_survival_listnet",
+  "seed": 104,
+  "total": 3252.9299738407135,
+  "ratio_vs_fewest": 0.7460084302327112,
+  "best_epoch": 6
+ }
+]

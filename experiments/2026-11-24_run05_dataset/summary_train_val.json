@@ -1,0 +1,25 @@
+{
+ "splits": [
+  "train",
+  "val"
+ ],
+ "queries_read": 29469,
+ "assemblies": 1675,
+ "states": 6897,
+ "states_with_success": 6772,
+ "skipped_states": {},
+ "per_split": {
+  "train": {
+   "assemblies": 1425,
+   "states": 5867,
+   "states_with_success": 5762,
+   "queries": 25075
+  },
+  "val": {
+   "assemblies": 250,
+   "states": 1030,
+   "states_with_success": 1010,
+   "queries": 4394
+  }
+ }
+}

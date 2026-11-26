@@ -1,0 +1,202 @@
+{
+ "mlp_bce#s100": {
+  "variant": "mlp_bce",
+  "ckpt": "experiments/2026-11-24_run05_train/mlp_bce/seed100/best.pt"
+ },
+ "mlp_bce#s101": {
+  "variant": "mlp_bce",
+  "ckpt": "experiments/2026-11-24_run05_train/mlp_bce/seed101/best.pt"
+ },
+ "mlp_bce#s102": {
+  "variant": "mlp_bce",
+  "ckpt": "experiments/2026-11-24_run05_train/mlp_bce/seed102/best.pt"
+ },
+ "mlp_bce#s103": {
+  "variant": "mlp_bce",
+  "ckpt": "experiments/2026-11-24_run05_train/mlp_bce/seed103/best.pt"
+ },
+ "mlp_bce#s104": {
+  "variant": "mlp_bce",
+  "ckpt": "experiments/2026-11-24_run05_train/mlp_bce/seed104/best.pt"
+ },
+ "mlp_survival#s100": {
+  "variant": "mlp_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/mlp_survival/seed100/best.pt"
+ },
+ "mlp_survival#s101": {
+  "variant": "mlp_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/mlp_survival/seed101/best.pt"
+ },
+ "mlp_survival#s102": {
+  "variant": "mlp_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/mlp_survival/seed102/best.pt"
+ },
+ "mlp_survival#s103": {
+  "variant": "mlp_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/mlp_survival/seed103/best.pt"
+ },
+ "mlp_survival#s104": {
+  "variant": "mlp_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/mlp_survival/seed104/best.pt"
+ },
+ "gnn_bce#s100": {
+  "variant": "gnn_bce",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_bce/seed100/best.pt"
+ },
+ "gnn_bce#s101": {
+  "variant": "gnn_bce",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_bce/seed101/best.pt"
+ },
+ "gnn_bce#s102": {
+  "variant": "gnn_bce",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_bce/seed102/best.pt"
+ },
+ "gnn_bce#s103": {
+  "variant": "gnn_bce",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_bce/seed103/best.pt"
+ },
+ "gnn_bce#s104": {
+  "variant": "gnn_bce",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_bce/seed104/best.pt"
+ },
+ "gnn_survival#s100": {
+  "variant": "gnn_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_survival/seed100/best.pt"
+ },
+ "gnn_survival#s101": {
+  "variant": "gnn_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_survival/seed101/best.pt"
+ },
+ "gnn_survival#s102": {
+  "variant": "gnn_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_survival/seed102/best.pt"
+ },
+ "gnn_survival#s103": {
+  "variant": "gnn_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_survival/seed103/best.pt"
+ },
+ "gnn_survival#s104": {
+  "variant": "gnn_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_survival/seed104/best.pt"
+ },
+ "gnn_survival_tail#s100": {
+  "variant": "gnn_survival_tail",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_survival_tail/seed100/best.pt"
+ },
+ "gnn_survival_tail#s101": {
+  "variant": "gnn_survival_tail",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_survival_tail/seed101/best.pt"
+ },
+ "gnn_survival_tail#s102": {
+  "variant": "gnn_survival_tail",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_survival_tail/seed102/best.pt"
+ },
+ "gnn_survival_tail#s103": {
+  "variant": "gnn_survival_tail",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_survival_tail/seed103/best.pt"
+ },
+ "gnn_survival_tail#s104": {
+  "variant": "gnn_survival_tail",
+  "ckpt": "experiments/2026-11-24_run05_train/gnn_survival_tail/seed104/best.pt"
+ },
+ "pn_gnn_survival#s100": {
+  "variant": "pn_gnn_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/pn_gnn_survival/seed100/best.pt"
+ },
+ "pn_gnn_survival#s101": {
+  "variant": "pn_gnn_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/pn_gnn_survival/seed101/best.pt"
+ },
+ "pn_gnn_survival#s102": {
+  "variant": "pn_gnn_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/pn_gnn_survival/seed102/best.pt"
+ },
+ "pn_gnn_survival#s103": {
+  "variant": "pn_gnn_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/pn_gnn_survival/seed103/best.pt"
+ },
+ "pn_gnn_survival#s104": {
+  "variant": "pn_gnn_survival",
+  "ckpt": "experiments/2026-11-24_run05_train/pn_gnn_survival/seed104/best.pt"
+ },
+ "asap_retrained#s100": {
+  "variant": "asap_retrained",
+  "ckpt": "experiments/2026-11-24_run05_train/asap_retrained/seed100/best.pt"
+ },
+ "asap_retrained#s101": {
+  "variant": "asap_retrained",
+  "ckpt": "experiments/2026-11-24_run05_train/asap_retrained/seed101/best.pt"
+ },
+ "asap_retrained#s102": {
+  "variant": "asap_retrained",
+  "ckpt": "experiments/2026-11-24_run05_train/asap_retrained/seed102/best.pt"
+ },
+ "asap_retrained#s103": {
+  "variant": "asap_retrained",
+  "ckpt": "experiments/2026-11-24_run05_train/asap_retrained/seed103/best.pt"
+ },
+ "asap_retrained#s104": {
+  "variant": "asap_retrained",
+  "ckpt": "experiments/2026-11-24_run05_train/asap_retrained/seed104/best.pt"
+ },
+ "gatv2_survival#s100": {
+  "variant": "gatv2_survival",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gatv2_survival/seed100/best.pt"
+ },
+ "gatv2_survival#s101": {
+  "variant": "gatv2_survival",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gatv2_survival/seed101/best.pt"
+ },
+ "gatv2_survival#s102": {
+  "variant": "gatv2_survival",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gatv2_survival/seed102/best.pt"
+ },
+ "gatv2_survival#s103": {
+  "variant": "gatv2_survival",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gatv2_survival/seed103/best.pt"
+ },
+ "gatv2_survival#s104": {
+  "variant": "gatv2_survival",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gatv2_survival/seed104/best.pt"
+ },
+ "gt_survival#s100": {
+  "variant": "gt_survival",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gt_survival/seed100/best.pt"
+ },
+ "gt_survival#s101": {
+  "variant": "gt_survival",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gt_survival/seed101/best.pt"
+ },
+ "gt_survival#s102": {
+  "variant": "gt_survival",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gt_survival/seed102/best.pt"
+ },
+ "gt_survival#s103": {
+  "variant": "gt_survival",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gt_survival/seed103/best.pt"
+ },
+ "gt_survival#s104": {
+  "variant": "gt_survival",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gt_survival/seed104/best.pt"
+ },
+ "gnn_survival_listnet#s100": {
+  "variant": "gnn_survival_listnet",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gnn_survival_listnet/seed100/best.pt"
+ },
+ "gnn_survival_listnet#s101": {
+  "variant": "gnn_survival_listnet",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gnn_survival_listnet/seed101/best.pt"
+ },
+ "gnn_survival_listnet#s102": {
+  "variant": "gnn_survival_listnet",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gnn_survival_listnet/seed102/best.pt"
+ },
+ "gnn_survival_listnet#s103": {
+  "variant": "gnn_survival_listnet",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gnn_survival_listnet/seed103/best.pt"
+ },
+ "gnn_survival_listnet#s104": {
+  "variant": "gnn_survival_listnet",
+  "ckpt": "experiments/2026-11-24_run06_explore_train/gnn_survival_listnet/seed104/best.pt"
+ }
+}

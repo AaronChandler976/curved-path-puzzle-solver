@@ -1,0 +1,1 @@
+scripts/eval_v2.py --split val --methods experiments/2026-11-24_run05_eval_val_dev/methods.json --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --outdir experiments/2026-11-24_run05_eval_val_dev --md experiments/2026-11-24_run05_eval_val_dev/val_dev.md --fig-dir experiments/2026-11-24_run05_eval_val_dev/figures --boot 2000 --procs 6

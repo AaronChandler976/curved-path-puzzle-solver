@@ -1,0 +1,79 @@
+# Phase 2 exploration (VAL only): ordering keys and budget policies
+
+Script `scripts/explore_orderings.py`; raw `experiments/2026-11-24_run06_explore_orderings/results.json`. 1010 val states with ≥ 1 success, 245 assemblies, main configuration, logged costs. **Exploratory, post-registration.** Paired comparison vs the same variant's registered p/c key (ratio of totals, bootstrap CI over assemblies; HL).
+
+| variant / key | total (s, seed-mean) | seeds mean ± std | ratio vs p/c [95% CI] | HL vs p/c (s) | W/T/L |
+|---|---|---|---|---|---|
+| gnn_survival/pc | 1835 | 1835 ± 129 | 1.000 [1.000, 1.000] | +0.00 | 0/245/0 |
+| gnn_survival/p | 1805 | 1805 ± 111 | 0.983 [0.948, 1.018] | +0.00 | 21/206/18 |
+| gnn_survival/inv_c | 1841 | 1841 ± 139 | 1.003 [0.999, 1.013] | +0.00 | 3/241/1 |
+| gnn_survival/pc_risk0.5 | 1839 | 1839 ± 116 | 1.002 [0.984, 1.023] | +0.00 | 13/218/14 |
+| gnn_survival/pc_risk1 | 1833 | 1833 ± 123 | 0.999 [0.975, 1.024] | +0.00 | 17/211/17 |
+| gnn_survival/pc_risk2 | 1827 | 1827 ± 114 | 0.996 [0.971, 1.023] | +0.00 | 17/210/18 |
+| gnn_survival/pc_tail0.5 | 1831 | 1831 ± 106 | 0.998 [0.982, 1.016] | +0.00 | 10/227/8 |
+| gnn_survival/pc_tail1 | 1820 | 1820 ± 119 | 0.992 [0.966, 1.016] | +0.00 | 13/220/12 |
+| gnn_survival/trunc1 | 719 | 719 ± 91 | 0.392 [0.222, 0.572] | +0.00 | 51/181/13 |
+| gnn_survival/trunc3 | 638 | 638 ± 35 | 0.348 [0.216, 0.514] | +0.00 | 48/191/6 |
+| gnn_survival/trunc10 | 953 | 953 ± 30 | 0.519 [0.406, 0.675] | +0.00 | 45/198/2 |
+| mlp_survival/pc | 2026 | 2026 ± 170 | 1.000 [1.000, 1.000] | +0.00 | 0/245/0 |
+| mlp_survival/p | 2014 | 2014 ± 181 | 0.994 [0.959, 1.026] | +0.00 | 21/191/33 |
+| mlp_survival/inv_c | 2032 | 2032 ± 172 | 1.003 [0.990, 1.017] | +0.00 | 5/237/3 |
+| mlp_survival/pc_risk0.5 | 2020 | 2020 ± 164 | 0.997 [0.971, 1.018] | +0.00 | 16/210/19 |
+| mlp_survival/pc_risk1 | 2007 | 2007 ± 169 | 0.991 [0.963, 1.014] | +0.00 | 18/204/23 |
+| mlp_survival/pc_risk2 | 2015 | 2015 ± 177 | 0.995 [0.966, 1.019] | +0.00 | 19/200/26 |
+| mlp_survival/pc_tail0.5 | 2040 | 2040 ± 175 | 1.007 [0.990, 1.024] | +0.00 | 10/222/13 |
+| mlp_survival/pc_tail1 | 2021 | 2021 ± 187 | 0.997 [0.975, 1.020] | +0.00 | 17/208/20 |
+| mlp_survival/trunc1 | 609 | 609 ± 49 | 0.301 [0.184, 0.434] | +0.00 | 67/166/12 |
+| mlp_survival/trunc3 | 609 | 609 ± 27 | 0.300 [0.207, 0.422] | +0.00 | 57/181/7 |
+| mlp_survival/trunc10 | 961 | 961 ± 54 | 0.474 [0.399, 0.586] | +0.00 | 56/187/2 |
+| gnn_survival_tail/pc | 1637 | 1637 ± 106 | 1.000 [1.000, 1.000] | +0.00 | 0/245/0 |
+| gnn_survival_tail/p | 1701 | 1701 ± 101 | 1.039 [0.992, 1.092] | +0.00 | 20/172/53 |
+| gnn_survival_tail/inv_c | 1631 | 1631 ± 106 | 0.996 [0.987, 1.000] | +0.00 | 2/241/2 |
+| gnn_survival_tail/pc_risk0.5 | 1625 | 1625 ± 74 | 0.992 [0.966, 1.015] | +0.00 | 14/204/27 |
+| gnn_survival_tail/pc_risk1 | 1633 | 1633 ± 58 | 0.998 [0.968, 1.025] | +0.00 | 16/199/30 |
+| gnn_survival_tail/pc_risk2 | 1645 | 1645 ± 69 | 1.005 [0.974, 1.032] | +0.00 | 18/194/33 |
+| gnn_survival_tail/pc_tail0.5 | 1624 | 1624 ± 95 | 0.992 [0.977, 1.007] | +0.00 | 6/230/9 |
+| gnn_survival_tail/pc_tail1 | 1608 | 1608 ± 109 | 0.982 [0.962, 1.001] | +0.00 | 11/220/14 |
+| gnn_survival_tail/trunc1 | 627 | 627 ± 98 | 0.383 [0.226, 0.553] | +0.00 | 53/180/12 |
+| gnn_survival_tail/trunc3 | 576 | 576 ± 96 | 0.352 [0.227, 0.517] | +0.00 | 49/191/5 |
+| gnn_survival_tail/trunc10 | 859 | 859 ± 59 | 0.525 [0.417, 0.678] | +0.00 | 47/196/2 |
+| pn_gnn_survival/pc | 1684 | 1684 ± 88 | 1.000 [1.000, 1.000] | +0.00 | 0/245/0 |
+| pn_gnn_survival/p | 1682 | 1682 ± 110 | 0.999 [0.965, 1.032] | +0.00 | 22/193/30 |
+| pn_gnn_survival/inv_c | 1690 | 1690 ± 79 | 1.004 [0.986, 1.025] | +0.00 | 5/236/4 |
+| pn_gnn_survival/pc_risk0.5 | 1680 | 1680 ± 114 | 0.998 [0.979, 1.022] | +0.00 | 9/217/19 |
+| pn_gnn_survival/pc_risk1 | 1667 | 1667 ± 109 | 0.990 [0.967, 1.015] | +0.00 | 14/210/21 |
+| pn_gnn_survival/pc_risk2 | 1666 | 1666 ± 121 | 0.989 [0.958, 1.018] | +0.00 | 15/206/24 |
+| pn_gnn_survival/pc_tail0.5 | 1700 | 1700 ± 71 | 1.009 [0.999, 1.024] | +0.00 | 6/226/13 |
+| pn_gnn_survival/pc_tail1 | 1683 | 1683 ± 85 | 1.000 [0.980, 1.018] | +0.00 | 10/218/17 |
+| pn_gnn_survival/trunc1 | 649 | 649 ± 115 | 0.386 [0.223, 0.560] | +0.00 | 58/174/13 |
+| pn_gnn_survival/trunc3 | 602 | 602 ± 70 | 0.357 [0.228, 0.516] | +0.00 | 54/185/6 |
+| pn_gnn_survival/trunc10 | 875 | 875 ± 56 | 0.520 [0.411, 0.669] | +0.00 | 51/192/2 |
+| fewest_contacts/pc | 2275 | 2275 ± 0 | 1.000 [1.000, 1.000] | +0.00 | 0/245/0 |
+| fewest_contacts/trunc1 | 908 | 908 ± 0 | 0.399 [0.237, 0.567] | +0.00 | 39/194/12 |
+| fewest_contacts/trunc3 | 757 | 757 ± 0 | 0.333 [0.211, 0.488] | +0.00 | 35/204/6 |
+| fewest_contacts/trunc10 | 1099 | 1099 ± 0 | 0.483 [0.389, 0.621] | +0.00 | 33/210/2 |
+| outside_in/pc | 2800 | 2800 ± 0 | 1.000 [1.000, 1.000] | +0.00 | 0/245/0 |
+| outside_in/trunc1 | 956 | 956 ± 0 | 0.342 [0.199, 0.508] | +0.00 | 32/199/14 |
+| outside_in/trunc3 | 782 | 782 ± 0 | 0.280 [0.181, 0.426] | +0.00 | 31/208/6 |
+| outside_in/trunc10 | 1267 | 1267 ± 0 | 0.453 [0.375, 0.578] | +0.00 | 31/212/2 |
+
+Same policy, learned vs heuristic (paired by assembly; the policy is held fixed):
+
+| A vs B | ratio of totals [95% CI] | HL (s) | W/T/L | Wilcoxon p (uncorrected) |
+|---|---|---|---|---|
+| gnn_survival vs fewest contacts, both pc | 0.807 [0.632, 1.016] | -0.02 | 99/89/57 | 0.00042 |
+| mlp_survival vs fewest contacts, both pc | 0.891 [0.686, 1.176] | -0.00 | 92/81/72 | 0.2 |
+| gnn_survival_tail vs fewest contacts, both pc | 0.720 [0.567, 0.910] | -0.03 | 106/86/53 | 2.7e-05 |
+| pn_gnn_survival vs fewest contacts, both pc | 0.740 [0.575, 0.964] | -0.02 | 100/88/57 | 0.00057 |
+| gnn_survival vs fewest contacts, both trunc1 | 0.791 [0.664, 0.904] | -0.02 | 101/89/55 | 2e-05 |
+| mlp_survival vs fewest contacts, both trunc1 | 0.671 [0.547, 0.837] | -0.01 | 92/83/70 | 0.06 |
+| gnn_survival_tail vs fewest contacts, both trunc1 | 0.691 [0.603, 0.788] | -0.03 | 104/85/56 | 2e-05 |
+| pn_gnn_survival vs fewest contacts, both trunc1 | 0.715 [0.585, 0.852] | -0.02 | 99/88/58 | 0.00023 |
+| gnn_survival vs fewest contacts, both trunc3 | 0.844 [0.666, 1.010] | -0.02 | 99/89/57 | 0.00027 |
+| mlp_survival vs fewest contacts, both trunc3 | 0.804 [0.650, 1.023] | -0.00 | 89/81/75 | 0.34 |
+| gnn_survival_tail vs fewest contacts, both trunc3 | 0.762 [0.671, 0.887] | -0.03 | 104/85/56 | 8.6e-05 |
+| pn_gnn_survival vs fewest contacts, both trunc3 | 0.795 [0.682, 0.946] | -0.02 | 100/88/57 | 0.00024 |
+| gnn_survival vs fewest contacts, both trunc10 | 0.867 [0.713, 1.021] | -0.02 | 99/89/57 | 0.00039 |
+| mlp_survival vs fewest contacts, both trunc10 | 0.875 [0.711, 1.127] | -0.00 | 91/81/73 | 0.26 |
+| gnn_survival_tail vs fewest contacts, both trunc10 | 0.782 [0.658, 0.929] | -0.02 | 104/86/55 | 0.0001 |
+| pn_gnn_survival vs fewest contacts, both trunc10 | 0.797 [0.661, 0.964] | -0.02 | 100/88/57 | 0.0005 |

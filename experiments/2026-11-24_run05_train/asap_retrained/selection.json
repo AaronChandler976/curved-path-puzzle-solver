@@ -1,0 +1,141 @@
+{
+ "variant": "asap_retrained",
+ "grid_seeds": [
+  0,
+  1,
+  2
+ ],
+ "grid": [
+  {
+   "lr": 0.001,
+   "batch": 16,
+   "mean_val_cost": 3115.1088679154714,
+   "per_seed": [
+    3013.894922065735,
+    3116.61726565361,
+    3214.814416027069
+   ],
+   "best_epoch": [
+    45,
+    22,
+    31
+   ]
+  },
+  {
+   "lr": 0.001,
+   "batch": 32,
+   "mean_val_cost": 3236.6295979658767,
+   "per_seed": [
+    3240.602662611008,
+    3257.055419921875,
+    3212.230711364746
+   ],
+   "best_epoch": [
+    38,
+    17,
+    49
+   ]
+  },
+  {
+   "lr": 0.0003,
+   "batch": 16,
+   "mean_val_cost": 3256.637807369232,
+   "per_seed": [
+    3099.9973207473754,
+    3213.5464418411257,
+    3456.3696595191955
+   ],
+   "best_epoch": [
+    43,
+    29,
+    24
+   ]
+  },
+  {
+   "lr": 0.0003,
+   "batch": 32,
+   "mean_val_cost": 3497.1649837811788,
+   "per_seed": [
+    3505.7430038928987,
+    3655.689530801773,
+    3330.0624166488647
+   ],
+   "best_epoch": [
+    25,
+    27,
+    30
+   ]
+  },
+  {
+   "lr": 0.0001,
+   "batch": 16,
+   "mean_val_cost": 3444.4410415331517,
+   "per_seed": [
+    3453.540482711792,
+    3609.729930973053,
+    3270.052710914612
+   ],
+   "best_epoch": [
+    42,
+    34,
+    33
+   ]
+  },
+  {
+   "lr": 0.0001,
+   "batch": 32,
+   "mean_val_cost": 3546.727158196767,
+   "per_seed": [
+    3388.377589559555,
+    3708.8170894622804,
+    3542.9867955684663
+   ],
+   "best_epoch": [
+    58,
+    44,
+    29
+   ]
+  }
+ ],
+ "chosen": {
+  "lr": 0.001,
+  "batch": 16
+ },
+ "chosen_mean_val_cost": 3115.1088679154714,
+ "smooth": 5,
+ "min_epochs": 10,
+ "max_epochs": 150,
+ "patience": 25,
+ "seeds": [
+  {
+   "seed": 100,
+   "best_val_cost": 3270.1379571437838,
+   "best_epoch": 28,
+   "ckpt": "experiments/2026-11-24_run05_train/asap_retrained/seed100/best.pt"
+  },
+  {
+   "seed": 101,
+   "best_val_cost": 3205.7360521316527,
+   "best_epoch": 40,
+   "ckpt": "experiments/2026-11-24_run05_train/asap_retrained/seed101/best.pt"
+  },
+  {
+   "seed": 102,
+   "best_val_cost": 3234.4851228237153,
+   "best_epoch": 57,
+   "ckpt": "experiments/2026-11-24_run05_train/asap_retrained/seed102/best.pt"
+  },
+  {
+   "seed": 103,
+   "best_val_cost": 3200.022464323044,
+   "best_epoch": 24,
+   "ckpt": "experiments/2026-11-24_run05_train/asap_retrained/seed103/best.pt"
+  },
+  {
+   "seed": 104,
+   "best_val_cost": 3326.883000564575,
+   "best_epoch": 16,
+   "ckpt": "experiments/2026-11-24_run05_train/asap_retrained/seed104/best.pt"
+  }
+ ]
+}

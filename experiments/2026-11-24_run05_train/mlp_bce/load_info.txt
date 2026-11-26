@@ -1,0 +1,20 @@
+=== start ===
+time: 2026-11-24T18:54:32-08:00
+uptime: 18:54:32 up 1 day, 22:42,  1 user,  load average: 3.23, 3.32, 3.65
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 1702 MiB
+power_profile: performance
+git_hash: 555e2ae3188031aac69edac2e636b815408409fa
+git_dirty: False
+cmd: scripts/train_v2.py --variant mlp_bce --outdir experiments/2026-11-24_run05_train
+pid: 2768733
+=== end ===
+time: 2026-11-24T19:13:41-08:00
+uptime: 19:13:41 up 1 day, 23:01,  1 user,  load average: 8.43, 8.45, 7.19
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+99 %, 7089 MiB
+power_profile: performance
+git_hash: c74672c79b3a09290b9357fd8810e5b3a067e52d
+git_dirty: False
+cmd: scripts/train_v2.py --variant mlp_bce --outdir experiments/2026-11-24_run05_train
+pid: 2768733

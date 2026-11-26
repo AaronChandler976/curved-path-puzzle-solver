@@ -1,5 +1,30 @@
 # Literature & SOTA Survey
 
+## Final related work (updated 2026-11-26)
+The project's final framing is cost-aware query ordering for assembly-by-disassembly with a tight-clearance SE(3)
+planner, on real CAD. Every paper cited in the final report was checked on the web; titles, authors, venues and URLs
+are in `paper/refs_check.md`. In short:
+
+- **Assembly-by-disassembly and learned guidance:**
+  - Assemble Them All (Tian et al., ACM TOG / SIGGRAPH Asia 2022): the data source.
+  - Cebulla, Asfour & Kröger (ICRA 2023): GNN removability probabilities to order AbD tests.
+  - ASAP (Tian et al., ICRA 2024): GNN-guided disassembly tree search, our open-source baseline.
+  - GRACE (Atad et al., IROS 2023): GNN sequence planning.
+- **Planner:** Manifold-Guided Motion Planning for Tight Assemblies / CMG-RRT (Livnat, Bilevich, Kleinbort,
+  Halperin; WAFR, arXiv 2607.17898), our oracle.
+- **Planner cost prediction and ordering:**
+  - Odense, Gupta & Macready (IROS 2022): GNN runtime prediction for sampling-based planners.
+  - Jiang et al. (arXiv 2609.30599, 2026): expected-time-optimal collision-check ordering with learned priors.
+  - Simon & Kadane (Artificial Intelligence, 1975): optimal order for sequential tests to a first success.
+- **Learning components:**
+  - GINE (Hu et al., ICLR 2020), GATv2 (Brody et al., ICLR 2022), PointNet (Qi et al., CVPR 2017).
+  - Discrete-time survival networks (Gensheimer & Narasimhan, PeerJ 2019).
+  - NeuralSort (Grover et al., ICLR 2019), ListNet (Cao et al., ICML 2007).
+
+---
+
+## Original survey (proposal stage, kept for the record)
+
 Nine papers published within the last 1-3 years (2023-2026), directly relevant to the
 curved-path puzzle-solving project. Two older foundational papers are also noted at the
 end for context, since the project's method extends them, but they are not counted

@@ -1,0 +1,19 @@
+{
+ "max_epochs": 150,
+ "patience": 25,
+ "smooth": 5,
+ "min_epochs": 10,
+ "feat_len": 512,
+ "batch_norm": 1,
+ "dropout": 0.0,
+ "optimizer": "Adam",
+ "lr": 0.001,
+ "batch": 16,
+ "seed": 100,
+ "variant": "asap_retrained",
+ "best_val_cost": 3270.1379571437838,
+ "best_epoch": 28,
+ "epochs_run": 54,
+ "train_s": 206.06924438476562,
+ "n_params": 1703681
+}

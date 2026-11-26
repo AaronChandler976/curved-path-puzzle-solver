@@ -1,0 +1,4 @@
+PYTHONDONTWRITEBYTECODE=1 env -u PYTHONPATH conda run --no-capture-output -n asap python scripts/asap_contact_graphs.py --ids experiments/2026-11-24_run05_redmax/ids_0.json --out experiments/2026-11-24_run05_redmax/asap_graphs_0.jsonl
+PYTHONDONTWRITEBYTECODE=1 env -u PYTHONPATH conda run --no-capture-output -n asap python scripts/asap_contact_graphs.py --ids experiments/2026-11-24_run05_redmax/ids_1.json --out experiments/2026-11-24_run05_redmax/asap_graphs_1.jsonl
+PYTHONDONTWRITEBYTECODE=1 env -u PYTHONPATH conda run --no-capture-output -n asap python scripts/asap_contact_graphs.py --ids experiments/2026-11-24_run05_redmax/ids_2.json --out experiments/2026-11-24_run05_redmax/asap_graphs_2.jsonl
+# first single-process attempt stopped after 1 assembly; its partial output (scratch from this run) deleted

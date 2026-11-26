@@ -1,0 +1,20 @@
+=== start ===
+time: 2026-11-24T23:08:45-08:00
+uptime: 23:08:45 up 2 days,  2:56,  1 user,  load average: 0.82, 1.85, 2.72
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+6 %, 1800 MiB
+power_profile: performance
+git_hash: b5d851a41ac2a70bb906879980cc9014d9fff2d6
+git_dirty: False
+cmd: scripts/eval_v2.py --split test --methods configs/final_methods.json --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --outdir experiments/2026-11-25_final_eval_replay --md reports/final_eval/replay.md --fig-dir reports/final_eval/figures --best-heuristic-val fewest_contacts --budget-policies 3 --boot 10000 --device cpu
+pid: 2929303
+=== end ===
+time: 2026-11-24T23:12:09-08:00
+uptime: 23:12:09 up 2 days,  3:00,  1 user,  load average: 3.75, 3.99, 3.49
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+51 %, 1843 MiB
+power_profile: performance
+git_hash: 19058659be79071f9b16a37aef49cac44939cbb1
+git_dirty: False
+cmd: scripts/eval_v2.py --split test --methods configs/final_methods.json --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --outdir experiments/2026-11-25_final_eval_replay --md reports/final_eval/replay.md --fig-dir reports/final_eval/figures --best-heuristic-val fewest_contacts --budget-policies 3 --boot 10000 --device cpu
+pid: 2929303

@@ -1,0 +1,2 @@
+env -u PYTHONPATH OMP_NUM_THREADS=1 conda run --no-capture-output -n disasm python scripts/asap_scores.py --outdir experiments/2026-11-23_run03_asap --procs 6
+scripts/asap_scores.py --outdir experiments/2026-11-23_run03_asap --procs 6

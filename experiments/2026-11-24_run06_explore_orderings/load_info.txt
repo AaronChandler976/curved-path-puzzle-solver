@@ -1,0 +1,40 @@
+=== start ===
+time: 2026-11-24T21:55:43-08:00
+uptime: 21:55:43 up 2 days,  1:43,  1 user,  load average: 0.18, 2.03, 2.26
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+0 %, 1602 MiB
+power_profile: performance
+git_hash: 4cc5cd710af48a3f518d1de770f0964d7d4ef19e
+git_dirty: False
+cmd: scripts/explore_orderings.py --methods experiments/2026-11-24_run05_eval_val/methods.json --outdir experiments/2026-11-24_run06_explore_orderings --md experiments/2026-11-24_run06_explore_orderings/orderings.md --device cpu
+pid: 2875010
+=== end ===
+time: 2026-11-24T21:55:52-08:00
+uptime: 21:55:52 up 2 days,  1:43,  1 user,  load average: 1.65, 2.28, 2.33
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+98 %, 2543 MiB
+power_profile: performance
+git_hash: 4cc5cd710af48a3f518d1de770f0964d7d4ef19e
+git_dirty: False
+cmd: scripts/explore_orderings.py --methods experiments/2026-11-24_run05_eval_val/methods.json --outdir experiments/2026-11-24_run06_explore_orderings --md experiments/2026-11-24_run06_explore_orderings/orderings.md --device cpu
+pid: 2875010
+=== start ===
+time: 2026-11-24T21:57:36-08:00
+uptime: 21:57:36 up 2 days,  1:45,  1 user,  load average: 5.54, 3.42, 2.74
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+99 %, 6792 MiB
+power_profile: performance
+git_hash: 66f1e748c9091206d0ed9b8a31887c52eb49b317
+git_dirty: False
+cmd: scripts/explore_orderings.py --methods experiments/2026-11-24_run05_eval_val/methods.json --outdir experiments/2026-11-24_run06_explore_orderings --md experiments/2026-11-24_run06_explore_orderings/orderings.md --device cpu
+pid: 2876192
+=== end ===
+time: 2026-11-24T21:57:46-08:00
+uptime: 21:57:46 up 2 days,  1:45,  1 user,  load average: 6.87, 3.78, 2.87
+nvidia_smi: utilization.gpu [%], memory.used [MiB]
+99 %, 6719 MiB
+power_profile: performance
+git_hash: 66f1e748c9091206d0ed9b8a31887c52eb49b317
+git_dirty: False
+cmd: scripts/explore_orderings.py --methods experiments/2026-11-24_run05_eval_val/methods.json --outdir experiments/2026-11-24_run06_explore_orderings --md experiments/2026-11-24_run06_explore_orderings/orderings.md --device cpu
+pid: 2876192

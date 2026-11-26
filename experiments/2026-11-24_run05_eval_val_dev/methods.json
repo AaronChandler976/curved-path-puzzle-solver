@@ -1,0 +1,37 @@
+{
+ "mlp_bce": [
+  "experiments/2026-11-24_run05_train/mlp_bce/seed100/best.pt",
+  "experiments/2026-11-24_run05_train/mlp_bce/seed101/best.pt",
+  "experiments/2026-11-24_run05_train/mlp_bce/seed102/best.pt",
+  "experiments/2026-11-24_run05_train/mlp_bce/seed103/best.pt",
+  "experiments/2026-11-24_run05_train/mlp_bce/seed104/best.pt"
+ ],
+ "mlp_survival": [
+  "experiments/2026-11-24_run05_train/mlp_survival/seed100/best.pt",
+  "experiments/2026-11-24_run05_train/mlp_survival/seed101/best.pt",
+  "experiments/2026-11-24_run05_train/mlp_survival/seed102/best.pt",
+  "experiments/2026-11-24_run05_train/mlp_survival/seed103/best.pt",
+  "experiments/2026-11-24_run05_train/mlp_survival/seed104/best.pt"
+ ],
+ "gnn_bce": [
+  "experiments/2026-11-24_run05_train/gnn_bce/seed100/best.pt",
+  "experiments/2026-11-24_run05_train/gnn_bce/seed101/best.pt",
+  "experiments/2026-11-24_run05_train/gnn_bce/seed102/best.pt",
+  "experiments/2026-11-24_run05_train/gnn_bce/seed103/best.pt",
+  "experiments/2026-11-24_run05_train/gnn_bce/seed104/best.pt"
+ ],
+ "gnn_survival": [
+  "experiments/2026-11-24_run05_train/gnn_survival/seed100/best.pt",
+  "experiments/2026-11-24_run05_train/gnn_survival/seed101/best.pt",
+  "experiments/2026-11-24_run05_train/gnn_survival/seed102/best.pt",
+  "experiments/2026-11-24_run05_train/gnn_survival/seed103/best.pt",
+  "experiments/2026-11-24_run05_train/gnn_survival/seed104/best.pt"
+ ],
+ "pn_gnn_survival": [
+  "experiments/2026-11-24_run05_train/pn_gnn_survival/seed100/best.pt",
+  "experiments/2026-11-24_run05_train/pn_gnn_survival/seed101/best.pt",
+  "experiments/2026-11-24_run05_train/pn_gnn_survival/seed102/best.pt",
+  "experiments/2026-11-24_run05_train/pn_gnn_survival/seed103/best.pt",
+  "experiments/2026-11-24_run05_train/pn_gnn_survival/seed104/best.pt"
+ ]
+}

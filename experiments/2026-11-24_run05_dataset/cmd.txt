@@ -1,0 +1,1 @@
+env -u PYTHONPATH conda run --no-capture-output -n disasm python scripts/build_dataset_v2.py --splits train,val --clouds --procs 8

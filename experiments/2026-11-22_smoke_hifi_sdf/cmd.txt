@@ -1,0 +1,1 @@
+conda run --no-capture-output -n disasm python scripts/smoke_cmgrrt.py --example general/06397 --device cuda --iterations 5000 --timeout 600 --seed 0 --threads 1 --sdf-epochs 40 --sdf-samples 10000000 --sdf-batch 8192 --sdf-sign robust --out experiments/2026-11-22_smoke_hifi_sdf/results.jsonl

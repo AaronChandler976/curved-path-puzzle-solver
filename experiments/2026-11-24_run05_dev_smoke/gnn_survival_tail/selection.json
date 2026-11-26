@@ -1,0 +1,40 @@
+{
+ "variant": "gnn_survival_tail",
+ "grid_seeds": [
+  0
+ ],
+ "smooth": 1,
+ "min_epochs": 0,
+ "patience": 25,
+ "max_epochs": 3,
+ "grid": [
+  {
+   "hidden": 64,
+   "lr": 0.001,
+   "layers": 2,
+   "lam": 0.1,
+   "mean_val_cost": 665.8128571510315,
+   "per_seed": [
+    665.8128571510315
+   ],
+   "best_epoch": [
+    2
+   ]
+  }
+ ],
+ "chosen": {
+  "hidden": 64,
+  "lr": 0.001,
+  "layers": 2,
+  "lam": 0.1
+ },
+ "chosen_mean_val_cost": 665.8128571510315,
+ "seeds": [
+  {
+   "seed": 100,
+   "best_val_cost": 976.045104265213,
+   "best_epoch": 0,
+   "ckpt": "experiments/2026-11-24_run05_dev_smoke/gnn_survival_tail/seed100/best.pt"
+  }
+ ]
+}

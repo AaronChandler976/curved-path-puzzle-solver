@@ -1,0 +1,21 @@
+{
+ "wd": 0.0001,
+ "dropout": 0.1,
+ "batch": 32,
+ "max_epochs": 150,
+ "patience": 25,
+ "smooth": 5,
+ "min_epochs": 10,
+ "tau": 0.1,
+ "hidden": 64,
+ "lr": 0.0003,
+ "layers": 2,
+ "lam": null,
+ "seed": 1,
+ "variant": "gatv2_survival",
+ "best_val_cost": 1747.7178246498108,
+ "best_epoch": 28,
+ "epochs_run": 54,
+ "train_s": 55.09756064414978,
+ "n_params": 23688
+}
