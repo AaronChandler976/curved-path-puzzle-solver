@@ -20,8 +20,8 @@ mechanical CAD (Fusion 360 assemblies) and to a sharper claim. How the original 
   - The learned SDF accepted penetrating paths (the exact SDF was adopted).
   - Validation optimism did not survive cross-validation and test.
   - The planner's time budget is soft (checked per iteration).
-  - The test set's larger, interpenetrating assemblies exposed a distribution shift. All of this is reported in the
-    paper's failure analysis.
+  - On the test set's larger, interpenetrating assemblies the ranker made confident timeout errors; distribution shift
+    is the plausible but untested cause. All of this is reported in the paper's failure analysis.
 - **Scale:** 2,022 assemblies, 41,913 labelled queries, 17,697 live test disassemblies. That is larger than the
   proposal planned, and possible because 95–98% of successes turned out to be cheap straight pulls.
 

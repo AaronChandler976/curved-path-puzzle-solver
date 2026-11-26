@@ -146,3 +146,25 @@
       mentioned; SDF result on the bundled tight assembly (16505), not the puzzle; failure-analysis seed stated; "0.04 s"
       footer states its source and that it covers all outcomes; same oracle and T stated on the results slide; no
       battery CAD evaluated; latency slide is a table; notes wording on latency and shift.
+15. **Phase 5 final-audit fixes (phase5_1: 4 MAJOR, 19 MINOR).**
+    - *MAJOR:*
+      - The paper conclusion now says the cost-aware advantage over removability holds only in the main replay and is
+        not robust.
+      - The budget policy is described as 72–79% in replay for every ordering replayed, and about 50% live for the two
+        orderings run with it.
+      - The paper defines every baseline and ablation (Experiments, "Baselines and ablations").
+      - `environment-disasm.yml` adds the PyTorch cu128 extra index so the pinned CUDA builds install.
+    - *MINOR:*
+      - Demo time: 19.5 s in the guarded live run (18.4 s in the demo re-run).
+      - Val is 89.6% 3–8-part.
+      - "300 scored of the 306 never-piloted" assemblies.
+      - GPU memory is the batch-of-200 peak; the profile run is called "confounded" as CLAUDE.md requires.
+      - Grids are described per variant.
+      - elk framing: one process using about 12 cores (median 11.7 in its guard samples); the difference from the paper
+        is the missing parallel tree exploration.
+      - README: "cheaper than" instead of "beats"; inputs not in git listed.
+      - `video/script.md` matches the built cuts; the video caption band no longer covers the render header.
+      - Talk notes say 34–39%.
+      - The novelty audit calls the shift a plausible, untested cause.
+      - The stale NEEDS_AARON line was removed.
+    - *Left for Aaron:* the video link placeholders (upload needed).

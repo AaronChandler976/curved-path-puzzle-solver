@@ -23,14 +23,14 @@ cap() { echo "drawbox=x=0:y=0:w=iw:h=110:color=white@0.92:t=fill,drawtext=expans
 
 # 1 (0-6 s) hook: the real CMG-RRT rotation removal (last state of the demo, frames 88..106)
 $FF -framerate 3.2 -start_number 88 -i "$FRAMES/%04d.png" -t 5.9 \
-  -vf "scale=1920:1080,$(cap 'Which part can come out next? Asking the planner costs 0.04 s ... or 30 s.'),format=yuv420p" \
+  -vf "scale=1920:970,pad=1920:1080:0:110:white,$(cap 'Which part can come out next? Asking the planner costs 0.04 s ... or 30 s.'),format=yuv420p" \
   -r 30 "$W/s1.mp4"
 # 2 (6-16 s) the problem
 $FF -f lavfi -i "color=c=white:s=1920x1080:d=10" -vf "drawtext=expansion=none:fontfile=$FONT:text='Each removal test is a CMG-RRT motion-planning query.':fontsize=50:fontcolor=0x0b0b0b:x=(w-text_w)/2:y=380,drawtext=expansion=none:fontfile=$FONT:text='A timeout (30 s) proves nothing - and it dominates the cost.':fontsize=50:fontcolor=0xc44e52:x=(w-text_w)/2:y=500,drawtext=expansion=none:fontfile=$FONT:text='So - which part should we ask about first?':fontsize=50:fontcolor=0x2a78d6:x=(w-text_w)/2:y=620,format=yuv420p" -r 30 "$W/s2.mp4"
 # 3 (16-30 s) the system
 $FF -loop 1 -t 14 -i "$W/pipeline-05.png" -vf "$pad,$(cap 'GNN + survival head - P(success) and expected cost per part; query in p/c order.')" -r 30 "$W/s3.mp4"
 # 4 (30-55 s) a real disassembly with the learned order (13.4 s of frames, slowed to 25 s)
-$FF -framerate 4.3 -i "$FRAMES/%04d.png" -vf "scale=1920:1080,$(cap 'A real test assembly - the learned query order, fresh CMG-RRT queries.'),format=yuv420p" -r 30 "$W/s4.mp4"
+$FF -framerate 4.3 -i "$FRAMES/%04d.png" -vf "scale=1920:970,pad=1920:1080:0:110:white,$(cap 'A real test assembly - the learned query order, fresh CMG-RRT queries.'),format=yuv420p" -r 30 "$W/s4.mp4"
 # 5 (55-75 s) headline result
 $FF -loop 1 -t 20 -i "$W/totals_replay_live.png" -vf "$pad,$(cap 'Fresh test set - cheaper than ASAP, no better than fewest contacts.')" -r 30 "$W/s5.mp4"
 # 6 (75-90 s) negative result

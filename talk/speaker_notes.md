@@ -28,7 +28,7 @@ the slide footers name. Speak to the picture, not the bullets.
    We fixed the planner adapter first: it never tried the straight pull from the start, and about a fifth of its
    successes went through parts. The protocol was pre-registered, and the fresh test set of 347 assemblies, half of
    them large, was evaluated exactly once.
-7. **Main result (60 s).** Bars are total planner time on the test set. GNN-Surv is far below random and 35–40% below
+7. **Main result (60 s).** Bars are total planner time on the test set. GNN-Surv is far below random and 34–39% below
    both ASAP models (39% below zero-shot, 34% below retrained). Against the simple heuristic "fewest contacts first" it is a tie: 1.055, with a CI that
    includes 1. Our pre-registered rule therefore says "does not beat". I report that as is.
 8. **Ablations (45 s).** The cost-aware head helps, but not robustly. Same GNN, survival p/c instead of BCE p: 11%
