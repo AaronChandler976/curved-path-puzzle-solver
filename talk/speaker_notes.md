@@ -56,8 +56,9 @@ the slide footers name. Speak to the picture, not the bullets.
     a contact heuristic on bigger, unseen products. A 3-second first pass is a 72% saving for everyone. Next steps:
     train on large assemblies and learn per-part budgets from the survival curve.
 
-Timing check: 15 + 12 × 45 + 60 + 30 + 30 ≈ 675 s ≈ 11 min at 45 s per slide. Trim slides 4 and 11 to 30 s each
-→ about 10 min. Rehearse with a timer.
+Timing check (measured on this file): the spoken text of items 1–14 is about 860 words. At 130 words per minute that
+is about 6.6 min; at 150 wpm, about 5.8 min. That leaves about 3 min for pauses, pointing at figures and the slide
+changes within the 10-minute slot. Rehearse once with a timer. If it runs long, cut item 4 (landscape) to one sentence.
 
 ## Likely questions
 1. **"Why doesn't the GNN beat fewest contacts if its predictions are good?"** Its C-index is only 0.67 within a state,
