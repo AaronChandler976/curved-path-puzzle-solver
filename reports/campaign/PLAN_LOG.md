@@ -28,3 +28,4 @@
 - 2026-11-26 09:45 Phase 3 live complete (09:29); live.md, figures, demo; Phase 3 audit started.
 - 2026-11-26 10:03 Phase 3 DONE (audits phase3_1 FAIL, phase3_2 FAIL, phase3_3 PASS). Phase 4 starts.
 - 2026-11-26 10:14 Phase 4 DONE (phase4_1 FAIL→fixed, phase4_2 PASS). Phase 5: elk 4 h run started (experiments/2026-11-26_phase5_elk), alone; only text work meanwhile.
+- 2026-11-26 14:19 elk T9 done: not solved in 240 min (clean). No timed jobs left.
