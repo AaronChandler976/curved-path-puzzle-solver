@@ -65,12 +65,14 @@ conda create -n disasm python=3.11 -y && conda activate disasm
 pip install torch --index-url https://download.pytorch.org/whl/cu128
 pip install torch_geometric trimesh rtree scikit-learn scipy pyyaml matplotlib imageio threadpoolctl spatialmath-python pymcubes tqdm
 # CMG-RRT (MIT) as a third-party clone, never edited in place (our adapter lives in src/disasm/oracle):
-git clone https://github.com/TAU-CGL/cmg-rrt external/cmg-rrt && pip install -e external/cmg-rrt/src/taucgl-rrt
+git clone https://github.com/TAU-CGL/cmg-rrt external/cmg-rrt
+pip install -e external/cmg-rrt/src/quicksdf -e external/cmg-rrt/src/taucgl-sdf -e external/cmg-rrt/src/taucgl-rrt
 pip install -e .            # this package (src/disasm)
 # ASAP baseline (separate env, for its redmax contact graph): see reports/run04/DECISIONS.md #9
 # LaTeX and video tools: conda create -n paper -c conda-forge tectonic ffmpeg
 ```
-`environment-disasm.yml` lists the exact package versions used. On machines where ROS sets `PYTHONPATH`, prefix
+`environment-disasm.yml` lists the exact package versions used (`conda env create -f environment-disasm.yml`, then the
+three local CMG-RRT packages and `pip install -e .` as above). On machines where ROS sets `PYTHONPATH`, prefix
 commands with `env -u PYTHONPATH`. Tests: `env -u PYTHONPATH PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python -m pytest`.
 
 ## Data
