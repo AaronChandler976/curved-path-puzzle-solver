@@ -26,3 +26,4 @@
 - 2026-11-25 11:48 live P2 1,098/9,716 (slowed to ~3/min on heavier assemblies; no busy samples). Projection: P2 ends 11-26 noon to 11-27 noon; P3+P4 by ~11-28. Phase 3 limit 11-30 12:00 holds.
 - 2026-11-25 17:49 live P2 3,881/9,716 (~7/min; 20 confounded, 0 errors).
 - 2026-11-26 09:45 Phase 3 live complete (09:29); live.md, figures, demo; Phase 3 audit started.
+- 2026-11-26 10:03 Phase 3 DONE (audits phase3_1 FAIL, phase3_2 FAIL, phase3_3 PASS). Phase 4 starts.
