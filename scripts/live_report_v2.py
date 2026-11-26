@@ -67,6 +67,7 @@ def main():
             flags["re-run"] += 1
     split = json.load(open(os.path.join(ROOT, "data/splits/v2_split.json")))
     test = sorted(split["test"])
+    calls = defaultdict(list)
     cost = defaultdict(dict)        # method(base) -> aid -> list of per-seed planner_s
     status = defaultdict(lambda: defaultdict(int))
     for (aid, m), r in rep.items():
@@ -75,6 +76,7 @@ def main():
             continue
         b, s = base(m)
         cost[b].setdefault(aid, []).append(float(r["planner_s"]))
+        calls[b].append(int(r.get("calls") or 0))
         status[b][r.get("status")] += 1
     per = {m: {aid: float(np.mean(v)) for aid, v in d.items()} for m, d in cost.items()}
     nseeds = {m: {aid: len(v) for aid, v in d.items()} for m, d in cost.items()}
@@ -86,8 +88,8 @@ def main():
          f"({a.boot}); HL CIs: 2,000 resamples. `gnn_survival@b3` is the val-best seed (101) only.\n",
          f"- (assembly, method) runs: {len(rep)}; re-run at least once: {flags['re-run']}; still confounded or errored after "
          f"re-runs (reported, flagged): {flags['still_confounded_or_error']}.\n",
-         "| ordering | assemblies | seeds per assembly | complete / stuck / error | total planner time (s) [95% CI over assemblies] |",
-         "|---|---|---|---|---|"]
+         "| ordering | assemblies | seeds per assembly | complete / stuck / error | total planner time (s) [95% CI over assemblies] | planner calls per assembly (mean) |",
+         "|---|---|---|---|---|---|"]
     res = {"n_runs": len(rep), "flags": dict(flags), "methods": {}}
     for m in [x for x in REG + EXPL if x in per]:
         aids = sorted(per[m])
@@ -96,7 +98,7 @@ def main():
         bs = v[idx].sum(1)
         ns = sorted(set(nseeds[m].values()))
         L.append(f"| {m}{' [expl.]' if m in EXPL else ''} | {len(aids)} | {ns} | {status[m]['complete']} / {status[m]['stuck']} / "
-                 f"{status[m]['error']} | {v.sum():.0f} [{np.percentile(bs, 2.5):.0f}, {np.percentile(bs, 97.5):.0f}] |")
+                 f"{status[m]['error']} | {v.sum():.0f} [{np.percentile(bs, 2.5):.0f}, {np.percentile(bs, 97.5):.0f}] | {np.mean(calls[m]):.1f} |")
         res["methods"][m] = {"n": len(aids), "total": float(v.sum()), "seeds": ns, "status": dict(status[m])}
 
     def family(pairs, aids_ok, label, correct=True):

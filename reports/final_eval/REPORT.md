@@ -7,10 +7,10 @@ heuristic was chosen on val: fewest contacts. Ratio of total planner time GNN-Su
 [0.829, 1.226], Holm p 0.81, does not beat. **Live, applied separately, gives the same verdict:** 0.915 [0.819, 1.015],
 Holm p 0.13 (§4).
 
-Resampling note: ratio and total CIs use 10,000 bootstrap resamples (registered). HL CIs use 2,000 and median-ratio
-CIs 2,000 (DECISIONS #2), and the live tables now say so. C-index and ECE values have no CIs; they are descriptive.
-Not reported for live: planner calls per method and a live rot_state subset (no per-state rotation flag is logged live);
-both are omissions against PREREG §4/§5.
+Resampling note: ratio and total CIs use 10,000 bootstrap resamples (registered). HL CIs use 2,000 (DECISIONS #2) and
+median-ratio CIs 2,000 (DECISIONS #13), and the live tables now say so. C-index and ECE values have no CIs; they are descriptive.
+Live planner calls per method are reported in `live.md` (added after audit phase3_2). A live rot_state subset is not
+reported, because no per-state rotation flag is logged live; that is an omission against PREREG §5.
 
 ## 1. Discipline (evidence)
 - **Marker:** `data/splits/.v2_test_evaluated` was written at 2026-11-24 23:08:45 (git b5d851a) by `scripts/eval_v2.py`, before
@@ -67,11 +67,12 @@ How to read this (claims limited to what the rule and numbers support):
     cheaper on total time and per assembly. The CI upper bound is 0.999.
   - *Clean-test check:* 0.877 [0.767, 1.001], so the total-time condition misses there. The per-assembly difference is
     still significant (Holm p 2.9e-5, HL −0.18 s).
-  - *Live:* GNN-Surv is costlier in total (1.045 [0.955, 1.150]) and cheaper only on the typical assembly (HL −0.06 s,
-    Holm p 0.035).
+  - *Live:* GNN-Surv is not cheaper in total (1.045 [0.955, 1.150]; the CI includes 1). It is cheaper on the typical
+    assembly (HL −0.06 s, Holm p 0.035), but on the live clean subset even that condition fails (Holm p 0.083).
   - *MLP pair:* the effect goes the other way (MLP-Surv / MLP-BCE 1.041 replay, 0.985 live, both n.s.).
-  - So the project's novelty claim, that modelling cost helps, is supported **per assembly with the GNN** and **on total
-    time only in the main replay analysis**. It is not robust across evaluations or encoders.
+  - So the project's novelty claim, that modelling cost helps, is supported **on total time and per assembly in the
+    main replay analysis with the GNN**; per assembly it also holds on the replay clean subset and in live on all
+    assemblies. It is not robust across evaluations or encoders.
 - **Not supported on test:** GNN vs MLP (survival head: 0.951, p 0.55). With the BCE head the GNN is costlier per
   assembly than the MLP (HL +0.10 s, Holm p 0.0027; ratio CI includes 1). PointNet features and the tail-aware objective
   made no detectable difference (CIs include 1, Holm p = 1).
@@ -90,13 +91,14 @@ How to read this (claims limited to what the rule and numbers support):
     difference.
   - The policy is not learned. It removes most of the cost of queries that time out, whatever the ordering.
 - **Prediction quality** (`replay.md`):
-  - Survival models are calibrated (ECE 0.038 GNN-Surv) and rank parts by time better than ASAP's score:
-    within-state C-index 0.674 vs ASAP zero-shot 0.593 and ASAP-retrained 0.626. ListNet is the highest at 0.689.
+  - Survival models are calibrated (ECE 0.038 GNN-Surv). Their within-state C-index is higher than ASAP's score: 0.674
+    vs ASAP zero-shot 0.593 and ASAP-retrained 0.626 (mean over seeds, no CI, descriptive). ListNet has the highest,
+    0.689.
   - The C-index is only modestly above 0.5, and the failures (§5) are confident mistakes.
 
 ## 4. Live full disassembly (PREREG §6) — complete
 - **Run:** `experiments/2026-11-24_final_eval_live/` (`scripts/run_final_live.sh`), tables in
-  `reports/final_eval/live_registered.md`.
+  `reports/final_eval/live.md` (final). The registered rows are identical in the interim snapshot `live_registered.md`.
   - Every method ran on all 347 test assemblies, with fresh queries (oracle v2: CMG-RRT only when the pull fails).
   - Planner seed per query = sha1("run05-live", …). The idle guard was on.
   - 13,533 (assembly, method) runs. 77 were confounded and re-run, and **0 remain confounded or errored**.
@@ -123,7 +125,8 @@ How to read this (claims limited to what the rule and numbers support):
   181/45/121, Wilcoxon p 0.019, Holm p 0.13: **does not beat**. On the 306 clean assemblies: 0.907 [0.801, 1.020], Holm
   p 0.22.
   - Disclosed: the interim P1 table (val-best seed only, `live_P1.md`) had Holm p 0.0018 for the typical-assembly
-    condition. With the registered 5-seed mean it is not significant.
+    condition. With the registered 5-seed mean it is not significant. The same interim table had GNN-Surv / Tail =
+    1.187 [1.060, 1.337], Holm p 0.016; with 5 seeds it is 1.058 [1.003, 1.110], Holm p 0.18.
 - **Both ASAP baselines live:** GNN-Surv satisfies both §7 criteria against each (descriptive; the "beats" label is
   registered only for the best heuristic):
   - ASAP zero-shot: 0.789 [0.699, 0.880], Holm p 2.8e-7.
@@ -147,8 +150,10 @@ How to read this (claims limited to what the rule and numbers support):
     seed variation is mixed in. Under the same policy GNN-Surv / fewest contacts = 0.959 [0.896, 1.023].
   - The live saving (about 50%) is smaller than the replay saving (72%) for two reasons. A stuck live disassembly pays the
     second pass in full. And the live 3 s budget is soft: the planner checks its time limit only between RRT
-    iterations. Pass-1 CMG-RRT queries that failed ran a median 4.24 s (max 72.6 s), which is 4,738 s of overrun beyond
-    3 s out of 22,083 s spent by the two policy rows. Addendum B.2 named only the pre-check as a replay/live difference;
+    iterations. Pass-1 CMG-RRT queries that failed (1,439) ran a median 4.24 s (max 72.6 s). That is 4,738 s of
+    CMG-RRT time beyond 3 s (5,627 s counting the whole query, pre-check included), out of 22,083 s spent by the two
+    policy rows (`experiments/2026-11-26_budget_overrun/budget_overrun.json`, `scripts/budget_overrun.py`, which states
+    the definitions). Addendum B.2 named only the pre-check as a replay/live difference;
     that was incomplete (DECISIONS #13).
 - Figures: `reports/final_eval/figures/totals_replay_live.pdf`, `budget_policy.pdf`, `failure_scatter.pdf`
   (`scripts/final_figures.py`; dashed line = fewest contacts).
@@ -156,8 +161,9 @@ How to read this (claims limited to what the rule and numbers support):
 ## 4b. Deviation: the planner budget T = 30 s is soft (found by audit phase3_1)
 - **Cause:** CMG-RRT (our adapter, `src/disasm/oracle/cmgrrt.py`) checks its time limit once per RRT iteration, and one
   iteration can take seconds in large assemblies.
-- **Size in the test labels (main configuration):**
-  - Unsolved queries ran a median 31.19 s (max 73.2 s), and query time beyond 30 s totals 8,163 s.
+- **Size in the test labels (main configuration; all 12,444 test queries, first clean attempt;
+  `experiments/2026-11-26_budget_overrun/`):**
+  - The 2,663 unsolved queries ran a median 31.19 s (max 73.2 s). Summed over all queries, cost beyond 30 s is 8,163 s.
   - 24 main-config successes and 158 CMG-RRT-only successes took longer than 30 s (max 89.1 s and 127.7 s) and still
     count as successes "within T".
 - **Effect:** the same labels serve every ordering in replay, and the same planner serves every method live, so the

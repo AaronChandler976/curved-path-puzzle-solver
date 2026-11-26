@@ -4,23 +4,23 @@ Source `experiments/2026-11-24_final_eval_live/results.jsonl` (every attempt), s
 
 - (assembly, method) runs: 17697; re-run at least once: 77; still confounded or errored after re-runs (reported, flagged): 0.
 
-| ordering | assemblies | seeds per assembly | complete / stuck / error | total planner time (s) [95% CI over assemblies] |
-|---|---|---|---|---|
-| random | 347 | [1] | 316 / 31 / 0 | 26464 [21786, 31202] |
-| outside_in | 347 | [1] | 313 / 34 / 0 | 23239 [18426, 28310] |
-| fewest_contacts | 347 | [1] | 312 / 35 / 0 | 23002 [18624, 27561] |
-| asap_zs | 347 | [1] | 314 / 33 / 0 | 26667 [21430, 32121] |
-| asap_retrained | 347 | [5] | 1565 / 170 / 0 | 23212 [18512, 28367] |
-| mlp_bce | 347 | [5] | 1563 / 172 / 0 | 21139 [17005, 25681] |
-| mlp_survival | 347 | [5] | 1560 / 175 / 0 | 20827 [16767, 25237] |
-| gnn_bce | 347 | [5] | 1569 / 166 / 0 | 20131 [16285, 24209] |
-| gnn_survival | 347 | [5] | 1572 / 163 / 0 | 21038 [16700, 25758] |
-| gnn_survival_tail | 347 | [5] | 1569 / 166 / 0 | 19885 [15987, 24045] |
-| pn_gnn_survival | 347 | [5] | 1566 / 169 / 0 | 20805 [16644, 25350] |
-| gt_survival [expl.] | 347 | [5] | 1566 / 169 / 0 | 21735 [17381, 26548] |
-| gnn_survival_listnet [expl.] | 347 | [5] | 1568 / 167 / 0 | 18336 [14716, 22146] |
-| fewest_contacts@b3 [expl.] | 347 | [1] | 311 / 36 / 0 | 11273 [8668, 14047] |
-| gnn_survival@b3 [expl.] | 347 | [1] | 311 / 36 / 0 | 10810 [8164, 13693] |
+| ordering | assemblies | seeds per assembly | complete / stuck / error | total planner time (s) [95% CI over assemblies] | planner calls per assembly (mean) |
+|---|---|---|---|---|---|
+| random | 347 | [1] | 316 / 31 / 0 | 26464 [21786, 31202] | 8.5 |
+| outside_in | 347 | [1] | 313 / 34 / 0 | 23239 [18426, 28310] | 8.2 |
+| fewest_contacts | 347 | [1] | 312 / 35 / 0 | 23002 [18624, 27561] | 8.2 |
+| asap_zs | 347 | [1] | 314 / 33 / 0 | 26667 [21430, 32121] | 8.4 |
+| asap_retrained | 347 | [5] | 1565 / 170 / 0 | 23212 [18512, 28367] | 8.2 |
+| mlp_bce | 347 | [5] | 1563 / 172 / 0 | 21139 [17005, 25681] | 8.0 |
+| mlp_survival | 347 | [5] | 1560 / 175 / 0 | 20827 [16767, 25237] | 8.0 |
+| gnn_bce | 347 | [5] | 1569 / 166 / 0 | 20131 [16285, 24209] | 7.9 |
+| gnn_survival | 347 | [5] | 1572 / 163 / 0 | 21038 [16700, 25758] | 8.0 |
+| gnn_survival_tail | 347 | [5] | 1569 / 166 / 0 | 19885 [15987, 24045] | 7.9 |
+| pn_gnn_survival | 347 | [5] | 1566 / 169 / 0 | 20805 [16644, 25350] | 8.0 |
+| gt_survival [expl.] | 347 | [5] | 1566 / 169 / 0 | 21735 [17381, 26548] | 8.1 |
+| gnn_survival_listnet [expl.] | 347 | [5] | 1568 / 167 / 0 | 18336 [14716, 22146] | 7.8 |
+| fewest_contacts@b3 [expl.] | 347 | [1] | 311 / 36 / 0 | 11273 [8668, 14047] | 9.0 |
+| gnn_survival@b3 [expl.] | 347 | [1] | 311 / 36 / 0 | 10810 [8164, 13693] | 8.7 |
 
 ### Registered comparisons (Holm family of 11)
 

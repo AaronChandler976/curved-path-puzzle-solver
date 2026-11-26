@@ -116,10 +116,11 @@
       and on total time only in the main replay; the clean-test check, live totals and the MLP pair do not confirm
       the total-time part (REPORT §2).
     - *MAJOR 2, live budget policy:* the live 3 s budget is soft. CMG-RRT checks the time limit per RRT iteration, so
-      failed pass-1 queries ran a median 4.24 s, with 4,738 s of overrun. Addendum B.2 named only the pre-check, which
+      failed pass-1 queries ran a median 4.24 s, with 4,738 s of CMG-RRT overrun beyond 3 s. Log:
+      `experiments/2026-11-26_budget_overrun/` (`scripts/budget_overrun.py`, definitions stated there). Addendum B.2 named only the pre-check, which
       was incomplete. The REPORT now gives the overrun.
     - *MAJOR 3, soft T = 30 s:* in the test labels unsolved queries ran a median 31.19 s (max 73.2 s), with 8,163 s
-      past 30 s. 24 main-config and 158 CMG-RRT-only successes took > 30 s. This is reported as a deviation from the
+      past 30 s summed over all 12,444 queries (same log). 24 main-config and 158 CMG-RRT-only successes took > 30 s. This is reported as a deviation from the
       PREREG's T and is not corrected after the test. It affects every ordering alike (same labels; same planner live).
     - *Code identity:* P3/P4 started with `git_dirty: True` from uncommitted report/talk edits. The live code
       (`scripts/live_abd.py`, `scripts/run_final_live.sh`, `scripts/train_v2.py`, `src/`) is identical from the
@@ -129,3 +130,8 @@
       labelled (table and figure), the subset-correction wording fixed, and C-index described as having no CIs.
       Live planner calls and live rot_state are disclosed as not reported. The 3.6 MB demo GIF was removed from git
       (the mp4 stays).
+    - *Audit phase3_2 fixes:* the overrun numbers now come from a logged script (above). The phase3_1 auditor's 8,083 s
+      / 154 / 5,627 s differ only by definition (attempt 0 only; whole query). Other fixes: median-ratio CIs use 2,000
+      resamples (recorded here); live planner calls added to `live.md`; the interim P1 Tail result disclosed;
+      C-index wording without a superiority claim; the final `live.md` cited; "not cheaper in total" (CI includes 1);
+      the live clean-subset Holm p 0.083 disclosed.
