@@ -55,6 +55,12 @@ distribution of the planner's time to success with a censoring-aware survival he
 query in the order that minimises expected cost. We evaluate it on real CAD assemblies with a pre-registered protocol
 and a fresh test set, against heuristics, an MLP and the open-source ASAP model, all with the same planner.
 
+This version follows the course feedback on our proposal. We moved from puzzles to real mechanical CAD
+(Fusion~360 assemblies), and we take states only from verified disassemblies, not from backward rollouts. We train a
+GNN to rank which part gets the next planner query, and we compare random, geometric/contact heuristics, an MLP and
+the GNN, all with the same planner and budget. Battery modules remain the motivating application; we did not evaluate
+battery CAD.
+
 \noindent\textbf{Contributions.}
 \begin{itemize}
 \item A cost-aware ranker for AbD: a GNN over the contact graph with a discrete-time survival head that treats planner
