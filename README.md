@@ -80,7 +80,7 @@ commands with `env -u PYTHONPATH`. Tests: `env -u PYTHONPATH PYTEST_DISABLE_PLUG
 Assemblies come from the Assemble Them All / ASAP Fusion 360 dataset (`data/raw/multi_assembly/`, download per the
 ATA repository). Labels (`data/labels/pilot_v2/`, 41,913 queries) and processed graphs are not in git because of their
 size. The frozen split `data/splits/v2_split.json` and the test marker are in git. Checkpoints and the split are
-published as a GitHub release (see below).
+published as the GitHub release v1.0-final (see below).
 
 ## How to run
 Each step writes `experiments/<date>_<name>/` with the command, git hash, load info and logs.
@@ -106,7 +106,9 @@ python scripts/render_demo.py --live-dir experiments/2026-11-26_demo_01310 --aid
 
 ## Checkpoints
 The 50 frozen checkpoints (10 variants × 5 seeds) are listed with sha256 in `configs/final_frozen.yaml`. They are
-published as release assets with the v2 split (see the repository's Releases page, or `reports/campaign/FINAL.md`).
+published with the v2 split as release
+[v1.0-final](https://github.com/AaronChandler976/curved-path-puzzle-solver/releases/tag/v1.0-final)
+(`checkpoints_final_frozen.tar.gz`, extract at the repo root; `SHA256SUMS`).
 
 ## How the project was run
 Work was done in logged runs with pre-registration (`docs/PREREG_run05.md`), an idle guard for all timed planner
