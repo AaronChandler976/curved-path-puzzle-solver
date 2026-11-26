@@ -1,12 +1,12 @@
-# Campaign final handover (DRAFT — completed at the end of Phase 5)
+# Campaign final handover
 
 ## What to submit
 | deliverable | due | file | status |
 |---|---|---|---|
 | Talk slides (10 min, Thu Dec 3) | Dec 3 (Canvas closes Dec 10) | `talk/main.pdf` (speaker notes: `talk/speaker_notes.md`; video to play: `talk/demo.mp4`) | ready (audit phase4_2 PASS) |
-| Final report (50 pts) | Tue Dec 15 23:59 | `paper/main.pdf` | PENDING Phase 5 |
-| GitHub repo (30 pts) | Dec 15 | https://github.com/AaronChandler976/curved-path-puzzle-solver (branch `main`) | PENDING merge |
-| Demo video ≤ 2 min (20 pts) | Dec 15 | `video/demo.mp4` → upload (YouTube unlisted or Drive) | PENDING build |
+| Final report (50 pts) | Tue Dec 15 23:59 | `paper/main.pdf` (6 pages, IEEEtran) | ready except the video link |
+| GitHub repo (30 pts) | Dec 15 | https://github.com/AaronChandler976/curved-path-puzzle-solver (branch `main`; release v1.0-final with the 50 checkpoints and the split) | merged |
+| Demo video ≤ 2 min (20 pts) | Dec 15 | `video/demo.mp4` (112.8 s, 1080p) → upload (YouTube unlisted or Drive) | built; upload needed |
 
 ## Remaining steps for Aaron
 1. Upload `video/demo.mp4` (YouTube unlisted or Google Drive, link viewable by anyone with it).
