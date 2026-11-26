@@ -36,7 +36,7 @@ $FF -loop 1 -t 20 -i "$W/totals_replay_live.png" -vf "$pad,$(cap 'Fresh test set
 # 6 (75-90 s) negative result
 $FF -loop 1 -t 15 -i "$W/failure_scatter.png" -vf "$pad,$(cap 'Why - a few confident timeouts on larger, unseen assemblies.')" -r 30 "$W/s6.mp4"
 # 7 (90-105 s) the policy that worked
-$FF -loop 1 -t 15 -i "$W/budget_policy.png" -vf "$pad,$(cap 'Biggest win, not learned - try every part for 3 s first (-72% replay, -50% live).')" -r 30 "$W/s7.mp4"
+$FF -loop 1 -t 15 -i "$W/budget_policy.png" -vf "$pad,$(cap 'Biggest win, not learned - try every part for 3 s first (-72 to -79% replay, about -50% live).')" -r 30 "$W/s7.mp4"
 # 8 (105-113 s) end card
 $FF -f lavfi -i "color=c=white:s=1920x1080:d=8" -vf "drawtext=expansion=none:fontfile=$FONT:text='Cost-aware query ordering for assembly-by-disassembly':fontsize=52:fontcolor=0x0b0b0b:x=(w-text_w)/2:y=420,drawtext=expansion=none:fontfile=$FONT:text='github.com/AaronChandler976/curved-path-puzzle-solver':fontsize=46:fontcolor=0x2a78d6:x=(w-text_w)/2:y=540,drawtext=expansion=none:fontfile=$FONT:text='Aaron Chandler - CMPE 258, SJSU, Fall 2026':fontsize=36:fontcolor=0x52514e:x=(w-text_w)/2:y=650,format=yuv420p" -r 30 "$W/s8.mp4"
 

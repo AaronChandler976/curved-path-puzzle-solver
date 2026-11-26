@@ -168,3 +168,23 @@
       - The novelty audit calls the shift a plausible, untested cause.
       - The stale NEEDS_AARON line was removed.
     - *Left for Aaron:* the video link placeholders (upload needed).
+16. **Phase 5 re-audit (phase5_2: PASS) — remaining MINORs and two corrections.**
+    - *Correction to #15:* #15 said all 19 phase5_1 MINORs were fixed; six were not. They are fixed now:
+      - the censoring time is $\kappa_i$ (no clash with the expected cost $c_i$);
+      - the graph-transformer claim cites arXiv 2210.05236 (authors verified; acceptance not confirmed, so cited as
+        arXiv);
+      - software versions are in Setup;
+      - the 0.04 s figure is described as the median of a random validation sample;
+      - Fig. 2 labels are larger, with shorter axis labels;
+      - 7.07 ms is consistent with the table.
+    - *Demo disclosure:* `experiments/2026-11-26_demo_01310/` is a fresh planner run on test assembly 01310, made after
+      the test marker. It re-runs the live disassembly with the same seeds and frozen checkpoint to save paths. It
+      selects nothing and is not an evaluation; the paper's numbers come from the guarded live run (19.5 s), with the
+      re-run's 18.4 s noted.
+    - Other fixes:
+      - the random baseline is described as an expectation in replay and one seeded shuffle per state live;
+      - the README lists the run 04 pool files;
+      - the video caption says -72 to -79% replay.
+    - *Release:* `v1.0-final` points at commit 092f54f (before the final fixes). A new release `v1.1-final` on the final
+      `main` carries the same checkpoints and split (identical sha256). The old tag is not moved or deleted (published
+      tag).
