@@ -12,7 +12,7 @@ FONT=$(fc-match -f '%{file}' 'DejaVu Sans:bold')
 FRAMES=$ROOT/experiments/2026-11-26_demo_01310/demo_01310_frames
 
 # stills: slide pages and figures at 1920 px wide, padded to 1920x1080 on white
-pdftoppm -png -r 240 -f 6 -l 6 "$ROOT/talk/main.pdf" "$W/pipeline"            # "What we built"
+pdftoppm -png -r 240 -f 5 -l 5 "$ROOT/talk/main.pdf" "$W/pipeline"            # "What we built"
 for f in totals_replay_live budget_policy failure_scatter; do
   pdftoppm -png -r 300 -singlefile "$ROOT/reports/final_eval/figures/$f.pdf" "$W/$f"
 done
@@ -28,7 +28,7 @@ $FF -framerate 3.2 -start_number 88 -i "$FRAMES/%04d.png" -frames:v 19 \
 # 2 (6-16 s) the problem
 $FF -f lavfi -i "color=c=white:s=1920x1080:d=10" -vf "drawtext=expansion=none:fontfile=$FONT:text='Each removal test is a CMG-RRT motion-planning query.':fontsize=50:fontcolor=0x0b0b0b:x=(w-text_w)/2:y=380,drawtext=expansion=none:fontfile=$FONT:text='A timeout (30 s) proves nothing - and it dominates the cost.':fontsize=50:fontcolor=0xc44e52:x=(w-text_w)/2:y=500,drawtext=expansion=none:fontfile=$FONT:text='So - which part should we ask about first?':fontsize=50:fontcolor=0x2a78d6:x=(w-text_w)/2:y=620,format=yuv420p" -r 30 "$W/s2.mp4"
 # 3 (16-30 s) the system
-$FF -loop 1 -t 14 -i "$W/pipeline-06.png" -vf "$pad,$(cap 'GNN + survival head - P(success) and expected cost per part; query in p/c order.')" -r 30 "$W/s3.mp4"
+$FF -loop 1 -t 14 -i "$W/pipeline-05.png" -vf "$pad,$(cap 'GNN + survival head - P(success) and expected cost per part; query in p/c order.')" -r 30 "$W/s3.mp4"
 # 4 (30-55 s) a real disassembly with the learned order (13.4 s of frames, slowed to 25 s)
 $FF -framerate 4.3 -i "$FRAMES/%04d.png" -vf "scale=1920:1080,$(cap 'A real test assembly - the learned query order, fresh CMG-RRT queries.'),format=yuv420p" -r 30 "$W/s4.mp4"
 # 5 (55-75 s) headline result
