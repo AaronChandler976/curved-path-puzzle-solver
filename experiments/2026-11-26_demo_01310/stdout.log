@@ -1,0 +1,4 @@
+1 (assembly, method) runs to do, 0 done; workers 1
+pybullet build time: Jan 29 2025 23:17:20
+[   0.4 min] main 1 01310 gnn_survival#s101 complete planner=19.3s calls=7 wall=20.6s conf=None busy_frac=None err=None
+LIVE EXIT runs=1 wall=22s

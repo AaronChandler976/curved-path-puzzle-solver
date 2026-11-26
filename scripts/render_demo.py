@@ -36,6 +36,8 @@ def main():
     ap.add_argument("--aid", required=True)
     ap.add_argument("--out", default=os.path.join(ROOT, "reports/run03/figures/demo"))
     ap.add_argument("--max-faces", type=int, default=2500)
+    ap.add_argument("--method", default="gnn_surv", help="method name in results.jsonl (run 05: e.g. gnn_survival#s101)")
+    ap.add_argument("--hd", action="store_true", help="also write <out>.mp4 frames at 1920x1080 (16x9 in at 120 dpi)")
     args = ap.parse_args()
     import matplotlib
     matplotlib.use("Agg")
@@ -45,7 +47,7 @@ def main():
     from taucgl_rrt.cspace import SE3
     from disasm.oracle.cmgrrt import load_assembly
     run = [json.loads(l) for l in open(os.path.join(args.live_dir, "results.jsonl"))]
-    run = [r for r in run if r["assembly_id"] == args.aid and r["method"] == "gnn_surv"][0]
+    run = [r for r in run if r["assembly_id"] == args.aid and r["method"] == args.method][0]
     asm = load_assembly(os.path.join(ROOT, "data/raw/multi_assembly/multi_assembly", args.aid))
     rng = np.random.default_rng(0)
     tris = {}
@@ -63,7 +65,8 @@ def main():
             if p == moving and pose is not None:
                 M = SE3(*pose).to_matrix()
                 V = V @ M[:3, :3].T + M[:3, 3]
-            fc = (*color[p][:3], 0.9 if p == moving else 0.35)
+            fc = ((0.165, 0.471, 0.839, 0.95) if p == moving else (0.62, 0.62, 0.60, 0.22)) if args.hd else \
+                (*color[p][:3], 0.9 if p == moving else 0.35)
             ax.add_collection3d(Poly3DCollection(V[F], facecolor=fc, edgecolor=(0, 0, 0, 0.04), linewidths=0.1))
         r = span * 0.9
         ax.set_xlim(c0[0] - r, c0[0] + r); ax.set_ylim(c0[1] - r, c0[1] + r); ax.set_zlim(c0[2] - r, c0[2] + r)
@@ -80,7 +83,7 @@ def main():
                                                    else f"unsolved {q['time_s']:.1f} s")
             lines.append(f" {i + 1}. part {p}: p={st['p'][str(p)] if isinstance(next(iter(st['p'])), str) else st['p'][p]:.2f} "
                          f"c={st['c'][str(p)] if isinstance(next(iter(st['c'])), str) else st['c'][p]:.1f}s -> {res}")
-        ax.text(0.0, 1.0, "\n".join(lines), va="top", family="monospace", fontsize=8)
+        ax.text(0.0, 1.0, "\n".join(lines), va="top", family="monospace", fontsize=14 if args.hd else 8)
 
     frames, strip = [], []
     nst = len(run["states"])
@@ -91,13 +94,19 @@ def main():
         q = [x for x in st["queries"] if x["part"] == ch][0] if ch is not None else None
         poses = path_poses(q["path_file"]) if q and q.get("path_file") else [None]
         for j, pose in enumerate(poses):
-            fig = plt.figure(figsize=(9, 4.2))
-            ax = fig.add_subplot(1, 2, 1, projection="3d")
+            fig = plt.figure(figsize=(16, 9) if args.hd else (9, 4.2), dpi=120 if args.hd else 100)
+            if args.hd:
+                ax = fig.add_axes([0.0, 0.0, 0.58, 0.92], projection="3d")
+            else:
+                ax = fig.add_subplot(1, 2, 1, projection="3d")
             draw(ax, present, ch, pose)
+            if args.hd:
+                ax.set_box_aspect(None, zoom=1.35)
             rot = 0.0 if pose is None else np.degrees(2 * np.arccos(min(1.0, abs(pose[3]))))
-            ax.set_title(f"part {ch} leaving (rotation {rot:.0f}°)" if ch is not None else "stuck", fontsize=9)
-            text_panel(fig.add_subplot(1, 2, 2), st, k, nst)
-            fig.tight_layout()
+            ax.set_title(f"part {ch} leaving (rotation {rot:.0f}°)" if ch is not None else "stuck", fontsize=20 if args.hd else 9)
+            text_panel(fig.add_axes([0.58, 0.05, 0.41, 0.9]) if args.hd else fig.add_subplot(1, 2, 2), st, k, nst)
+            if not args.hd:
+                fig.tight_layout()
             fig.canvas.draw()
             img = np.asarray(fig.canvas.buffer_rgba())[..., :3].copy()
             frames.append(img)
@@ -106,7 +115,12 @@ def main():
             plt.close(fig)
         removed.append(ch)
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
-    imageio.mimsave(args.out + ".gif", frames, duration=0.12, loop=0)
+    if args.hd:      # PNG frames; encode with ffmpeg from the `paper` env (see video/script.md)
+        fd = args.out + "_frames"
+        os.makedirs(fd, exist_ok=True)
+        for i, f in enumerate(frames):
+            imageio.imwrite(os.path.join(fd, f"{i:04d}.png"), f)
+    imageio.mimsave(args.out + ".gif", frames[::2] if args.hd else frames, duration=0.12, loop=0)
     h = max(s.shape[0] for s in strip)
     imageio.imwrite(args.out + "_strip.png", np.concatenate([s[:h] for s in strip], 0))
     print(json.dumps({"gif": args.out + ".gif", "strip": args.out + "_strip.png", "frames": len(frames),
