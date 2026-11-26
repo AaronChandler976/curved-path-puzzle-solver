@@ -123,6 +123,33 @@ CMG-RRT~\cite{livnat_cmgrrt}, a tight-clearance planner that follows the contact
 except for our collision adapter. Every success is re-validated edge by edge at step $\le\varepsilon/2$. The query
 cost is the planner wall-clock time of both stages; the budget is $T=30$\,s.
 
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[node distance=0.35cm and 0.42cm, >={Stealth[length=2mm]},
+  box/.style={draw,rounded corners=2pt,align=center,font=\footnotesize,minimum height=0.95cm,inner sep=3pt},
+  ours/.style={box,fill=blue!8}, orc/.style={box,fill=orange!10}]
+\node[box] (cad) {Fusion 360\\assembly, state $S$};
+\node[box,right=of cad] (feat) {contact graph\\18 node / 5 edge\\features};
+\node[ours,right=of feat] (enc) {GINE encoder\\$L$ residual layers\\+ LayerNorm};
+\node[ours,right=of enc] (head) {survival head\\hazards $h_{i1..K}$\\$K=8$ log bins};
+\node[ours,right=of head] (pc) {$p_i=1-S_{iK}$\\$c_i=\mathbb{E}[\min(t_i,T)]$};
+\node[box,right=of pc] (ord) {query order\\$\downarrow p_i/c_i$};
+\node[orc,below=0.75cm of ord] (pre) {straight-pull\\pre-check\\(step $\le\varepsilon/2$)};
+\node[orc,left=of pre] (rrt) {CMG-RRT\\exact union SDF\\budget $T$};
+\node[box,left=of rrt] (rem) {first success:\\remove part,\\next state};
+\draw[->] (cad) -- (feat); \draw[->] (feat) -- (enc); \draw[->] (enc) -- (head); \draw[->] (head) -- (pc); \draw[->] (pc) -- (ord);
+\draw[->] (ord) -- node[right,font=\scriptsize]{next part} (pre);
+\draw[->] (pre) -- node[above,font=\scriptsize]{blocked} (rrt);
+\draw[->] (rrt) -- node[above,font=\scriptsize]{success} (rem);
+\draw[->] (pre.south) -- ++(0,-0.35) -| node[pos=0.25,below,font=\scriptsize]{free pull} (rem.south);
+\draw[->] (rem.west) -| node[pos=0.75,left,font=\scriptsize]{} (cad.south);
+\node[font=\scriptsize,align=left,anchor=north west] at ([yshift=-0.15cm]enc.south west) {training: censoring-aware\\survival NLL on every\\labelled query};
+\end{tikzpicture}
+\caption{Architecture and pipeline. Blue: learned ranker. Orange: oracle v2 (an unsolved CMG-RRT query is censored at
+$T$, never ``infeasible''). Each state's parts are queried in descending $p/c$ until one comes out.}
+\label{fig:arch}
+\end{figure*}
+
 \subsection{Ranker: GNN with a censoring-aware survival head}
 Each state is a contact graph: nodes are present parts, directed edges join parts in contact. Node features (18) are
 log volume, area, bounding-box extents, position relative to the sub-assembly centre and its norm, contact count and
@@ -183,7 +210,14 @@ assemblies; tests are two-sided Wilcoxon signed-rank tests, Holm-corrected over 
 rule was fixed in advance: GNN-Surv beats the best heuristic (chosen on validation: fewest contacts) only if the ratio-of-totals
 CI lies below 1 \emph{and} the Holm-adjusted test is significant with a negative HL difference.
 
-\subsection{Main result (test, replay)}
+\subsection{Main result (test, replay and live)}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/totals_replay_live.pdf}
+\caption{Total planner time on the test set (bars) with 95\% bootstrap CIs over assemblies. Blue: our trained
+rankers; orange: ASAP; gray: untrained orderings; dashed: fewest contacts.}
+\label{fig:totals}
+\end{figure}
 \begin{table}[t]
 \centering
 \caption{Total planner time (s) on the 347-assembly test set, evaluated once. Replay re-uses logged query costs over
@@ -237,6 +271,12 @@ counts every query of every disassembly, including runs that get stuck. An explo
 cheapest live ordering (0.797 vs fewest contacts) but not in replay, so we treat it as a lead, not a result.
 
 \subsection{Budget policy (exploratory)}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/budget_policy.pdf}
+\caption{Full budget ($T=30$\,s) vs a 3\,s first pass, replay and live (live GNN-Surv with the policy: seed 101).}
+\label{fig:budget}
+\end{figure}
 Querying every part first with a 3\,s budget, and retrying at 30\,s only if none succeeds, reduces the replayed total of
 fewest contacts from 7{,}202\,s to 2{,}008\,s ($-72\%$) and that of GNN-Surv to 1{,}904\,s. Under the same policy the two do
 not differ detectably (0.948 [0.820, 1.095]). Live the saving is about 50\%: stuck runs pay the retry, and the planner
@@ -244,6 +284,24 @@ overruns short budgets (below). The policy was chosen on validation after regist
 exploratory.
 
 \subsection{Latency and memory}
+\begin{table}[t]
+\centering
+\caption{Ranker cost (forward pass on collated inputs, median; 200 validation states). Features: 2.4\,ms per state from
+the cached contact graph. The profile run was flagged by the idle guard's load criterion; outside load was
+$\le0.36$ cores.}
+\label{tab:latency}
+\footnotesize
+\begin{tabular}{lrrrr}
+\toprule
+model & params & CPU 1 thr. (ms) & GPU b=1 (ms) & GPU mem (MB)\\
+\midrule
+MLP-Surv & 22.8k & 0.04 & 0.08 & 10\\
+GNN-Surv & 32.4k & 0.12 & 0.24 & 11\\
+PN-GNN-Surv & 61.2k & 1.89 & 0.23 & 904\\
+ASAP-retrained & 1.70M & 7.07 & 0.72 & 3{,}849\\
+\bottomrule
+\end{tabular}
+\end{table}
 GNN-Surv has 32{,}392 parameters and takes 0.12\,ms per state on one CPU thread (0.24\,ms on the GPU at batch 1, 11\,MB
 peak), plus 2.4\,ms to build the state's features from the cached contact graph. ASAP's model has 1.7\,M parameters and
 takes 7.0\,ms. One avoided timeout (30\,s) equals about 12{,}000 ranker calls. (The profile run was flagged by the idle
@@ -251,6 +309,13 @@ guard's load criterion; measured outside load stayed $\le0.36$ cores.)
 
 \section{Failure Analysis, Negative Results and Limitations}
 \label{sec:fail}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/failure_scatter.pdf}
+\caption{Test states (replay) where GNN-Surv (seed 101) paid more than fewest contacts. Blue: it queried a part that
+timed out before the first success.}
+\label{fig:fail}
+\end{figure}
 \textbf{Where the cost goes.} The costliest 5\% of test states hold 89\% of fewest contacts' total and 77\% of
 GNN-Surv's. Against fewest contacts, GNN-Surv is cheaper on 436 states (saving 3{,}240\,s) and costlier on 368 (losing
 3{,}404\,s). Of the loss, 3{,}153\,s comes from 85 states in which it queried a part that ran to the full budget before
