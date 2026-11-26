@@ -80,7 +80,7 @@ How to read this (claims limited to what the rule and numbers support):
     within-state C-index 0.674 vs ASAP zero-shot 0.593 and ASAP-retrained 0.626. ListNet is the highest at 0.689.
   - The C-index is only modestly above 0.5, and the failures (§5) are confident mistakes.
 
-## 4. Live full disassembly (PREREG §6) — registered methods complete
+## 4. Live full disassembly (PREREG §6) — complete
 - **Run:** `experiments/2026-11-24_final_eval_live/` (`scripts/run_final_live.sh`), tables in
   `reports/final_eval/live_registered.md`.
   - Every method ran on all 347 test assemblies, with fresh queries (oracle v2: CMG-RRT only when the pull fails).
@@ -121,8 +121,18 @@ How to read this (claims limited to what the rule and numbers support):
     difference that survives Holm.
 - **Subsets** (GNN-Surv vs fewest contacts, uncorrected): ratios 0.85–0.99 in every source and size bin; none has a CI
   entirely below 1.
-- **Exploratory live rows** (P3: GT-Surv and ListNet; P4: budget policy) are PENDING and get their own table in
-  `reports/final_eval/live.md`.
+- **Exploratory live rows** (post-registration, uncorrected p; `reports/final_eval/live.md`). P3 and P4 finished at
+  2026-11-26 09:29 (17,697 runs in total).
+  - *ListNet:* 18,336 s, the cheapest live ordering. Ratio vs fewest contacts 0.797 [0.711, 0.886], p 3.7e-5; vs
+    GNN-Surv 0.872 [0.806, 0.942]. In replay ListNet was no cheaper than fewest contacts (7,226 vs 7,202 s), so replay
+    and live disagree for this variant. It is a hypothesis for future work, not a finding.
+  - *GT-Surv:* 21,735 s; vs fewest contacts 0.945 [0.844, 1.055].
+  - *Budget policy T' = 3 s:* fewest contacts 23,002 → 11,273 s (ratio 0.490 [0.424, 0.557]); GNN-Surv (val-best
+    seed) 10,810 s (vs its 5-seed full-budget mean: 0.514). Under the same policy GNN-Surv / fewest contacts = 0.959
+    [0.896, 1.023]. The live saving (about 50%) is smaller than the replay saving (72%) because a stuck live
+    disassembly pays the second pass in full.
+- Figures: `reports/final_eval/figures/totals_replay_live.pdf`, `budget_policy.pdf`, `failure_scatter.pdf`
+  (`scripts/final_figures.py`; dashed line = fewest contacts).
 
 ## 5. Failure analysis (`reports/final_eval/failure_analysis.md`)
 - **Tail concentration:** the costliest 5% of states hold 89% of fewest contacts' total and 77% of GNN-Surv's.
