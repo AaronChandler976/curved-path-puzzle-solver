@@ -10,14 +10,14 @@ beyond replaying logged planner paths.
 
 | time | picture | caption (burned in) |
 |---|---|---|
-| 0:00–0:05 | a 12-part CAD assembly; one part slides out along a curved path, fast | "Which part can come out next? Asking a motion planner costs 0.04 s… or 30 s." |
-| 0:05–0:15 | the same assembly, parts highlighted one by one; a timer runs to 30 s on a stuck part | "Each question is a CMG-RRT query. A timeout proves nothing, and it is expensive." |
-| 0:15–0:30 | pipeline animation: CAD → contact graph → GNN → p and c per part → query order → planner | "We predict success probability AND expected cost, timeouts included, and query in p/c order." |
-| 0:30–0:55 | a real live disassembly from `experiments/2026-11-24_final_eval_live/` (GNN-Surv order shown as numbered labels; each removal replayed from its saved path) | "A real disassembly with the learned query order (fresh planner queries)." |
-| 0:55–1:15 | the test-set bar chart (`reports/final_eval/figures/replay_test_totals.pdf`) | "Fresh test set, 347 assemblies, pre-registered: cheaper than ASAP and random… but no better than a simple contact heuristic." |
-| 1:15–1:30 | failure example: the model's confident first pick times out (p ≈ 1.0, 30 s) | "Why: confident timeouts on large, unseen assemblies." |
-| 1:30–1:45 | budget-policy bars: 7,202 s → 2,008 s | "The biggest win wasn't learned: try every part for 3 s first. −72% planner time." |
-| 1:45–1:55 | repo URL and title card | "Code, data and paper: github.com/AaronChandler976/curved-path-puzzle-solver" |
+| 0:00–0:06 | the real CMG-RRT rotation removal (test assembly 01310, last state) | "Which part can come out next? Asking the planner costs 0.04 s ... or 30 s." |
+| 0:06–0:16 | text card | "Each removal test is a CMG-RRT motion-planning query. / A timeout (30 s) proves nothing - and it dominates the cost. / So - which part should we ask about first?" |
+| 0:16–0:30 | talk slide "What we built" | "GNN + survival head - P(success) and expected cost per part; query in p/c order." |
+| 0:30–0:55 | the whole demo disassembly of 01310 (GNN-Surv order, p and c, removals from logged paths) | "A real test assembly - the learned query order, fresh CMG-RRT queries." |
+| 0:55–1:15 | test totals figure (replay and live) | "Fresh test set - cheaper than ASAP, no better than fewest contacts." |
+| 1:15–1:30 | failure scatter | "Why - a few confident timeouts on larger, unseen assemblies." |
+| 1:30–1:45 | budget-policy figure | "Biggest win, not learned - try every part for 3 s first (-72% replay, -50% live)." |
+| 1:45–1:53 | end card with title, repo URL and author | — |
 
 Notes
 - Hook in the first 5 s: the fast curved removal plus the 0.04 s vs 30 s contrast.

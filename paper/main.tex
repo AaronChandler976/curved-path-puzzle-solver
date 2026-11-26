@@ -34,8 +34,8 @@ and live (17{,}697 full disassemblies). The cost-aware ranker is 34--39\% cheape
 replay and 9--21\% cheaper live. It is cheaper than removability-only ordering with the same encoder in the main
 replay analysis (ratio 0.887, Holm $p<10^{-6}$), but not robustly across evaluations. It does not beat a
 fewest-contacts heuristic (replay 1.055 [0.887, 1.257], live 0.915 [0.819, 1.015]). The loss comes from a few
-confident timeouts on larger, unseen assemblies. An untrained two-pass budget policy cuts planner time by 72\% in
-replay and about 50\% live for every ordering. The ranker itself costs 2.5\,ms per state.
+confident timeouts on larger, unseen assemblies. An untrained two-pass budget policy cuts planner time by 72--79\%
+in replay for every ordering we replayed, and by about 50\% live for the two orderings run with it. The ranker itself costs 2.5\,ms per state.
 \end{abstract}
 
 \section{Introduction}
@@ -74,7 +74,8 @@ removability-only ordering with the same GNN in the main replay analysis (11\%),
 It does not beat a fewest-contacts heuristic. A failure analysis finds the loss in a few confident timeouts on larger,
 unseen assemblies.
 \item A negative and a practical finding reported as such: validation favoured the most-tuned variants, which the
-out-of-sample checks did not confirm, and an untrained two-pass budget policy cuts planner time by 72\% for every ordering.
+out-of-sample checks did not confirm, and an untrained two-pass budget policy cuts replayed planner time by 72--79\% for every ordering replayed
+(about 50\% live for the two orderings run with it).
 \end{itemize}
 
 \section{Related Work}
@@ -207,9 +208,20 @@ products. The evaluation protocol was pre-registered before any model was traine
 Hardware: AMD Ryzen 9 9900X (12 cores), RTX 5070 Ti (16\,GB), 64\,GB RAM. Planner queries run on 10 single-threaded CPU
 workers. An idle guard pauses dispatch while other processes use more than 0.5 cores, and it records how busy the
 machine was during each query; confounded queries are re-run with the same seed. Models are trained with PyTorch and
-PyG on the GPU (AdamW, weight decay $10^{-4}$, dropout 0.1, batch 32 states, $\le150$ epochs). Every variant gets the
-same grid (hidden $\{64,128\}$ $\times$ lr $\{10^{-3},3\cdot10^{-4}\}$ $\times$ layers $\{2,3\}$), selected by
-validation replay cost (5-epoch trailing mean, three grid seeds), and is retrained with 5 seeds.
+PyG on the GPU (AdamW, weight decay $10^{-4}$, dropout 0.1, batch 32 states, $\le150$ epochs). Our variants share one
+grid (hidden $\{64,128\}$ $\times$ lr $\{10^{-3},3\cdot10^{-4}\}$ $\times$ layers $\{2,3\}$; the tail-aware and ListNet
+variants add $\lambda\in\{0.1,1\}$; ASAP retrained uses lr $\{10^{-3},3\cdot10^{-4},10^{-4}\}$ $\times$ batch
+$\{16,32\}$ with its own architecture). Configurations are selected by validation replay cost (5-epoch trailing mean,
+three grid seeds) and retrained with 5 seeds.
+
+\textbf{Baselines and ablations} (all use the same oracle and $T$). \emph{Random}: the exact expectation over uniformly
+random query orders. \emph{Outside-in}: parts whose centroid is farthest from the sub-assembly's bounding-box centre
+first. \emph{Fewest contacts}: parts with the fewest present contact neighbours first (ties: outside-in, then part id).
+\emph{ASAP zero-shot}: the released ASAP GNN (PointNet part features, GATv2 layers) with its own redmax contact graph,
+parts ordered by its score. \emph{ASAP retrained}: the same architecture and objective (one positive per state, the
+part our disassembly removed), trained on our labels. \emph{MLP}: the same per-part blocks and head as the GNN without
+message passing. \emph{BCE} heads predict only $p$ and order by $p$; survival heads order by $p/c$. \emph{Hindsight
+optimal}: the cheapest successful query, a lower bound.
 
 \textbf{Metrics.} Primary: total planner time to disassemble, summed over the test set, in \emph{replay} (re-using the
 logged cost of every query, so every ordering is scored on the same planner outcomes) and \emph{live} (fresh queries).
@@ -258,7 +270,7 @@ GNN-Surv vs fewest contacts: replay 1.055 [0.887, 1.257], Holm $p=0.43$; live 0.
 GNN-Surv takes 7{,}595\,s against 22{,}186\,s for random, 12{,}387\,s for ASAP zero-shot and 11{,}500\,s for ASAP
 retrained on our labels with its own objective (ratios 0.342, 0.613 and 0.660; all Holm $p<10^{-5}$, HL $<0$). Against
 fewest contacts (7{,}202\,s) the ratio is 1.055 [0.887, 1.257] with Holm $p=0.43$, so by the registered rule GNN-Surv
-\textbf{does not beat} the heuristic. The same holds on the 300 test assemblies that were never used in any pilot (0.999
+\textbf{does not beat} the heuristic. The same holds on the 300 scored assemblies among the 306 never used in any pilot (0.999
 [0.829, 1.226]).
 
 \subsection{Ablations}
@@ -273,7 +285,8 @@ inner early stopping already reduced the tail-aware variant's apparent advantage
 \subsection{Qualitative example}
 Fig.~\ref{fig:demo} shows the last state of a live test disassembly (assembly 01310, GNN-Surv seed 101). The ranker
 puts part 7 first ($p=0.97$, $c=1.3$\,s). Its straight pull is blocked, and CMG-RRT finds a path that rotates it by up
-to 102$^\circ$ in 18.4\,s, longer than the predicted cost but a success. This removal needs the curved planner.
+to 102$^\circ$, longer than the predicted cost but a success: 19.5\,s in the guarded live run (18.4\,s in the demo
+re-run). This removal needs the curved planner.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.95\linewidth]{figures/demo_01310.pdf}
@@ -307,7 +320,7 @@ exploratory.
 \begin{table}[t]
 \centering
 \caption{Ranker cost (forward pass on collated inputs, median; 200 validation states). Features: 2.4\,ms per state from
-the cached contact graph. The profile run was flagged by the idle guard's load criterion; outside load was
+the cached contact graph. The profile run counts as confounded by the idle guard's load criterion; outside load was
 $\le0.36$ cores.}
 \label{tab:latency}
 \footnotesize
@@ -323,10 +336,10 @@ ASAP-retrained & 1.70M & 7.07 & 0.72 & 3{,}849\\
 \bottomrule
 \end{tabular}
 \end{table}
-GNN-Surv has 32{,}392 parameters and takes 0.12\,ms per state on one CPU thread (0.24\,ms on the GPU at batch 1, 11\,MB
-peak), plus 2.4\,ms to build the state's features from the cached contact graph. ASAP's model has 1.7\,M parameters and
-takes 7.0\,ms. One avoided timeout (30\,s) equals about 12{,}000 ranker calls. (The profile run was flagged by the idle
-guard's load criterion; measured outside load stayed $\le0.36$ cores.)
+GNN-Surv has 32{,}392 parameters and takes 0.12\,ms per state on one CPU thread (0.24\,ms on the GPU at batch 1; 11\,MB
+peak GPU memory for a batch of 200 states), plus 2.4\,ms to build the state's features from the cached contact graph. ASAP's model has 1.7\,M parameters and
+takes 7.0\,ms. One avoided timeout (30\,s) equals about 12{,}000 ranker calls. (By the idle guard's rule the profile run counts as
+confounded, because its load criterion fired; measured outside load stayed $\le0.36$ cores.)
 
 \section{Failure Analysis, Negative Results and Limitations}
 \label{sec:fail}
@@ -346,7 +359,7 @@ $c\le3.7$\,s and then ran unsolved for more than 30\,s. These are confident erro
 \textbf{Plausible cause (not tested): shift in size and geometry.} The training set is 89.5\% 3--8-part
 assemblies; the test set is 51\%
 9--12-part and 63\% assemblies whose CAD interpenetrates slightly (tolerated per pair). The 20 largest losses are all
-in the fresh sources, 15 of them with 9--12 parts. Validation (80\% small assemblies) had fewer than 30 large assemblies in
+in the fresh sources, 15 of them with 9--12 parts. Validation (89.6\% 3--8-part assemblies) had fewer than 30 large assemblies in
 every size subset, and the cross-validation was only summarised in aggregate, so neither revealed this. Calibration on the test set is still good on average
 (ECE 0.038) and the within-state C-index is 0.674 (ASAP: 0.593), so the failure is in the tail, where it matters.
 
@@ -359,9 +372,10 @@ obstacle by up to 0.149 (against $\varepsilon=0.005$) when checked exactly. The 
 it validly.
 (iii) 95--98\% of successes are straight pulls, so CMG-RRT itself decides only a few percent of removals. Its
 timeouts, however, dominate the cost.
-(iv) The authors' hardest bundled puzzle (elk) was not solved by the public, single-process CMG-RRT in one 4\,h run
-with the learned SDF (76{,}901 iterations, idle-guarded). The paper reports a 156-minute mean using 16 cores and a
-parallel exploration that the public code does not include.
+(iv) The authors' hardest bundled puzzle (elk) was not solved by the public CMG-RRT code in one 4\,h run with the
+learned SDF (76{,}901 iterations, idle-guarded; one process, which used about 12 CPU cores through its numerical
+libraries). The paper reports a 156-minute mean on 16 cores with a parallel tree exploration that the public code does
+not include. One seed cannot compare success rates.
 (v) Validation optimism: the variant with the largest grid looked best on validation and was not better out of
 sample.
 
@@ -374,10 +388,11 @@ the 3\,s first pass live (median 4.2\,s for failed queries). Every ordering face
 
 \section{Conclusion and Future Work}
 \label{sec:concl}
-Modelling what a planner query costs, including the timeouts, makes a learned AbD ranker cheaper than ranking by
-removability and than ASAP's model, on a fresh, pre-registered test set with a tight-clearance SE(3) planner. It did
-not beat a simple contact heuristic on larger, unseen products, because of a few confident timeouts. An untrained
-budget policy saved far more. Next steps are to train and calibrate on large assemblies (or condition on size), and to
+On a fresh, pre-registered test set with a tight-clearance SE(3) planner, a learned ranker that models query cost
+and timeouts was cheaper than ASAP's model in replay and live. It was cheaper than ranking by removability with the
+same encoder in the main replay analysis, but not robustly across evaluations or encoders. It did not beat a simple
+contact heuristic on larger, unseen products; in replay a few confident timeouts account for most of the loss. An
+untrained budget policy saved far more. Next steps are to train and calibrate on large assemblies (or condition on size), and to
 learn per-part budgets from the predicted survival curve instead of a fixed first-pass limit.
 
 \bibliographystyle{IEEEtran}

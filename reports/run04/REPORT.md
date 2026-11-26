@@ -94,8 +94,9 @@ because both tables draw from one bootstrap random generator. They are the same 
 0.002, threshold −0.005, 50 steps, 10,000 samples; the bundled learned SDF; GPU), run alone after a 5-min idle wait.
 - **Result: not solved within the 240-min cap.** 76,901 iterations, 3.42 M tree nodes, 14,400 s of planner time.
 - **Timing hygiene:** busy_frac 0.0069 over 2,881 samples (< 0.05, not confounded).
-- **Comparison with the paper:** it reports a 156-min mean on 16 cores, with a parallel exploration that the public code
-  does not include. One single-process run with one seed is not enough to compare success rates. We report that the
+- **Comparison with the paper:** it reports a 156-min mean on 16 cores, with a parallel tree exploration that the public
+  code does not include. Our run is one process, but its numerical libraries used about 12 cores (median 11.7 in
+  `guard_puzzle_elk_s0/idle_samples.jsonl`), so the difference is the missing parallel exploration, not the core count. One single-process run with one seed is not enough to compare success rates. We report that the
   public, single-process code did not solve elk in 4 h here.
 
 ## 7. Needs Aaron
