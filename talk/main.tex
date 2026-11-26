@@ -31,7 +31,8 @@
 \begin{columns}
 \column{0.55\textwidth}
 \begin{itemize}
-\item Recycling and teardown (e.g.\ battery modules) need a \textbf{removal sequence} for real CAD products.
+\item Recycling and teardown need a \textbf{removal sequence} for real CAD products (battery modules are the
+motivation; we evaluate on general mechanical CAD, no battery models).
 \item Assembly-by-disassembly: at each step, ask a motion planner \emph{``can part $i$ come out?''}
 \item Each question is a \textbf{CMG-RRT query} in SE(3): \textcolor{blu}{0.04\,s} if a straight pull works,
 \textcolor{acc}{30\,s} if it times out.
@@ -49,7 +50,7 @@
 \draw[-{Stealth},thick,acc] (3.9,1.9) to[bend left] (4.7,2.6) node[above]{\small timeout: 30 s};
 \end{tikzpicture}
 \end{columns}
-\src{Oracle v2 query costs: run 04 T4 (\texttt{reports/run04/oracle\_v2.md}); median 0.037\,s on the validation set.}
+\src{Oracle v2 query costs: run 04 T4 (\texttt{reports/run04/oracle\_v2.md}): median 0.037\,s over its 624-query oracle-validation set, all outcomes.}
 \end{frame}
 
 % 2 ------------------------------------------------------------------ problem
@@ -104,10 +105,21 @@ CMG-RRT (WAFR 2026), open source & --- (planner) & SE(3), tight clearance \\
 \end{itemize}
 \end{frame}
 
+% 4b ----------------------------------------------------------------- demo
+\begin{frame}{A real disassembly with the learned query order (test assembly)}
+\centering
+\includegraphics[width=0.66\linewidth,trim=0 60 0 0,clip]{figures/demo_frame.png}\\
+{\small Test assembly 01310, GNN-Surv order with predicted $p$ and $c$; part 7 needs a 102° rotation found by CMG-RRT.
+\textbf{Play \texttt{talk/demo.mp4} (13 s).}}
+\src{Re-run of the live test disassembly with saved paths: \texttt{experiments/2026-11-26\_demo\_01310/} (same seeds; 19.3\,s planner time vs 20.5\,s in the live run).}
+\end{frame}
+
 % 5 ------------------------------------------------------------------ data
-\begin{frame}{Data: valid states from known feasible disassemblies (course feedback)}
-\begin{itemize}
-\item Start from the real assembled product; query \textbf{every} part; remove a verified success; repeat.
+\begin{frame}{Data: states reached by verified disassemblies (course feedback)}
+\begin{itemize}\small
+\item Start from the real assembled product; query \textbf{every} part; remove a path-validated success; repeat.
+\item Caveats: the sequences are found by our planner, not given by the dataset; 156 of 2,022 assemblies get stuck;
+63\% of test assemblies have small CAD interpenetrations that we tolerate per pair (valid only up to that allowance).
 \item 2,022 assemblies, 3--12 parts, \textbf{41,913 labelled queries}, 12.6\,h on 10 cores, idle-guarded timing.
 \item Oracle fixed first: the original adapter never tried the straight pull from the start pose (123/124 misses),
 and 18.5\% of its successes went through parts at fine resolution.
@@ -123,7 +135,7 @@ and 18.5\% of its successes went through parts at fine resolution.
 {\scriptsize\color{gr} blue: ours \quad orange: ASAP \quad gray: untrained; dashed: fewest contacts}\\[3pt]
 \small GNN-Surv / fewest contacts: replay $1.055$ [0.887, 1.257], live $0.915$ [0.819, 1.015] $\Rightarrow$
 \textcolor{acc}{\textbf{does not beat}} (pre-registered rule, both).
-\src{\texttt{reports/final\_eval/replay.md}, \texttt{live.md}; bootstrap over 341/347 assemblies; 5 seeds per model.}
+\src{Every ordering uses the same oracle (pull check $\rightarrow$ CMG-RRT) and budget $T=30$\,s. \texttt{reports/final\_eval/replay.md}, \texttt{live.md}; bootstrap over 341/347 assemblies; 5 seeds per model.}
 \end{frame}
 
 % 7 ------------------------------------------------------------------ ablations
@@ -161,23 +173,31 @@ plain vs tail-aware loss (GNN-Surv vs GNN-Surv-Tail) & 1.024 [0.934, 1.112] & 1\
 
 % 9 ------------------------------------------------------------------ budget policy
 \begin{frame}{The biggest win was not learned: try 3 s first}
-\begin{itemize}
+\begin{itemize}\small
 \item Two-pass policy: every part gets 3\,s; only if none comes out, retry at 30\,s.
-\item Fewest contacts: 7,202\,s $\rightarrow$ \textbf{2,008\,s} ($-72\%$) on test; GNN-Surv 7,595\,s $\rightarrow$ 1,904\,s.
+\item Replay on test: $-72\%$ to $-79\%$ for every ordering; fewest contacts 7,202\,s $\rightarrow$ \textbf{2,008\,s}, GNN-Surv 7,595\,s $\rightarrow$ 1,904\,s.
 \item Under the same policy, learned vs heuristic: 0.948 [0.820, 1.095] --- no detectable difference.
-\item Live: about $-50\%$ (stuck runs pay the retry; the planner overruns short budgets).
+\item Live (fewest contacts; GNN-Surv at one seed, 101): about $-50\%$. Stuck runs pay the retry, and budgets are soft (the planner checks time per iteration: timeouts ran a median 31\,s).
 \end{itemize}
-\centering\includegraphics[width=0.78\linewidth]{figures/budget_policy.pdf}
+\centering\includegraphics[width=0.62\linewidth]{figures/budget_policy.pdf}
 \src{Exploratory (post-registration, chosen on validation): \texttt{reports/final\_eval/replay.md}.}
 \end{frame}
 
 % 10 ----------------------------------------------------------------- latency
 \begin{frame}{Cost of the ranker vs the planner time at stake}
-\begin{itemize}
-\item GNN-Surv: 32k parameters, 0.12\,ms per state (1 CPU thread) + 2.4\,ms features.
-\item ASAP's model: 1.7M parameters, 7.0\,ms per state.
-\item One avoided timeout = 30\,s = $\sim$12,000 ranker calls.
-\end{itemize}
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+model & parameters & ms / state (1 CPU thread) & GPU peak memory\\
+\midrule
+GNN-Surv (ours) & 32k & 0.12 + 2.4 features & 11\,MB\\
+PN-GNN-Surv & 61k & 1.89 + 2.4 features & 904\,MB\\
+ASAP & 1.7M & 7.0 & 3.8\,GB\\
+\midrule
+one CMG-RRT timeout & \multicolumn{3}{r}{30\,s = about 12,000 GNN-Surv calls}\\
+\bottomrule
+\end{tabular}
+\end{center}
 \src{\texttt{reports/run05/profile.md} (timing flagged confounded by the idle-guard rule; outside load $\le$0.36 cores).}
 \end{frame}
 
@@ -188,8 +208,8 @@ plain vs tail-aware loss (GNN-Surv vs GNN-Surv-Tail) & 1.024 [0.934, 1.112] & 1\
 \begin{itemize}\small
 \item 89\% of fewest contacts' total is in its costliest 5\% of states (77\% for GNN-Surv).
 \item GNN-Surv's loss vs fewest contacts: \textbf{85 states where it queried a timeout first} (+3,153\,s).
-\item In its costliest states it predicted $p\approx0.9$--$1.0$, $c\le3.7$\,s for parts that then ran 30\,s.
-\item Shift: training is 79\% 3--8-part assemblies; test is 51\% 9--12-part and 63\% interpenetrating CAD.
+\item In its 10 costliest states the first-queried part had $p\ge0.90$, $c\le3.7$\,s and then ran 30\,s (seed 101).
+\item Plausible cause (not tested): shift. Train is 89.5\% 3--8-part; test is 51\% 9--12-part and 63\% interpenetrating CAD.
 \end{itemize}
 \column{0.42\textwidth}
 \includegraphics[width=\linewidth]{figures/failure_scatter.pdf}
@@ -201,7 +221,7 @@ plain vs tail-aware loss (GNN-Surv vs GNN-Surv-Tail) & 1.024 [0.934, 1.112] & 1\
 \begin{frame}{Negative results and what we learned}
 \begin{itemize}
 \item The planner adapter was the first bug: start pose never tested, coarse goal check (18.5\% invalid paths).
-\item A learned SDF ``solved'' a tight puzzle 3/3 --- every path went through the part (exact check: 0/3).
+\item A learned SDF ``solved'' a bundled tight assembly 3/3 --- every path went through the part (exact check: 0/3).
 \item 95--98\% of successes are straight pulls; CMG-RRT decides the rest, and the timeouts dominate cost.
 \item Validation optimism is real: pick on val, confirm out of sample, pre-register the test.
 \end{itemize}
@@ -212,17 +232,11 @@ plain vs tail-aware loss (GNN-Surv vs GNN-Surv-Tail) & 1.024 [0.934, 1.112] & 1\
 \begin{itemize}
 \item Cost-aware ordering is cheaper than both ASAP baselines on a fresh test set; its edge over removability-only ordering holds in replay but not robustly.
 \item It does not beat a simple contact heuristic on larger, unseen assemblies --- confident timeouts are the reason.
-\item A 3\,s first-pass budget cuts planner time by 72\% for every ordering.
+\item A 3\,s first-pass budget cuts planner time by 72--79\% in replay (about 50\% live) for every ordering tested.
 \item Next: calibrate for shift (train on 9--12-part assemblies), learn per-part budgets from the survival curve.
 \end{itemize}
 \vfill
 {\small Code: \texttt{github.com/AaronChandler976/curved-path-puzzle-solver}}
 \end{frame}
 
-\appendix
-\begin{frame}{Backup: a real disassembly with the learned order}
-\centering
-\includegraphics[width=0.72\linewidth]{figures/demo_frame.png}\\
-{\small Test assembly 01310, GNN-Surv order; part 7 leaves with a 102° CMG-RRT rotation. Animation: \texttt{talk/demo.mp4}.}
-\end{frame}
 \end{document}

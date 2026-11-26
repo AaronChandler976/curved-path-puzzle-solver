@@ -135,3 +135,14 @@
       resamples (recorded here); live planner calls added to `live.md`; the interim P1 Tail result disclosed;
       C-index wording without a superiority claim; the final `live.md` cited; "not cheaper in total" (CI includes 1);
       the live clean-subset Holm p 0.083 disclosed.
+14. **Phase 4 audit fixes (phase4_1: 2 MAJOR, 13 MINOR).**
+    - *MAJOR 1:* the data slide now states that sequences are planner-found, that 156/2,022 assemblies get stuck, and
+      that allowance assemblies are valid only up to the tolerated interpenetration.
+    - *MAJOR 2:* the demo is a main-flow slide (frame + "play talk/demo.mp4", 13 s) with a 20 s speaker-notes item.
+      The backup appendix was removed.
+    - *Factual fix carried into REPORT §5 and the paper:* train is 89.5% 3–8-part (79% is the v1 share). The paper's
+      "root cause" became "plausible cause (not tested)".
+    - *Other MINORs:* budget saving "72–79% in replay, about 50% live (fewest contacts; GNN-Surv seed 101)"; soft budget
+      mentioned; SDF result on the bundled tight assembly (16505), not the puzzle; failure-analysis seed stated; "0.04 s"
+      footer states its source and that it covers all outcomes; same oracle and T stated on the results slide; no
+      battery CAD evaluated; latency slide is a table; notes wording on latency and shift.

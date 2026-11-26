@@ -257,7 +257,8 @@ GNN-Surv's. Against fewest contacts, GNN-Surv is cheaper on 436 states (saving 3
 the first success. In each of its ten costliest states, the first part it queried had predicted $p\ge0.90$ and
 $c\le3.7$\,s and then ran unsolved for more than 30\,s. These are confident errors, not ties broken badly.
 
-\textbf{Root cause: shift in size and geometry.} The training set is 79\% 3--8-part assemblies; the test set is 51\%
+\textbf{Plausible cause (not tested): shift in size and geometry.} The training set is 89.5\% 3--8-part
+assemblies; the test set is 51\%
 9--12-part and 63\% assemblies whose CAD interpenetrates slightly (tolerated per pair). The 20 largest losses are all
 in the fresh sources, 15 of them with 9--12 parts. Validation (80\% small assemblies) had fewer than 30 large assemblies in
 every size subset, and the cross-validation was only summarised in aggregate, so neither revealed this. Calibration on the test set is still good on average

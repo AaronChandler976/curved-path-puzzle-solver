@@ -19,8 +19,12 @@ the slide footers name. Speak to the picture, not the bullets.
    which is a straight-pull check, then CMG-RRT if needed. Remove the first success and repeat. Ablations: MLP instead of
    the GNN, a BCE head instead of survival, PointNet features, a tail-aware loss. Baselines: random, two heuristics,
    ASAP zero-shot and ASAP retrained on our labels.
+5b. **Demo (20 s).** Play `talk/demo.mp4`: a real test assembly, the learned order with p and c, and part 7
+   leaving with a 102° rotation that only CMG-RRT finds.
 6. **Data (45 s).** This answers the professor's feedback. We use real Fusion 360 products and states that are reached
-   by verified removals, so the states are physically valid. That gives 41,913 labelled queries over 2,022 assemblies.
+   by verified, path-checked removals, so every state is reachable. Caveats I say out loud: the sequences come from
+   our planner, not from the dataset; 156 assemblies get stuck; and most test assemblies have small CAD
+   interpenetrations that we tolerate per pair. That gives 41,913 labelled queries over 2,022 assemblies.
    We fixed the planner adapter first: it never tried the straight pull from the start, and about a fifth of its
    successes went through parts. The protocol was pre-registered, and the fresh test set of 347 assemblies, half of
    them large, was evaluated exactly once.
@@ -38,22 +42,23 @@ the slide footers name. Speak to the picture, not the bullets.
    not beat it. It is again cheaper than both ASAP models. A ListNet-trained variant looked best live but not in
    replay. That is a lead for future work, not a result.
 10. **Budget policy (45 s).** The biggest win was not learned. Give every part 3 s first and retry at 30 s only if
-    nothing comes out. Planner time drops 72% in replay and about 50% live, for every ordering. Live gains less because stuck
+    nothing comes out. Planner time drops 72–79% in replay for every ordering, and about 50% live for the two orderings we ran with it. Live gains less because stuck
     disassemblies pay the retry and the planner overruns short budgets. Under that policy, learned and heuristic orderings
     show no detectable difference.
-11. **Latency (30 s).** The ranker costs about 2.5 ms per state on one CPU thread. One avoided timeout pays for
-    about 12,000 calls. Deploying it costs nothing measurable; the question is only whether it orders well.
+11. **Latency (30 s).** The ranker costs about 2.5 ms per state on one CPU thread (features included). One avoided
+    timeout pays for about 12,000 calls. Its cost is negligible next to the planner; the question is only whether it
+    orders well.
 12. **Failure analysis (45 s).** Nearly all of the loss against the heuristic comes from 85 states where the model
     confidently queried a part that then timed out: for the part queried first it predicted 0.90–1.00
     success and at most 3.7 s cost. These are large
-    assemblies, and the model was trained mostly on 3–8 parts. That is a distribution shift, and validation was too small
-    in those sizes to show it.
+    assemblies, and the model was trained mostly on 3–8 parts. A plausible cause, which we did not test, is distribution
+    shift; validation had too few large assemblies to show it. These numbers are for one seed (101).
 13. **Negative results (45 s).** The planner adapter was the first bug. A learned collision model "solved" a puzzle by
     going through the part. 95–98% of successes are straight pulls, so timeouts dominate the cost. Pre-registration is
     what kept us honest about all of this.
 14. **Summary (30 s).** Cost-aware ordering is cheaper than both ASAP baselines, and cheaper than removability-only
     ordering in replay (not robustly). It does not beat
-    a contact heuristic on bigger, unseen products. A 3-second first pass is a 72% saving for everyone. Next steps:
+    a contact heuristic on bigger, unseen products. A 3-second first pass saves 72–79% in replay (about half live). Next steps:
     train on large assemblies and learn per-part budgets from the survival curve.
 
 Timing check (measured on this file): the spoken text of items 1–14 is about 860 words. At 130 words per minute that

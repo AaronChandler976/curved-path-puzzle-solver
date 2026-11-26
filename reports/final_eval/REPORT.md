@@ -183,5 +183,6 @@ How to read this (claims limited to what the rule and numbers support):
   confident wrong predictions.
 - **Where it happens:** the 20 largest losses are all on assemblies with 4–12 parts (15 of 20 with 9–12 parts) from the
   fresh sources.
-- **Plausible cause (not tested):** distribution shift. Test is 51% 9–12-part and 63% allowance-recovered assemblies, train is 79% 3–8-part
-  v1. Val (80% v1) and the train+val CV could not show this, because 9–12-part assemblies were underpowered there.
+- **Plausible cause (not tested):** distribution shift. Test is 51% 9–12-part and 63% allowance-recovered assemblies, train is 89.5% 3–8-part
+  (79% from the original v1 set). Val (80% v1) had fewer than 30 large assemblies per size subset, and the CV was only
+  summarised in aggregate, so neither could show this.
