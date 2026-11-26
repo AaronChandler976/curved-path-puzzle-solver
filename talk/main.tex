@@ -117,7 +117,7 @@ and 18.5\% of its successes went through parts at fine resolution.
 \end{frame}
 
 % 6 ------------------------------------------------------------------ main result
-\begin{frame}{Test result: beats ASAP and random, ties the contact heuristic}
+\begin{frame}{Test result: cheaper than ASAP and random, ties the contact heuristic}
 \centering
 \includegraphics[width=0.94\linewidth]{figures/totals_replay_live.pdf}\\[-1pt]
 {\scriptsize\color{gr} blue: ours \quad orange: ASAP \quad gray: untrained; dashed: fewest contacts}\\[3pt]
@@ -127,7 +127,7 @@ and 18.5\% of its successes went through parts at fine resolution.
 \end{frame}
 
 % 7 ------------------------------------------------------------------ ablations
-\begin{frame}{Ablations on test: the cost-aware head is what helps}
+\begin{frame}{Ablations on test: the cost-aware head helps --- but not robustly}
 \begin{center}\footnotesize
 \begin{tabular}{lcc}
 \toprule
@@ -142,7 +142,8 @@ plain vs tail-aware loss (GNN-Surv vs GNN-Surv-Tail) & 1.024 [0.934, 1.112] & 1\
 \end{tabular}
 \end{center}
 \begin{itemize}\small
-\item Lesson: validation favoured the variants with most tuning; cross-validation and test did not confirm them.
+\item Survival vs BCE holds in replay; on the clean subset the CI reaches 1.001, live it is cheaper only per assembly, and the MLP pair goes the other way.
+\item Validation favoured the most-tuned variants; cross-validation and test did not confirm them.
 \end{itemize}
 \src{\texttt{reports/final\_eval/REPORT.md} \S2; \texttt{reports/explore/cv.md}.}
 \end{frame}
@@ -152,7 +153,7 @@ plain vs tail-aware loss (GNN-Surv vs GNN-Surv-Tail) & 1.024 [0.934, 1.112] & 1\
 \begin{itemize}
 \item 17,697 disassembly runs, idle-guarded; every confounded run re-run, none left confounded.
 \item GNN-Surv / fewest contacts $=\mathbf{0.915}$ [0.819, 1.015], Holm $p=0.13$: \textcolor{acc}{\textbf{does not beat}} (same verdict as replay).
-\item Beats ASAP zero-shot (0.789) and ASAP retrained (0.906 [0.827, 0.994]) live, too.
+\item Cheaper than ASAP zero-shot (0.789) and ASAP retrained (0.906 [0.827, 0.994]) live, too.
 \item Exploratory: GNN-Surv + ListNet loss 0.797 vs fewest contacts live --- but not in replay, so: a lead, not a result.
 \end{itemize}
 \src{\texttt{reports/final\_eval/live.md}; seed-mean of 5 seeds per trained model (pre-registered).}
@@ -164,7 +165,7 @@ plain vs tail-aware loss (GNN-Surv vs GNN-Surv-Tail) & 1.024 [0.934, 1.112] & 1\
 \item Two-pass policy: every part gets 3\,s; only if none comes out, retry at 30\,s.
 \item Fewest contacts: 7,202\,s $\rightarrow$ \textbf{2,008\,s} ($-72\%$) on test; GNN-Surv 7,595\,s $\rightarrow$ 1,904\,s.
 \item Under the same policy, learned vs heuristic: 0.948 [0.820, 1.095] --- no detectable difference.
-\item Live (stuck runs pay the retry): about $-50\%$ for both.
+\item Live: about $-50\%$ (stuck runs pay the retry; the planner overruns short budgets).
 \end{itemize}
 \centering\includegraphics[width=0.78\linewidth]{figures/budget_policy.pdf}
 \src{Exploratory (post-registration, chosen on validation): \texttt{reports/final\_eval/replay.md}.}
@@ -209,7 +210,7 @@ plain vs tail-aware loss (GNN-Surv vs GNN-Surv-Tail) & 1.024 [0.934, 1.112] & 1\
 
 \begin{frame}{Summary}
 \begin{itemize}
-\item Cost-aware (survival) ordering beats removability-only ordering and both ASAP baselines on a fresh test set.
+\item Cost-aware ordering is cheaper than both ASAP baselines on a fresh test set; its edge over removability-only ordering holds in replay but not robustly.
 \item It does not beat a simple contact heuristic on larger, unseen assemblies --- confident timeouts are the reason.
 \item A 3\,s first-pass budget cuts planner time by 72\% for every ordering.
 \item Next: calibrate for shift (train on 9--12-part assemblies), learn per-part budgets from the survival curve.

@@ -27,13 +27,19 @@ the slide footers name. Speak to the picture, not the bullets.
 7. **Main result (60 s).** Bars are total planner time on the test set. GNN-Surv is far below random and 35–40% below
    both ASAP models (39% below zero-shot, 34% below retrained). Against the simple heuristic "fewest contacts first" it is a tie: 1.055, with a CI that
    includes 1. Our pre-registered rule therefore says "does not beat". I report that as is.
-8. **Ablations (45 s).** The cost-aware head is the part that helps: same GNN, survival p/c instead of BCE p, 11%
-   less planner time, significant after Holm. GNN vs MLP, PointNet and the tail loss show no detectable difference on
+8. **Ablations (45 s).** The cost-aware head helps, but not robustly. Same GNN, survival p/c instead of BCE p: 11%
+   less planner time in the main replay, significant after Holm. On the clean subset the CI just touches 1, live it
+   is cheaper only on the typical assembly, and for the MLP it goes the other way. So it is a modest, encoder-dependent
+   effect. GNN vs MLP, PointNet and the tail loss show no detectable difference on
    test. Lesson: validation favoured the variants we had tuned most, and cross-validation and the test did not confirm
    them.
-9. **Live (45 s).** Fresh CMG-RRT queries, full disassemblies, same methods (filled in from `live.md`).
+9. **Live (45 s).** We also ran every method live: fresh planner queries, all 347 assemblies, 17,697 full
+   disassemblies with the idle guard. Same verdict. GNN-Surv is 0.915 of fewest contacts, the CI includes 1, so it does
+   not beat it. It is again cheaper than both ASAP models. A ListNet-trained variant looked best live but not in
+   replay. That is a lead for future work, not a result.
 10. **Budget policy (45 s).** The biggest win was not learned. Give every part 3 s first and retry at 30 s only if
-    nothing comes out. Planner time drops 72% for every ordering. Under that policy, learned and heuristic orderings
+    nothing comes out. Planner time drops 72% in replay and about 50% live, for every ordering. Live gains less because stuck
+    disassemblies pay the retry and the planner overruns short budgets. Under that policy, learned and heuristic orderings
     show no detectable difference.
 11. **Latency (30 s).** The ranker costs about 2.5 ms per state on one CPU thread. One avoided timeout pays for
     about 12,000 calls. Deploying it costs nothing measurable; the question is only whether it orders well.
@@ -45,7 +51,8 @@ the slide footers name. Speak to the picture, not the bullets.
 13. **Negative results (45 s).** The planner adapter was the first bug. A learned collision model "solved" a puzzle by
     going through the part. 95–98% of successes are straight pulls, so timeouts dominate the cost. Pre-registration is
     what kept us honest about all of this.
-14. **Summary (30 s).** Cost-aware ordering beats removability-only ordering and both ASAP baselines. It does not beat
+14. **Summary (30 s).** Cost-aware ordering is cheaper than both ASAP baselines, and cheaper than removability-only
+    ordering in replay (not robustly). It does not beat
     a contact heuristic on bigger, unseen products. A 3-second first pass is a 72% saving for everyone. Next steps:
     train on large assemblies and learn per-part budgets from the survival curve.
 
