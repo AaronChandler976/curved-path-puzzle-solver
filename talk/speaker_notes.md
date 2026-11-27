@@ -31,7 +31,7 @@ the slide footers name. Speak to the picture, not the bullets.
 7. **Main result (60 s).** Bars are total planner time on the test set. GNN-Surv is far below random and 34–39% below
    both ASAP models (39% below zero-shot, 34% below retrained). Against the simple heuristic "fewest contacts first" it is a tie: 1.055, with a CI that
    includes 1. Our pre-registered rule therefore says "does not beat". I report that as is.
-8. **Ablations (45 s).** The cost-aware head helps, but not robustly. Same GNN, survival p/c instead of BCE p: 11%
+8. **Ablations (45 s).** These are test replay numbers. The cost-aware head helps in replay, but not robustly. Same GNN, survival p/c instead of BCE p: 11%
    less planner time in the main replay, significant after Holm. On the clean subset the CI just touches 1, live it
    is cheaper only on the typical assembly, and for the MLP it goes the other way. So it is a modest, encoder-dependent
    effect. GNN vs MLP, PointNet and the tail loss show no detectable difference on

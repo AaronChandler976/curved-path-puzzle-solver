@@ -107,10 +107,20 @@ CMG-RRT (WAFR 2026), open source & --- (planner) & SE(3), tight clearance \\
 
 % 4b ----------------------------------------------------------------- demo
 \begin{frame}{A real disassembly with the learned query order (test assembly)}
-\centering
-\includegraphics[width=0.66\linewidth,trim=0 60 0 0,clip]{figures/demo_frame.png}\\
-{\small Test assembly 01310, GNN-Surv order with predicted $p$ and $c$; for part 7 the straight pull fails and CMG-RRT finds a path with a 102° rotation.
-\textbf{Play \texttt{talk/demo.mp4} (13 s).}}
+\begin{columns}[T]
+\column{0.44\textwidth}
+\vspace{2pt}\centering\includegraphics[height=0.5\textheight,keepaspectratio]{figures/demo_parts.png}
+\column{0.54\textwidth}
+\small
+Test assembly 01310, last state (parts 5--7 present).\\[4pt]
+GNN-Surv order (score $p/c$):
+\begin{enumerate}
+\item part 7: $p=0.97$, $c=1.3$\,s $\to$ \textbf{success}, 18.36\,s
+\item part 5: $p=0.90$, $c=3.3$\,s $\to$ not queried
+\end{enumerate}
+The straight pull fails for part 7; CMG-RRT finds a path with a 102° rotation (frame: 59° into it).\\[6pt]
+\textbf{Play \texttt{talk/demo.mp4} (13 s).}
+\end{columns}
 \src{Re-run of the live test disassembly with saved paths: \texttt{experiments/2026-11-26\_demo\_01310/} (same seeds; 19.3\,s planner time vs 20.5\,s in the live run).}
 \end{frame}
 
@@ -139,11 +149,11 @@ and 18.5\% of its successes dipped below the contact tolerance at fine resolutio
 \end{frame}
 
 % 7 ------------------------------------------------------------------ ablations
-\begin{frame}{Ablations on test: the cost-aware head helps --- but not robustly}
+\begin{frame}{Ablations on test: the cost-aware head's edge is not robust}
 \begin{center}\footnotesize
 \begin{tabular}{lcc}
 \toprule
-contrast (ratio of total time, A/B) & ratio [95\% CI] & Holm $p$\\
+contrast (test replay; ratio of total time, A/B) & ratio [95\% CI] & Holm $p$\\
 \midrule
 \textbf{survival $p/c$ vs BCE $p$} (GNN) & \textbf{0.887} [0.785, 0.999] & $6\times10^{-7}$\\
 GNN-Surv vs ASAP retrained & 0.660 [0.543, 0.793] & $5\times10^{-7}$\\
