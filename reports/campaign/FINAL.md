@@ -13,7 +13,7 @@
 2. Put the link in `paper/main.tex` (`\newcommand{\videourl}{...}`) and in `README.md` (VIDEO-LINK), then recompile:
    `cd paper && conda run -n paper tectonic -X compile main.tex`, and commit.
 3. Upload `talk/main.pdf` to Canvas after the talk; submit `paper/main.pdf`, the repo URL and the video link by Dec 15.
-4. See `reports/campaign/NEEDS_AARON.md` for the rest (license choice, optional items).
+4. See `reports/campaign/NEEDS_AARON.md` for the rest (optional items). License: MIT, added 2026-11-26.
 
 ## Where the results are
 - Final (test, evaluated once): `reports/final_eval/REPORT.md`

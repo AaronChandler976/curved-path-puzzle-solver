@@ -121,6 +121,6 @@ work, and an independent audit after every phase (`reports/campaign/AUDITS/`). E
 the run folder that produced it.
 
 ## License and credits
-No license file has been chosen for our code yet (see `reports/campaign/NEEDS_AARON.md`). Third-party: CMG-RRT
-(MIT, TAU-CGL), ASAP and Assemble Them All (see their repositories). CMG-RRT is used unmodified, through our collision
+Our code is released under the MIT License (see `LICENSE`). Third-party code and data keep their own licenses:
+CMG-RRT (MIT, TAU-CGL), ASAP and Assemble Them All (see their repositories). CMG-RRT is used unmodified, through our collision
 adapter; `patches/README.md` lists any patches.

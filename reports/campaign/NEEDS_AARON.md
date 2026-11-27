@@ -5,7 +5,7 @@
   Chrome, gnome-shell, localsearch) use about 0.5 CPU cores together. That sits right at the idle guard's busy threshold,
   so about 23% of runs are flagged confounded and re-run. Closing Firefox/Chrome while it runs would cut the re-runs. Nothing
   in the project depends on it.
-- **License:** the repo has no LICENSE file. Choosing one (e.g. MIT) is your decision; the README says none is chosen yet.
+- ~~License~~ done 2026-11-26: MIT (`LICENSE`), README updated.
 - **Video link (required):** upload `video/demo.mp4` (YouTube unlisted or Google Drive), then replace VIDEO-LINK-PLACEHOLDER
   in `paper/main.tex` (`\videourl`) and VIDEO-LINK in `README.md`, recompile the paper
   (`cd paper && conda run -n paper tectonic -X compile main.tex`), commit and push to `main`.
