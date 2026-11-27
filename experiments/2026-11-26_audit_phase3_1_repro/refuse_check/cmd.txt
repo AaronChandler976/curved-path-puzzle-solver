@@ -1,0 +1,1 @@
+scripts/eval_v2.py --split test --methods configs/final_methods.json --redmax experiments/2026-11-24_run05_redmax/asap_graphs.jsonl --outdir experiments/2026-11-26_audit_phase3_1_repro/refuse_check --md experiments/2026-11-26_audit_phase3_1_repro/refuse_check/x.md --fig-dir experiments/2026-11-26_audit_phase3_1_repro/refuse_check --best-heuristic-val fewest_contacts
